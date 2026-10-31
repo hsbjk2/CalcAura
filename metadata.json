@@ -1,0 +1,6 @@
+{
+  "name": "CalcAura — All-in-One Mathematics & STEM Workspace",
+  "description": "Professional all-in-one mathematics, scientific computing, graphing, geometry visualizer, equation solver, and STEM workspace built by HSBJK.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
