@@ -40,9 +40,9 @@ import { ToolDirectory } from './components/ToolDirectory.tsx';
 import { Footer } from './components/Footer.tsx';
 import { SearchModal } from './components/SearchModal.tsx';
 import { AboutModal } from './components/AboutModal.tsx';
-import { AuthModal } from './components/Auth/AuthModal.tsx';
+
 import { ClerkAuthPage } from './components/Auth/ClerkAuthPage.tsx';
-import { useAuth } from './context/AuthContext.tsx';
+
 import { useI18n } from './i18n/I18nContext.tsx';
 import { Language, TRANSLATIONS } from './i18n/translations.ts';
 import {
@@ -274,7 +274,7 @@ export default function App() {
     }
     return 'home';
   });
-  const { openAuthModal } = useAuth();
+ 
   const [historyNotebookToOpen, setHistoryNotebookToOpen] = useState<Notebook | null>(null);
   const [historyReviewAttempt, setHistoryReviewAttempt] = useState<PracticeHistoryEntry | null>(null);
   const { currentLang, setLang: setCurrentLang, t } = useI18n();
@@ -1212,9 +1212,7 @@ export default function App() {
         }}
       />
 
-      <AuthModal
-        onSuccessRedirect={(dest) => handleSelectTab(dest)}
-      />
+  
     </div>
   );
 }
