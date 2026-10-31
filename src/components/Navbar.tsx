@@ -245,11 +245,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   // ==========================================
 
   const handleSignIn = () => {
-
-    setMobileMenuOpen(false);
-
-    openAuthModal('signin', 'history');
-  };
+  setMobileMenuOpen(false);
+  onSelectTab('sign-in');
+};
 
   // ==========================================
   // NAVBAR UI
