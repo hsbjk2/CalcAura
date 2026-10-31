@@ -54,20 +54,22 @@ export const ClerkAuthPage: React.FC<ClerkAuthPageProps> = ({
             {mode === 'sign-in' ? (
 
               <SignIn
-                routing="hash"
-                appearance={getClerkAppearance(darkMode)}
-                fallbackRedirectUrl="/history"
-                signUpUrl="#/sign-up"
-              />
+  routing="hash"
+  appearance={getClerkAppearance(darkMode)}
+  forceRedirectUrl="/#/history"
+  fallbackRedirectUrl="/#/history"
+  signUpUrl="#/sign-up"
+/>
 
             ) : (
 
               <SignUp
-                routing="hash"
-                appearance={getClerkAppearance(darkMode)}
-                fallbackRedirectUrl="/history"
-                signInUrl="#/sign-in"
-              />
+  routing="hash"
+  appearance={getClerkAppearance(darkMode)}
+  forceRedirectUrl="/#/history"
+  fallbackRedirectUrl="/#/history"
+  signInUrl="#/sign-in"
+/>
 
             )}
 
