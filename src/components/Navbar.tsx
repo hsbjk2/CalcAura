@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Search,
   Sun,
   Moon,
   Menu,
@@ -8,12 +7,8 @@ import {
   Globe,
   ArrowRight,
   PenTool,
-  Compass,
-  GraduationCap,
   History,
   LogIn,
-  LogOut,
-  UserCheck,
 } from 'lucide-react';
 import { Language, Translations } from '../i18n/translations.ts';
 import { GlobalSearchDropdown } from './GlobalSearchDropdown.tsx';
@@ -58,10 +53,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   isLandingView = true,
   isAboutView = false,
 }) => {
-  const { user, isAuthenticated, isClerkActive, openAuthModal, logout } = useAuth();
+  const { user, isAuthenticated, openAuthModal } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [langMenuOpen, setLangMenuOpen] = useState<boolean>(false);
-  const [userMenuOpen, setUserMenuOpen] = useState<boolean>(false);
   const [scrolledPastHero, setScrolledPastHero] = useState<boolean>(false);
 
   useEffect(() => {
@@ -234,7 +228,25 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </button>
 
-          {/* User Auth Section */}
+          {/* Clerk Authentication - Desktop */}
+{isAuthenticated ? (
+  <div className="flex items-center gap-2 shrink-0">
+    <UserButton
+      afterSignOutUrl="/"
+      appearance={getClerkAppearance(darkMode)}
+    />
+  </div>
+) : (
+  <button
+    onClick={() => openAuthModal('signin', 'history')}
+    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#7957F5]/15 to-[#D94BCB]/15 hover:from-[#7957F5]/25 hover:to-[#D94BCB]/25 text-[#7957F5] dark:text-[#D94BCB] border border-[#7957F5]/30 text-xs font-bold transition-all cursor-pointer shrink-0"
+    title="Sign in to your account"
+    aria-label="Sign In"
+  >
+    <LogIn className="w-3.5 h-3.5" />
+    <span>Sign In</span>
+  </button>
+)}
           {isAuthenticated ? (
             isClerkActive ? (
               <div className="flex items-center gap-2">
