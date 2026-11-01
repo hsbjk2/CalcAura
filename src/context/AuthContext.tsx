@@ -36,7 +36,9 @@ const ClerkAuthBridge: React.FC<{ children: React.ReactNode }> = ({ children }) 
   // Supabase receives the authenticated Clerk session token. The Clerk user ID
   // is the only user identifier used for ownership and RLS filtering.
   useEffect(() => {
-    if (isSignedIn && userId) {
+  if (!isLoaded) return;
+
+  if (isSignedIn && userId) {
       setGlobalTokenProvider(async () => {
         try {
           return (await getToken()) || null;
