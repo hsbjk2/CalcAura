@@ -296,36 +296,40 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
         {/* User Status Bar & Tabs */}
         <div className="flex flex-wrap items-center gap-3">
           {/* Authenticated User Chip */}
-          <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
-            {user.avatar && /^https?:\/\//i.test(user.avatar) ? (
-  <img
-    src={user.avatar}
-    alt={`${user.name}'s profile`}
-    className="w-9 h-9 rounded-full object-cover border border-white/10 shrink-0"
-    referrerPolicy="no-referrer"
-  />
-) : (
-  <span className="text-xl w-9 h-9 flex items-center justify-center shrink-0">
-    {user.avatar || '🎓'}
-  </span>
-)}
-            <div className="text-left">
-              <div className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-tight">
-                {user.name}
-              </div>
-              <div className="text-[10px] font-mono text-slate-400 leading-none">
-                {user.email}
-              </div>
-            </div>
-            <button
-              onClick={logout}
-              className="ml-2 p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
-              title="Sign Out"
-              aria-label="Sign Out"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <<div className="flex items-center gap-2.5 px-3 py-2 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 max-w-[280px] min-w-0">
+
+  {user.avatar && /^https?:\/\//i.test(user.avatar) ? (
+    <img
+      src={user.avatar}
+      alt={`${user.name}'s profile`}
+      className="w-9 h-9 rounded-full object-cover shrink-0"
+      referrerPolicy="no-referrer"
+    />
+  ) : (
+    <span className="text-xl w-9 h-9 flex items-center justify-center shrink-0">
+      {user.avatar || '🎓'}
+    </span>
+  )}
+
+  <div className="text-left min-w-0 flex-1">
+    <div className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+      {user.name}
+    </div>
+    <div className="text-[10px] font-mono text-slate-400 truncate">
+      {user.email}
+    </div>
+  </div>
+
+  <button
+    onClick={logout}
+    className="ml-1 p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer shrink-0"
+    title="Sign Out"
+    aria-label="Sign Out"
+  >
+    <LogOut className="w-3.5 h-3.5" />
+  </button>
+
+</div>
 
           {/* Tab Switcher */}
           <div className="inline-flex p-1.5 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 self-start sm:self-auto">
