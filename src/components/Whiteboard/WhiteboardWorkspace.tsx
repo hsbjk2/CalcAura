@@ -146,13 +146,84 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
   const isMountedRef = useRef<boolean>(false);
 
   // Load Notebook on mount
-  useEffect(() => {
-    if (initialNotebook && initialNotebook.sheets && initialNotebook.sheets.length > 0) {
+  // Load the saved notebook when the workspace opens
+useEffect(() => {
+  let cancelled = false;
+
+  const initializeNotebook = async () => {
+    setNotebookReady(false);
+
+    // Use the notebook selected from History when provided.
+    if (initialNotebook?.sheets?.length) {
       setNotebook(initialNotebook);
-      setActiveSheetId(initialNotebook.activeSheetId || initialNotebook.sheets[0].id);
-      isWhiteboardSavedInHistory(initialNotebook.id).then((saved) => {
-        setIsSaved(saved);
-      });
+
+      setActiveSheetId(
+        initialNotebook.activeSheetId || initialNotebook.sheets[0].id
+      );
+
+      try {
+        const saved = await isWhiteboardSavedInHistory(initialNotebook.id);
+
+        if (!cancelled) {
+          setIsSaved(saved);
+        }
+      } catch {
+        if (!cancelled) setIsSaved(false);
+      }
+
+      if (!cancelled) setNotebookReady(true);
+      return;
+    }
+
+    // Otherwise restore the most recently saved local notebook.
+    try {
+      const savedNotebook = await loadNotebook();
+
+      if (cancelled) return;
+
+      const restoredNotebook =
+        savedNotebook?.sheets?.length
+          ? savedNotebook
+          : createDefaultNotebook();
+
+      setNotebook(restoredNotebook);
+
+      setActiveSheetId(
+        restoredNotebook.activeSheetId ||
+        restoredNotebook.sheets[0]?.id ||
+        ''
+      );
+
+      setIsSaved(false);
+    } catch (error) {
+      console.error('Unable to restore whiteboard:', error);
+
+      if (cancelled) return;
+
+      const freshNotebook = createDefaultNotebook();
+
+      setNotebook(freshNotebook);
+
+      setActiveSheetId(
+        freshNotebook.activeSheetId ||
+        freshNotebook.sheets[0]?.id ||
+        ''
+      );
+
+      setIsSaved(false);
+    }
+
+    if (!cancelled) {
+      setNotebookReady(true);
+    }
+  };
+
+  void initializeNotebook();
+
+  return () => {
+    cancelled = true;
+  };
+}, [initialNotebook]);
     } else {
       // Fresh new board is initially unsaved
       setIsSaved(false);
