@@ -328,6 +328,8 @@ export const ShapesLibraryModal: React.FC<ShapesLibraryModalProps> = ({
       <div
         className="relative w-full max-w-2xl max-h-[85vh] bg-white dark:bg-[#18181D] rounded-3xl border border-slate-200 dark:border-white/12 shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 text-slate-800 dark:text-slate-100"
         onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-white/10 flex items-center justify-between bg-slate-50/50 dark:bg-white/[0.02]">
@@ -425,34 +427,29 @@ export const ShapesLibraryModal: React.FC<ShapesLibraryModalProps> = ({
                 return (
                   <div
                     key={shape.id}
-                    className={`group relative p-3 rounded-2xl border transition-all flex flex-col items-center justify-between text-center ${
+                    onClick={() => {
+                      onInsertShape(shape.id);
+                      onClose();
+                      whiteboardSounds.playPopSound();
+                    }}
+                    className={`group relative p-3 rounded-2xl border transition-all flex flex-col items-center justify-between text-center cursor-pointer ${
                       isCurrent
                         ? 'border-[#7957F5] bg-[#7957F5]/5 dark:bg-[#7957F5]/10 shadow-md shadow-[#7957F5]/10'
                         : 'border-slate-200/80 dark:border-white/10 hover:border-[#7957F5]/50 bg-slate-50/50 dark:bg-white/[0.02] hover:bg-white dark:hover:bg-white/[0.06]'
                     }`}
                   >
-                    {/* SVG Shape Icon Box - Clicking directly inserts onto whiteboard */}
+                    {/* SVG Shape Icon Box */}
                     <div
-                      onClick={() => {
-                        onInsertShape(shape.id);
-                        onClose();
-                        whiteboardSounds.playPopSound();
-                      }}
-                      className="w-16 h-16 rounded-xl flex items-center justify-center p-2 text-[#7957F5] dark:text-[#D94BCB] group-hover:scale-110 transition-transform cursor-pointer"
-                      title={`Click to insert ${shape.name} onto whiteboard`}
+                      className="w-16 h-16 rounded-xl flex items-center justify-center p-2 text-[#7957F5] dark:text-[#D94BCB] group-hover:scale-110 transition-transform pointer-events-none"
+                      title={`Insert ${shape.name}`}
                     >
                       {shape.svgPreview}
                     </div>
 
-                    {/* Shape Info - Clicking inserts onto whiteboard */}
+                    {/* Shape Info */}
                     <div
-                      onClick={() => {
-                        onInsertShape(shape.id);
-                        onClose();
-                        whiteboardSounds.playPopSound();
-                      }}
-                      className="mt-1.5 w-full cursor-pointer"
-                      title={`Click to insert ${shape.name}`}
+                      className="mt-1.5 w-full pointer-events-none"
+                      title={`Insert ${shape.name}`}
                     >
                       <div className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate group-hover:text-[#7957F5] transition-colors">
                         {shape.name}
@@ -465,7 +462,10 @@ export const ShapesLibraryModal: React.FC<ShapesLibraryModalProps> = ({
                     {/* Action Buttons: Insert (Primary) & Draw (Custom size) */}
                     <div className="mt-2.5 w-full flex items-center gap-1.5">
                       <button
-                        onClick={() => {
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
                           onInsertShape(shape.id);
                           onClose();
                           whiteboardSounds.playPopSound();
@@ -477,7 +477,10 @@ export const ShapesLibraryModal: React.FC<ShapesLibraryModalProps> = ({
                         <span>Insert</span>
                       </button>
                       <button
-                        onClick={() => {
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
                           onSelectShape(shape.id);
                           onClose();
                           whiteboardSounds.playTapSound();
