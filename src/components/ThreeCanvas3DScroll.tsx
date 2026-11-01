@@ -60,6 +60,11 @@ export const ThreeCanvas3DScroll: React.FC<ThreeCanvas3DScrollProps> = ({ t }) =
   const [surfaceType, setSurfaceType] = useState<SurfaceType>('saddle');
   const [wireframe, setWireframe] = useState<boolean>(true);
   const [autoRotate, setAutoRotate] = useState<boolean>(true);
+  const autoRotateRef = useRef<boolean>(true);
+
+  useEffect(() => {
+    autoRotateRef.current = autoRotate;
+  }, [autoRotate]);
   const [scrollPct, setScrollPct] = useState<number>(0);
   const [camCoords, setCamCoords] = useState<{ x: string; y: string; z: string }>({
     x: '0.0',
@@ -296,8 +301,8 @@ export const ThreeCanvas3DScroll: React.FC<ThreeCanvas3DScrollProps> = ({ t }) =
         cameraRef.current.position.x += (targetCamX - cameraRef.current.position.x) * 0.06;
         cameraRef.current.lookAt(0, scroll * 0.4, 0);
 
-        if (autoRotate && !isDragging.current) {
-          manualRot.current.y += delta * 0.28;
+        if (autoRotateRef.current && !isDragging.current) {
+          manualRot.current.y += delta * 0.38;
         }
 
         meshGroupRef.current.rotation.y = manualRot.current.y + scroll * Math.PI * 1.8;
