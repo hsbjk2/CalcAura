@@ -296,7 +296,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
         {/* User Status Bar & Tabs */}
         <div className="flex flex-wrap items-center gap-3">
           {/* Authenticated User Chip */}
-          <<div className="flex items-center gap-2.5 px-3 py-2 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 max-w-[280px] min-w-0">
+          <div className="flex items-center gap-2.5 px-3 py-2 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 max-w-[280px] min-w-0">
 
   {user.avatar && /^https?:\/\//i.test(user.avatar) ? (
     <img
