@@ -50,38 +50,20 @@ export const ParticleNetworkBackground: React.FC<ParticleNetworkBackgroundProps>
     darkModeRef.current = darkMode;
   }, [darkMode]);
 
-  // Track active scroll and navigation states for frame-rate throttling & density reduction
-  const isScrollingRef = useRef<boolean>(false);
-  const isNavigatingRef = useRef<boolean>(false);
-  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const navTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Smooth page scroll tracking for organic depth parallax
+  const targetScrollYRef = useRef<number>(0);
+  const scrollYRef = useRef<number>(0);
 
-  // When activeTab changes (e.g. curriculum tabs, classes, or tools navigation), enter low-overhead mode
-  useEffect(() => {
-    isNavigatingRef.current = true;
-    if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current);
-    navTimeoutRef.current = setTimeout(() => {
-      isNavigatingRef.current = false;
-    }, 600);
-    return () => {
-      if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current);
-    };
-  }, [activeTab]);
-
-  // Listen for scroll events to throttle frames during active page scrolling
   useEffect(() => {
     const handleScroll = () => {
-      isScrollingRef.current = true;
-      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-      scrollTimeoutRef.current = setTimeout(() => {
-        isScrollingRef.current = false;
-      }, 350);
+      targetScrollYRef.current = window.scrollY || window.pageYOffset || 0;
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
+    // Initialize with current scroll
+    handleScroll();
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
     };
   }, []);
 
@@ -236,25 +218,21 @@ export const ParticleNetworkBackground: React.FC<ParticleNetworkBackgroundProps>
       animFrameIdRef.current = requestAnimationFrame(render);
       if (!isTabVisible) return;
 
-      // FRAME-RATE THROTTLING MECHANISM:
-      // When the user is actively scrolling or switching curriculum tabs, throttle frame rate to ~22fps (45ms)
-      // to ensure main thread scrolling, KaTeX formulas, and UI layout remain perfectly fluid (60-120Hz).
-      const isThrottled = isScrollingRef.current || isNavigatingRef.current;
-      const minInterval = isThrottled ? 45 : 16;
-      if (now - lastRenderTimestamp < minInterval) {
-        return;
-      }
-      lastRenderTimestamp = now;
-
       const dt = Math.min((now - lastTime) / 1000, 0.1);
       lastTime = now;
       elapsed += dt * speedFactor;
 
+      // Smooth scroll tracking with organic damping
+      const scrollDelta = targetScrollYRef.current - scrollYRef.current;
+      scrollYRef.current += scrollDelta * 0.12;
+      const currentScrollY = scrollYRef.current;
+      const scrollParallaxY = -currentScrollY * 0.42;
+
       const isDark = darkModeRef.current;
 
-      // Smooth mouse tracking (skip during active scroll to save cycles)
+      // Smooth mouse tracking
       const mouse = mouseRef.current;
-      if (!isThrottled && mouse.active) {
+      if (mouse.active) {
         mouse.x += (mouse.targetX - mouse.x) * 0.08;
         mouse.y += (mouse.targetY - mouse.y) * 0.08;
       } else {
@@ -264,8 +242,8 @@ export const ParticleNetworkBackground: React.FC<ParticleNetworkBackgroundProps>
 
       ctx.clearRect(0, 0, width, height);
 
-      // --- ATMOSPHERIC BACKGROUND RADIAL GLOW ---
-      const waveCenterY = height * 0.62;
+      // --- ATMOSPHERIC BACKGROUND RADIAL GLOW (Displaced gently by page scroll) ---
+      const waveCenterY = height * 0.62 + scrollParallaxY * 0.22;
       const waveCenterX = width * 0.55;
 
       if (isDark) {
@@ -312,8 +290,8 @@ export const ParticleNetworkBackground: React.FC<ParticleNetworkBackgroundProps>
       }
 
       // Mouse Parallax Offset
-      const mouseParallaxX = (!isThrottled && mouse.active) ? ((mouse.x / width) - 0.5) * 22 : 0;
-      const mouseParallaxY = (!isThrottled && mouse.active) ? ((mouse.y / height) - 0.5) * 16 : 0;
+      const mouseParallaxX = mouse.active ? ((mouse.x / width) - 0.5) * 22 : 0;
+      const mouseParallaxY = mouse.active ? ((mouse.y / height) - 0.5) * 16 : 0;
 
       // Update Node Positions
       const t = elapsed;
@@ -323,7 +301,7 @@ export const ParticleNetworkBackground: React.FC<ParticleNetworkBackgroundProps>
         const node = nodes[i];
 
         if (!node.isFloating) {
-          // --- ORGANIC FLOWING WAVE FORMATIONS ---
+          // --- ORGANIC FLOWING WAVE FORMATIONS WITH DEPTH SCROLL PARALLAX ---
           const normX = node.baseX / width;
           const k1 = 2.4;
           const k2 = 4.2;
@@ -347,11 +325,14 @@ export const ParticleNetworkBackground: React.FC<ParticleNetworkBackgroundProps>
           const localDriftX = Math.cos(t * 0.9 + node.phaseX) * (isMobile ? 6 : 10);
           const localDriftY = Math.sin(t * 1.1 + node.phaseY) * (isMobile ? 7 : 12);
 
-          let targetX = node.baseX + localDriftX + mouseParallaxX * (1 + node.z * 0.005);
-          let targetY = node.baseY + waveY + localDriftY + mouseParallaxY * (1 + node.z * 0.005);
+          // Apply vertical scroll displacement according to 3D depth z
+          const nodeScrollDisplacement = scrollParallaxY * (1 + node.z * 0.005);
 
-          // Mouse proximity reaction (gentle elastic deflection, bypassed during active scrolling)
-          if (!isThrottled && mouse.active) {
+          let targetX = node.baseX + localDriftX + mouseParallaxX * (1 + node.z * 0.005);
+          let targetY = node.baseY + waveY + localDriftY + nodeScrollDisplacement + mouseParallaxY * (1 + node.z * 0.005);
+
+          // Mouse proximity reaction (gentle elastic deflection)
+          if (mouse.active) {
             const dx = targetX - mouse.x;
             const dy = targetY - mouse.y;
             const dist = Math.hypot(dx, dy);
@@ -367,19 +348,17 @@ export const ParticleNetworkBackground: React.FC<ParticleNetworkBackgroundProps>
           node.x = targetX;
           node.y = targetY;
         } else {
-          // --- CELESTIAL FLOATING DUST PARTICLES ---
-          // In throttled mode, skip processing 60% of floating particles
-          if (isThrottled && i % 3 !== 0) continue;
-
+          // --- CELESTIAL FLOATING DUST PARTICLES (Streaming with scroll velocity) ---
           node.x += node.vx * (1 + Math.sin(t + node.phaseX) * 0.3);
-          node.y += node.vy * (1 + Math.cos(t + node.phaseY) * 0.3);
+          // Stream particles upward when scrolling down, and downward when scrolling up
+          node.y += node.vy * (1 + Math.cos(t + node.phaseY) * 0.3) - scrollDelta * 0.28;
 
           if (node.x < -30) node.x = width + 30;
           if (node.x > width + 30) node.x = -30;
-          if (node.y < -30) node.y = height + 30;
-          if (node.y > height + 30) node.y = -30;
+          if (node.y < -50) node.y = height + 50;
+          if (node.y > height + 50) node.y = -50;
 
-          if (!isThrottled && mouse.active) {
+          if (mouse.active) {
             const dx = node.x - mouse.x;
             const dy = node.y - mouse.y;
             const dist = Math.hypot(dx, dy);
@@ -394,9 +373,8 @@ export const ParticleNetworkBackground: React.FC<ParticleNetworkBackgroundProps>
       }
 
       // --- DRAW CONNECTING LINES (Interconnected Plexus Filaments) ---
-      // When throttled, reduce connection distance & maximum connections per node to preserve UI smoothness
-      const currentConnectDist = isThrottled ? MAX_CONNECT_DISTANCE * 0.72 : MAX_CONNECT_DISTANCE;
-      const currentMaxConnections = isThrottled ? 2 : MAX_CONNECTIONS_PER_NODE;
+      const currentConnectDist = MAX_CONNECT_DISTANCE;
+      const currentMaxConnections = MAX_CONNECTIONS_PER_NODE;
 
       const sortedIndices = nodes.map((_, idx) => idx).sort((a, b) => nodes[a].x - nodes[b].x);
       const connectionCount = new Uint8Array(nodeCount);
@@ -407,14 +385,11 @@ export const ParticleNetworkBackground: React.FC<ParticleNetworkBackgroundProps>
         const idxA = sortedIndices[i];
         const nodeA = nodes[idxA];
 
-        if (isThrottled && nodeA.isFloating && idxA % 3 !== 0) continue;
         if (connectionCount[idxA] >= currentMaxConnections) continue;
 
         for (let j = i + 1; j < nodeCount; j++) {
           const idxB = sortedIndices[j];
           const nodeB = nodes[idxB];
-
-          if (isThrottled && nodeB.isFloating && idxB % 3 !== 0) continue;
 
           const dx = nodeB.x - nodeA.x;
           if (dx > currentConnectDist) break;
@@ -463,9 +438,6 @@ export const ParticleNetworkBackground: React.FC<ParticleNetworkBackgroundProps>
       for (let i = 0; i < nodeCount; i++) {
         const node = nodes[i];
 
-        // Density reduction during scrolling/navigation
-        if (isThrottled && node.isFloating && i % 3 !== 0) continue;
-
         let currentRadius = node.radius;
         if (node.isLuminous) {
           const pulse = Math.sin(t * 2.2 + node.luminousPhase) * 0.45;
@@ -476,32 +448,24 @@ export const ParticleNetworkBackground: React.FC<ParticleNetworkBackgroundProps>
           if (node.isLuminous) {
             const haloRadius = currentRadius * (isMobile ? 4.5 : 6.0);
 
-            if (!isThrottled) {
-              // High-fidelity multi-stop radial gradient
-              const glow = ctx.createRadialGradient(
-                node.x,
-                node.y,
-                0,
-                node.x,
-                node.y,
-                haloRadius
-              );
-              glow.addColorStop(0, 'rgba(0, 242, 254, 0.7)');
-              glow.addColorStop(0.3, 'rgba(34, 211, 238, 0.35)');
-              glow.addColorStop(0.7, 'rgba(20, 184, 166, 0.12)');
-              glow.addColorStop(1, 'rgba(5, 8, 13, 0)');
+            // High-fidelity multi-stop radial gradient
+            const glow = ctx.createRadialGradient(
+              node.x,
+              node.y,
+              0,
+              node.x,
+              node.y,
+              haloRadius
+            );
+            glow.addColorStop(0, 'rgba(0, 242, 254, 0.7)');
+            glow.addColorStop(0.3, 'rgba(34, 211, 238, 0.35)');
+            glow.addColorStop(0.7, 'rgba(20, 184, 166, 0.12)');
+            glow.addColorStop(1, 'rgba(5, 8, 13, 0)');
 
-              ctx.fillStyle = glow;
-              ctx.beginPath();
-              ctx.arc(node.x, node.y, haloRadius, 0, Math.PI * 2);
-              ctx.fill();
-            } else {
-              // Lightweight translucent fill during active scroll
-              ctx.fillStyle = 'rgba(34, 211, 238, 0.25)';
-              ctx.beginPath();
-              ctx.arc(node.x, node.y, haloRadius * 0.65, 0, Math.PI * 2);
-              ctx.fill();
-            }
+            ctx.fillStyle = glow;
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, haloRadius, 0, Math.PI * 2);
+            ctx.fill();
 
             // Radiant Core
             ctx.fillStyle = '#E0FCFC';
@@ -524,29 +488,22 @@ export const ParticleNetworkBackground: React.FC<ParticleNetworkBackgroundProps>
         } else {
           if (node.isLuminous) {
             const haloRadius = currentRadius * 4.5;
-            if (!isThrottled) {
-              const glow = ctx.createRadialGradient(
-                node.x,
-                node.y,
-                0,
-                node.x,
-                node.y,
-                haloRadius
-              );
-              glow.addColorStop(0, 'rgba(13, 148, 136, 0.35)');
-              glow.addColorStop(0.4, 'rgba(2, 132, 199, 0.18)');
-              glow.addColorStop(1, 'rgba(248, 250, 252, 0)');
+            const glow = ctx.createRadialGradient(
+              node.x,
+              node.y,
+              0,
+              node.x,
+              node.y,
+              haloRadius
+            );
+            glow.addColorStop(0, 'rgba(13, 148, 136, 0.35)');
+            glow.addColorStop(0.4, 'rgba(2, 132, 199, 0.18)');
+            glow.addColorStop(1, 'rgba(248, 250, 252, 0)');
 
-              ctx.fillStyle = glow;
-              ctx.beginPath();
-              ctx.arc(node.x, node.y, haloRadius, 0, Math.PI * 2);
-              ctx.fill();
-            } else {
-              ctx.fillStyle = 'rgba(13, 148, 136, 0.15)';
-              ctx.beginPath();
-              ctx.arc(node.x, node.y, haloRadius * 0.6, 0, Math.PI * 2);
-              ctx.fill();
-            }
+            ctx.fillStyle = glow;
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, haloRadius, 0, Math.PI * 2);
+            ctx.fill();
 
             ctx.fillStyle = '#0F766E';
             ctx.beginPath();
