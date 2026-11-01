@@ -431,22 +431,30 @@ export const ShapesLibraryModal: React.FC<ShapesLibraryModalProps> = ({
                         : 'border-slate-200/80 dark:border-white/10 hover:border-[#7957F5]/50 bg-slate-50/50 dark:bg-white/[0.02] hover:bg-white dark:hover:bg-white/[0.06]'
                     }`}
                   >
-                    {/* SVG Shape Icon Box */}
+                    {/* SVG Shape Icon Box - Clicking directly inserts onto whiteboard */}
                     <div
                       onClick={() => {
-                        onSelectShape(shape.id);
+                        onInsertShape(shape.id);
                         onClose();
-                        whiteboardSounds.playTapSound();
+                        whiteboardSounds.playPopSound();
                       }}
-                      className="w-16 h-16 rounded-xl flex items-center justify-center p-2 text-[#7957F5] dark:text-[#D94BCB] group-hover:scale-105 transition-transform cursor-pointer"
-                      title={`Click to draw ${shape.name}`}
+                      className="w-16 h-16 rounded-xl flex items-center justify-center p-2 text-[#7957F5] dark:text-[#D94BCB] group-hover:scale-110 transition-transform cursor-pointer"
+                      title={`Click to insert ${shape.name} onto whiteboard`}
                     >
                       {shape.svgPreview}
                     </div>
 
-                    {/* Shape Info */}
-                    <div className="mt-1.5 w-full">
-                      <div className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
+                    {/* Shape Info - Clicking inserts onto whiteboard */}
+                    <div
+                      onClick={() => {
+                        onInsertShape(shape.id);
+                        onClose();
+                        whiteboardSounds.playPopSound();
+                      }}
+                      className="mt-1.5 w-full cursor-pointer"
+                      title={`Click to insert ${shape.name}`}
+                    >
+                      <div className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate group-hover:text-[#7957F5] transition-colors">
                         {shape.name}
                       </div>
                       <div className="text-[10px] text-slate-400 truncate mt-0.5">
@@ -454,33 +462,34 @@ export const ShapesLibraryModal: React.FC<ShapesLibraryModalProps> = ({
                       </div>
                     </div>
 
-                    {/* Action Buttons: Draw vs Insert */}
+                    {/* Action Buttons: Insert (Primary) & Draw (Custom size) */}
                     <div className="mt-2.5 w-full flex items-center gap-1.5">
+                      <button
+                        onClick={() => {
+                          onInsertShape(shape.id);
+                          onClose();
+                          whiteboardSounds.playPopSound();
+                        }}
+                        className="flex-1 py-1 px-2 rounded-lg text-[10px] font-bold bg-gradient-to-r from-[#7957F5] to-[#D94BCB] hover:brightness-110 active:scale-95 text-white transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1"
+                        title="Insert directly into center of whiteboard"
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span>Insert</span>
+                      </button>
                       <button
                         onClick={() => {
                           onSelectShape(shape.id);
                           onClose();
                           whiteboardSounds.playTapSound();
                         }}
-                        className={`flex-1 py-1 px-1.5 rounded-lg text-[10px] font-semibold transition-all cursor-pointer ${
+                        className={`py-1 px-1.5 rounded-lg text-[10px] font-semibold transition-all cursor-pointer ${
                           isCurrent
                             ? 'bg-[#7957F5] text-white shadow-xs'
                             : 'bg-slate-200/70 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-white/20'
                         }`}
-                        title="Select tool to draw with custom size"
+                        title="Select tool to drag-draw with custom size"
                       >
                         Draw
-                      </button>
-                      <button
-                        onClick={() => {
-                          onInsertShape(shape.id);
-                          onClose();
-                        }}
-                        className="py-1 px-2 rounded-lg text-[10px] font-bold bg-gradient-to-r from-[#7957F5] to-[#D94BCB] hover:brightness-110 active:scale-95 text-white transition-all cursor-pointer shadow-xs flex items-center gap-1 shrink-0"
-                        title="Insert directly into center of whiteboard"
-                      >
-                        <Plus className="w-3 h-3" />
-                        <span>Insert</span>
                       </button>
                     </div>
                   </div>
