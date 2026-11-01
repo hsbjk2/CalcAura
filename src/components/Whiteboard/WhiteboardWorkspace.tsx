@@ -42,10 +42,9 @@ import { PropertiesBar } from './PropertiesBar.tsx';
 import { SheetStrip } from './SheetStrip.tsx';
 import { NewSheetModal } from './NewSheetModal.tsx';
 import { StickerEmojiModal } from './StickerEmojiModal.tsx';
+import { ShapesLibraryModal } from './ShapesLibraryModal.tsx';
 import { ExportModal } from './ExportModal.tsx';
-import { AlertTriangle, Trash2, X, Copy, Check, Save, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext.tsx';
-import { isSupabaseConfigured } from '../../lib/supabaseClient.ts';
+import { AlertTriangle, Trash2, X, Copy, Check, Save, ZoomIn, ZoomOut, Maximize2, ChevronDown, Frame, Crosshair } from 'lucide-react';
 import {
   saveWhiteboardToHistory,
   saveWhiteboardAsCopy,
@@ -68,8 +67,6 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
   initialNotebook,
   onNavigateToHistory,
 }) => {
-  const { user, isAuthenticated } = useAuth();
-
   // Main Notebook State
   const [notebook, setNotebook] = useState<Notebook>(() => initialNotebook || createDefaultNotebook());
   const [activeSheetId, setActiveSheetId] = useState<string>(() => (initialNotebook || notebook).sheets[0]?.id || '');
@@ -79,6 +76,7 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
   const [saveToast, setSaveToast] = useState<string | null>(null);
   const [saveAsModalOpen, setSaveAsModalOpen] = useState<boolean>(false);
   const [saveAsName, setSaveAsName] = useState<string>('');
+  const [boundaryMenuOpen, setBoundaryMenuOpen] = useState<boolean>(false);
 
   // Active Tool & Properties
   const [activeTool, setActiveTool] = useState<ToolType>('pen');
@@ -95,6 +93,7 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
 
   // Modals
   const [newSheetModalOpen, setNewSheetModalOpen] = useState<boolean>(false);
+  const [shapesModalOpen, setShapesModalOpen] = useState<boolean>(false);
   const [stickerModalOpen, setStickerModalOpen] = useState<boolean>(false);
   const [exportModalOpen, setExportModalOpen] = useState<boolean>(false);
   const [sheetPendingDelete, setSheetPendingDelete] = useState<Sheet | null>(null);
@@ -171,16 +170,6 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
 
   // Manual explicit save to History
   const handleManualSave = useCallback(async () => {
-    if (!isAuthenticated || !user?.id) {
-      setSaveToast('Sign in with Clerk before saving this whiteboard to your account.');
-      setTimeout(() => setSaveToast(null), 4000);
-      return;
-    }
-    if (!isSupabaseConfigured()) {
-      setSaveToast('Connect Supabase before saving whiteboards to the cloud.');
-      setTimeout(() => setSaveToast(null), 4000);
-      return;
-    }
     try {
       let thumbnail: string | undefined;
       if (activeSheet) {
@@ -188,7 +177,7 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
           thumbnail = await generateSheetThumbnail(activeSheet);
         } catch {}
       }
-      await saveWhiteboardToHistory(notebook, thumbnail, user.id);
+      await saveWhiteboardToHistory(notebook, thumbnail);
       setIsSaved(true);
       whiteboardSounds.playSaveSound();
       setSaveToast(`Board "${notebook.name}" saved to History!`);
@@ -198,7 +187,7 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
       setSaveToast('Failed to save whiteboard. Please try again.');
       setTimeout(() => setSaveToast(null), 3500);
     }
-  }, [notebook, activeSheet, isAuthenticated, user?.id]);
+  }, [notebook, activeSheet]);
 
   // Save As (Create a new copy in History)
   const handleOpenSaveAs = useCallback(() => {
@@ -208,18 +197,6 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
 
   const handleConfirmSaveAs = useCallback(async () => {
     if (!saveAsName.trim()) return;
-    if (!isAuthenticated || !user?.id) {
-      setSaveToast('Sign in with Clerk before saving a whiteboard copy.');
-      setTimeout(() => setSaveToast(null), 4000);
-      setSaveAsModalOpen(false);
-      return;
-    }
-    if (!isSupabaseConfigured()) {
-      setSaveToast('Connect Supabase before saving whiteboards to the cloud.');
-      setTimeout(() => setSaveToast(null), 4000);
-      setSaveAsModalOpen(false);
-      return;
-    }
     try {
       let thumbnail: string | undefined;
       if (activeSheet) {
@@ -227,7 +204,7 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
           thumbnail = await generateSheetThumbnail(activeSheet);
         } catch {}
       }
-      const newEntry = await saveWhiteboardAsCopy(notebook, saveAsName.trim(), thumbnail, user.id);
+      const newEntry = await saveWhiteboardAsCopy(notebook, saveAsName.trim(), thumbnail);
       setNotebook(newEntry.notebook);
       setActiveSheetId(newEntry.notebook.activeSheetId || newEntry.notebook.sheets[0]?.id);
       setIsSaved(true);
@@ -240,7 +217,7 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
       setSaveToast('Failed to save copy. Please try again.');
       setTimeout(() => setSaveToast(null), 3500);
     }
-  }, [notebook, saveAsName, activeSheet, isAuthenticated, user?.id]);
+  }, [notebook, saveAsName, activeSheet]);
 
   const handleRenameNotebook = useCallback(async (newName: string) => {
     setNotebook((prev) => ({ ...prev, name: newName }));
@@ -442,33 +419,85 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
     const rect = canvas.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return;
 
-    const targetW = Math.round(rect.width * dpr);
-    const targetH = Math.round(rect.height * dpr);
-
-    if (canvas.width !== targetW || canvas.height !== targetH) {
-      canvas.width = targetW;
-      canvas.height = targetH;
+    const targetWidth = Math.round(rect.width * dpr);
+    const targetHeight = Math.round(rect.height * dpr);
+    if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
     }
+
+    const sheetWidth = activeSheet.width || 1920;
+    const sheetHeight = activeSheet.height || 1080;
 
     ctx.save();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // 1. Render Sheet Background
-    renderWhiteboardBackground({
-      ctx,
-      width: rect.width,
-      height: rect.height,
-      zoom,
-      pan,
-      background: activeSheet.background,
-    });
+    // 1. Render Outer Workspace Desk Background (Outside Sheet Boundary)
+    ctx.fillStyle = darkMode ? '#0A0D18' : '#E8EDF5';
+    ctx.fillRect(0, 0, rect.width, rect.height);
 
-    // 2. Apply Pan & Zoom for objects and paths
+    // Subtle desk grid texture for spatial orientation
+    ctx.save();
+    ctx.strokeStyle = darkMode ? 'rgba(255, 255, 255, 0.025)' : 'rgba(0, 0, 0, 0.035)';
+    ctx.lineWidth = 1;
+    const deskGrid = 40;
+    for (let x = 0; x < rect.width; x += deskGrid) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, rect.height);
+      ctx.stroke();
+    }
+    for (let y = 0; y < rect.height; y += deskGrid) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(rect.width, y);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // 2. Apply Pan & Zoom for sheet boundary and content
     ctx.save();
     ctx.translate(pan.x, pan.y);
     ctx.scale(zoom, zoom);
 
-    // 3. Render Unified Layers (Paths & Objects sorted by zIndex ascending)
+    // Sheet Page Paper Shadow & Solid Paper Fill
+    ctx.save();
+    ctx.shadowColor = darkMode ? 'rgba(0, 0, 0, 0.75)' : 'rgba(15, 23, 42, 0.18)';
+    ctx.shadowBlur = 32 / zoom;
+    ctx.shadowOffsetY = 12 / zoom;
+    ctx.fillStyle = activeSheet.background === 'plain-dark' ? '#161618' : '#FFFFFF';
+    ctx.fillRect(0, 0, sheetWidth, sheetHeight);
+    ctx.restore();
+
+    // Sheet Boundary Border & Dimension Pill
+    ctx.save();
+    ctx.strokeStyle = darkMode ? 'rgba(121, 87, 245, 0.45)' : 'rgba(121, 87, 245, 0.35)';
+    ctx.lineWidth = 1.5 / zoom;
+    ctx.strokeRect(0, 0, sheetWidth, sheetHeight);
+
+    // Boundary Header Label
+    ctx.font = `600 ${Math.max(10, 11 / zoom)}px sans-serif`;
+    ctx.fillStyle = darkMode ? 'rgba(148, 163, 184, 0.85)' : 'rgba(100, 116, 139, 0.9)';
+    ctx.fillText(`Sheet Boundary • ${sheetWidth} × ${sheetHeight} px (Ctrl + Scroll to zoom)`, 2, -10 / zoom);
+    ctx.restore();
+
+    // 3. CLIP TO BOUNDARY: Strictly clip drawings so nothing shows after the boundary
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, sheetWidth, sheetHeight);
+    ctx.clip();
+
+    // Render Sheet Background pattern ONLY inside boundary
+    renderWhiteboardBackground({
+      ctx,
+      width: sheetWidth,
+      height: sheetHeight,
+      zoom: 1,
+      pan: { x: 0, y: 0 },
+      background: activeSheet.background,
+    });
+
+    // Render Unified Layers (Paths & Objects sorted by zIndex ascending)
     type UnifiedCanvasLayer =
       | { kind: 'path'; path: DrawingPath; zIndex: number }
       | { kind: 'object'; object: CanvasObject; zIndex: number };
@@ -520,6 +549,9 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
       ctx.stroke();
       ctx.restore();
     }
+
+    // Restore boundary clip so selection handles can render cleanly
+    ctx.restore();
 
     // 5. Render Selection Bounding Box & 8 Handles + Rotation handle if selected in select mode
     if (selectedObjectId && activeTool === 'select') {
@@ -610,76 +642,146 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
     };
   }, [redrawCanvas]);
 
-  // Fit to screen: Automatically fit all sheet drawing content centered inside viewport
+  // Center sheet boundary in the workspace viewport at designated zoom (defaults to 100%)
+  const handleCenterPage = useCallback((targetZoom: number = 1) => {
+    if (!activeSheet || !canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return;
+
+    const sheetW = activeSheet.width || 1920;
+    const sheetH = activeSheet.height || 1080;
+
+    setZoom(targetZoom);
+    const newPanX = Math.round((rect.width - sheetW * targetZoom) / 2);
+    const newPanY = Math.round((rect.height - sheetH * targetZoom) / 2);
+    setPan({ x: newPanX, y: newPanY });
+    whiteboardSounds.playTapSound();
+  }, [activeSheet]);
+
+  // Fit to screen: Automatically fit the designated sheet boundary centered inside viewport with balanced margins
   const handleFitToScreen = useCallback(() => {
     if (!activeSheet || !canvasRef.current) return;
     const rect = canvasRef.current.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return;
 
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
-
-    // Measure paths
-    activeSheet.paths.forEach((p) => {
-      p.points.forEach((pt) => {
-        if (pt.x < minX) minX = pt.x;
-        if (pt.y < minY) minY = pt.y;
-        if (pt.x > maxX) maxX = pt.x;
-        if (pt.y > maxY) maxY = pt.y;
-      });
-    });
-
-    // Measure objects
-    activeSheet.objects.forEach((o) => {
-      if (o.x < minX) minX = o.x;
-      if (o.y < minY) minY = o.y;
-      if (o.x + o.width > maxX) maxX = o.x + o.width;
-      if (o.y + o.height > maxY) maxY = o.y + o.height;
-    });
-
-    // Default 1200x800 sheet area if empty
-    if (minX === Infinity || maxX === -Infinity) {
-      minX = 0;
-      minY = 0;
-      maxX = 1200;
-      maxY = 800;
-    }
+    const sheetW = activeSheet.width || 1920;
+    const sheetH = activeSheet.height || 1080;
 
     const pad = 48;
-    const contentW = Math.max(100, maxX - minX + pad * 2);
-    const contentH = Math.max(100, maxY - minY + pad * 2);
-    const contentCenterX = (minX + maxX) / 2;
-    const contentCenterY = (minY + maxY) / 2;
+    const scaleX = (rect.width - pad * 2) / sheetW;
+    const scaleY = (rect.height - pad * 2) / sheetH;
+    const newZoom = Math.min(1.5, Math.max(0.15, Number(Math.min(scaleX, scaleY).toFixed(2))));
 
-    const scaleX = rect.width / contentW;
-    const scaleY = rect.height / contentH;
-    const newZoom = Math.min(2.5, Math.max(0.2, Math.min(scaleX, scaleY)));
-
-    const newPanX = rect.width / 2 - contentCenterX * newZoom;
-    const newPanY = rect.height / 2 - contentCenterY * newZoom;
+    const newPanX = Math.round((rect.width - sheetW * newZoom) / 2);
+    const newPanY = Math.round((rect.height - sheetH * newZoom) / 2);
 
     setZoom(newZoom);
     setPan({ x: newPanX, y: newPanY });
     whiteboardSounds.playTapSound();
   }, [activeSheet]);
 
+  const handleSetSheetDimensions = useCallback(
+    (width: number, height: number) => {
+      if (!activeSheet) return;
+      pushHistory();
+      whiteboardSounds.playTapSound();
+      setNotebook((prev) => ({
+        ...prev,
+        sheets: prev.sheets.map((s) => (s.id === activeSheet.id ? { ...s, width, height } : s)),
+      }));
+      setSaveToast(`Canvas boundary set to ${width} × ${height} px`);
+    },
+    [activeSheet, pushHistory]
+  );
+
+  const handleExpandSheetBoundary = useCallback(
+    (factor: number = 1.25) => {
+      if (!activeSheet) return;
+      pushHistory();
+      whiteboardSounds.playTapSound();
+      const curW = activeSheet.width || 1920;
+      const curH = activeSheet.height || 1080;
+      const nextW = Math.round(curW * factor);
+      const nextH = Math.round(curH * factor);
+      setNotebook((prev) => ({
+        ...prev,
+        sheets: prev.sheets.map((s) => (s.id === activeSheet.id ? { ...s, width: nextW, height: nextH } : s)),
+      }));
+      setSaveToast(`Boundary expanded to ${nextW} × ${nextH} px`);
+    },
+    [activeSheet, pushHistory]
+  );
+
+  // Auto-center sheet boundary on initial mount
+  const initialFitDoneRef = useRef<boolean>(false);
+  useEffect(() => {
+    const tryFit = () => {
+      if (canvasRef.current) {
+        const rect = canvasRef.current.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          handleFitToScreen();
+          return true;
+        }
+      }
+      return false;
+    };
+
+    if (!initialFitDoneRef.current) {
+      initialFitDoneRef.current = true;
+      if (!tryFit()) {
+        const t1 = setTimeout(tryFit, 40);
+        const t2 = setTimeout(tryFit, 120);
+        const t3 = setTimeout(tryFit, 300);
+        return () => {
+          clearTimeout(t1);
+          clearTimeout(t2);
+          clearTimeout(t3);
+        };
+      }
+    }
+  }, [handleFitToScreen]);
+
   const handleZoomIn = useCallback(() => {
     whiteboardSounds.playTapSound();
-    setZoom((z) => Math.min(4.0, Number((z * 1.2).toFixed(2))));
+    if (!canvasRef.current) {
+      setZoom((z) => Math.min(4.0, Number((z * 1.2).toFixed(2))));
+      return;
+    }
+    const rect = canvasRef.current.getBoundingClientRect();
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+    setZoom((prevZoom) => {
+      const nextZoom = Math.min(4.0, Number((prevZoom * 1.2).toFixed(2)));
+      setPan((prevPan) => ({
+        x: Math.round(cx - (cx - prevPan.x) * (nextZoom / prevZoom)),
+        y: Math.round(cy - (cy - prevPan.y) * (nextZoom / prevZoom)),
+      }));
+      return nextZoom;
+    });
   }, []);
 
   const handleZoomOut = useCallback(() => {
     whiteboardSounds.playTapSound();
-    setZoom((z) => Math.max(0.2, Number((z / 1.2).toFixed(2))));
+    if (!canvasRef.current) {
+      setZoom((z) => Math.max(0.2, Number((z / 1.2).toFixed(2))));
+      return;
+    }
+    const rect = canvasRef.current.getBoundingClientRect();
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+    setZoom((prevZoom) => {
+      const nextZoom = Math.max(0.2, Number((prevZoom / 1.2).toFixed(2)));
+      setPan((prevPan) => ({
+        x: Math.round(cx - (cx - prevPan.x) * (nextZoom / prevZoom)),
+        y: Math.round(cy - (cy - prevPan.y) * (nextZoom / prevZoom)),
+      }));
+      return nextZoom;
+    });
   }, []);
 
   const handleResetZoom = useCallback(() => {
-    whiteboardSounds.playTapSound();
-    setZoom(1);
-    setPan({ x: 0, y: 0 });
-  }, []);
+    handleCenterPage(1);
+  }, [handleCenterPage]);
 
   // ==========================================
   // IMAGE INSERTION (File Upload & Clipboard)
@@ -1287,19 +1389,57 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
     }
   };
 
-  // Zoom with mouse wheel or trackpad
-  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
-    if (e.ctrlKey || e.metaKey) {
+  // Native non-passive Wheel listener for seamless Ctrl + Scroll Zoom, Shift + Scroll Side-Scrolling, and normal panning
+  useEffect(() => {
+    const container = canvasContainerRef.current;
+    if (!container) return;
+
+    const onNativeWheel = (e: WheelEvent) => {
+      // Don't intercept if scrolling inside a modal, dropdown, properties bar, or text input
+      const target = e.target as HTMLElement | null;
+      if (target?.closest('.modal, [role="dialog"], textarea, select, input')) {
+        return;
+      }
       e.preventDefault();
-      const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
-      setZoom((z) => Math.min(4, Math.max(0.2, z * zoomFactor)));
-    } else {
-      setPan((p) => ({
-        x: p.x - e.deltaX,
-        y: p.y - e.deltaY,
-      }));
-    }
-  };
+      const rect = container.getBoundingClientRect();
+      const cursorX = e.clientX - rect.left;
+      const cursorY = e.clientY - rect.top;
+
+      if (e.ctrlKey || e.metaKey) {
+        // Zoom in/out centered at mouse cursor
+        const zoomDelta = e.deltaY < 0 ? 1.10 : 0.90;
+        setZoom((prevZoom) => {
+          const nextZoom = Math.min(4.0, Math.max(0.15, Number((prevZoom * zoomDelta).toFixed(3))));
+          setPan((prevPan) => ({
+            x: Math.round(cursorX - (cursorX - prevPan.x) * (nextZoom / prevZoom)),
+            y: Math.round(cursorY - (cursorY - prevPan.y) * (nextZoom / prevZoom)),
+          }));
+          return nextZoom;
+        });
+      } else if (e.shiftKey) {
+        // Shift + scroll = side-scrolling (horizontal pan)
+        // Note: Standard vertical mouse wheel reports deltaY even when holding Shift in many OS/browsers
+        const sideDelta = Math.abs(e.deltaX) > 0 ? e.deltaX : e.deltaY;
+        setPan((prevPan) => ({
+          x: Math.round(prevPan.x - sideDelta),
+          y: prevPan.y,
+        }));
+      } else {
+        // Normal scroll:
+        // deltaY pans vertically (up/down)
+        // deltaX pans horizontally (trackpad swipe or tilt wheel)
+        setPan((prevPan) => ({
+          x: Math.round(prevPan.x - e.deltaX),
+          y: Math.round(prevPan.y - e.deltaY),
+        }));
+      }
+    };
+
+    container.addEventListener('wheel', onNativeWheel, { passive: false });
+    return () => {
+      container.removeEventListener('wheel', onNativeWheel);
+    };
+  }, []);
 
   const updateCurrentSheetThumbnail = () => {
     if (!activeSheet) return;
@@ -1316,39 +1456,69 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
     if (!activeSheet) return;
     pushHistory();
     whiteboardSounds.playPopSound();
-    const canvasWidth = canvasRef.current?.clientWidth || 800;
-    const canvasHeight = canvasRef.current?.clientHeight || 600;
-    const centerScreen = { x: canvasWidth / 2, y: canvasHeight / 2 };
-    const centerCanvas = screenToCanvas(centerScreen.x, centerScreen.y);
+    const canvas = canvasRef.current;
+    const rect = canvas?.getBoundingClientRect();
+    const sheetW = activeSheet.width || 1920;
+    const sheetH = activeSheet.height || 1080;
 
     const isLinear = shape === 'line' || shape === 'arrow' || shape === 'double-arrow';
     const isAxes = shape === 'coordinate-axes';
-    const defaultWidth = isLinear ? 180 : isAxes ? 200 : 120;
-    const defaultHeight = isLinear ? 36 : isAxes ? 200 : 120;
+    const defaultWidth = isLinear ? 220 : isAxes ? 220 : 150;
+    const defaultHeight = isLinear ? 44 : isAxes ? 220 : 150;
+
+    let spawnX: number;
+    let spawnY: number;
+
+    if (rect && rect.width > 0 && rect.height > 0) {
+      // Calculate canvas coordinate of the current viewport center
+      const centerCanvasX = (rect.width / 2 - pan.x) / zoom;
+      const centerCanvasY = (rect.height / 2 - pan.y) / zoom;
+      spawnX = Math.round(centerCanvasX - defaultWidth / 2);
+      spawnY = Math.round(centerCanvasY - defaultHeight / 2);
+
+      // If calculated center is completely outside sheet boundary, center directly on sheet
+      if (spawnX < 0 || spawnX > sheetW - defaultWidth || spawnY < 0 || spawnY > sheetH - defaultHeight) {
+        spawnX = Math.round((sheetW - defaultWidth) / 2);
+        spawnY = Math.round((sheetH - defaultHeight) / 2);
+      }
+    } else {
+      spawnX = Math.round((sheetW - defaultWidth) / 2);
+      spawnY = Math.round((sheetH - defaultHeight) / 2);
+    }
+
+    // Ensure completely within sheet boundary with safe padding
+    spawnX = Math.max(20, Math.min(sheetW - defaultWidth - 20, spawnX));
+    spawnY = Math.max(20, Math.min(sheetH - defaultHeight - 20, spawnY));
 
     const newShape: CanvasObject = {
       id: generateId(),
       type: 'shape',
       shapeType: shape,
-      x: Math.round(centerCanvas.x - defaultWidth / 2),
-      y: Math.round(centerCanvas.y - defaultHeight / 2),
+      x: spawnX,
+      y: spawnY,
       width: defaultWidth,
       height: defaultHeight,
-      strokeColor,
-      fillColor: fillColor || 'transparent',
-      strokeWidth,
+      strokeColor: strokeColor || (darkMode ? '#FFFFFF' : '#1E293B'),
+      fillColor: fillColor || 'rgba(121, 87, 245, 0.2)',
+      strokeWidth: strokeWidth || 3,
       zIndex: getNextStackZIndex(activeSheet),
     };
 
     setNotebook((prev) => ({
       ...prev,
       sheets: prev.sheets.map((s) =>
-        s.id === activeSheet.id ? { ...s, objects: [...s.objects, newShape] } : s
+        s.id === activeSheet.id
+          ? { ...s, objects: [...s.objects, newShape], updatedAt: Date.now() }
+          : s
       ),
     }));
     setSelectedObjectId(newShape.id);
     setActiveTool('select');
-    updateCurrentSheetThumbnail();
+    setSaveToast(`Inserted ${shape.replace('-', ' ')} on canvas`);
+    setTimeout(() => {
+      setSaveToast((cur) => (cur?.startsWith('Inserted') ? null : cur));
+    }, 2500);
+    requestAnimationFrame(() => redrawCanvas());
   };
 
   const handleClearCurrentSheet = () => {
@@ -1375,9 +1545,11 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
     setSelectedObjectId(null);
     setNotebook((prev) => ({ ...prev, activeSheetId: sheetId }));
     const target = notebook.sheets.find((s) => s.id === sheetId);
-    if (target) {
+    if (target && target.pan && (target.pan.x !== 0 || target.pan.y !== 0)) {
       setZoom(target.zoom || 1);
-      setPan(target.pan || { x: 0, y: 0 });
+      setPan(target.pan);
+    } else {
+      setTimeout(() => handleFitToScreen(), 20);
     }
   };
 
@@ -1403,9 +1575,8 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
       activeSheetId: newId,
     }));
     setActiveSheetId(newId);
-    setZoom(1);
-    setPan({ x: 0, y: 0 });
     setSelectedObjectId(null);
+    setTimeout(() => handleFitToScreen(), 20);
   };
 
   const handleRenameSheet = (sheetId: string, newName: string) => {
@@ -1724,6 +1895,7 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
         onSelectShape={setActiveShape}
         onOpenImageUpload={() => imageInputRef.current?.click()}
         onOpenStickerModal={() => setStickerModalOpen(true)}
+        onOpenShapesModal={() => setShapesModalOpen(true)}
         onInsertShape={handleInsertShape}
       />
 
@@ -1737,6 +1909,7 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
           onSelectShape={setActiveShape}
           onOpenImageUpload={() => imageInputRef.current?.click()}
           onOpenStickerModal={() => setStickerModalOpen(true)}
+          onOpenShapesModal={() => setShapesModalOpen(true)}
           onInsertShape={handleInsertShape}
           className="hidden md:flex"
         />
@@ -1785,7 +1958,6 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
               setEraserCursorPos(null);
             }}
             onDoubleClick={handleDoubleClick}
-            onWheel={handleWheel}
             className={`w-full h-full block touch-none ${
               activeTool === 'pan'
                 ? 'cursor-grab active:cursor-grabbing'
@@ -1880,13 +2052,92 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
             />
           )}
 
-          {/* Interactive Zoom Controls & Fit to Screen Pill */}
+          {/* Bottom Left: Interactive Navigation & Zoom Hint */}
+          <div className="hidden sm:flex absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-20 items-center gap-2 px-3 py-1.5 bg-white/90 dark:bg-[#18181B]/90 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-2xl shadow-md text-[11px] text-slate-500 dark:text-slate-400 select-none pointer-events-none">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Boundary: <strong>{activeSheet?.width || 1920} × {activeSheet?.height || 1080}</strong></span>
+            <span className="opacity-40">•</span>
+            <span><strong>Scroll</strong> to pan</span>
+            <span className="opacity-40">•</span>
+            <span><strong>Shift + Scroll</strong> to side-scroll</span>
+            <span className="opacity-40">•</span>
+            <span><strong>Ctrl + Scroll</strong> to zoom</span>
+          </div>
+
+          {/* Interactive Zoom Controls & Canvas Boundary Size Selector */}
           <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-20 flex items-center gap-0.5 sm:gap-1 p-1 bg-white/90 dark:bg-[#18181B]/90 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-2xl shadow-md text-xs font-medium text-slate-700 dark:text-slate-200 select-none">
+            {/* Boundary Size Switcher Dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setBoundaryMenuOpen(!boundaryMenuOpen)}
+                className="px-2 py-1 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 flex items-center gap-1 font-mono text-[11px] transition-colors cursor-pointer"
+                title="Change or Expand Sheet Boundary"
+              >
+                <Frame className="w-3.5 h-3.5 text-[#7957F5]" />
+                <span className="hidden md:inline">{activeSheet?.width || 1920}×{activeSheet?.height || 1080}</span>
+                <ChevronDown className="w-3 h-3 text-slate-400" />
+              </button>
+
+              {boundaryMenuOpen && (
+                <div
+                  className="absolute bottom-full right-0 mb-2 w-56 bg-white dark:bg-[#1C1C20] rounded-2xl border border-slate-200 dark:border-white/10 shadow-xl p-1.5 space-y-1 z-30 animate-in fade-in slide-in-from-bottom-2 duration-150"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Sheet Boundary Size
+                  </div>
+                  {[
+                    { label: '1920 × 1080 (Full HD 16:9)', w: 1920, h: 1080 },
+                    { label: '2560 × 1440 (2K QHD Expanded)', w: 2560, h: 1440 },
+                    { label: '3840 × 2160 (4K UHD Giant)', w: 3840, h: 2160 },
+                    { label: '1920 × 2160 (Double Height)', w: 1920, h: 2160 },
+                  ].map((preset) => (
+                    <button
+                      key={preset.label}
+                      onClick={() => {
+                        handleSetSheetDimensions(preset.w, preset.h);
+                        setBoundaryMenuOpen(false);
+                      }}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
+                        (activeSheet?.width || 1920) === preset.w && (activeSheet?.height || 1080) === preset.h
+                          ? 'bg-[#7957F5]/10 text-[#7957F5] font-bold'
+                          : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-slate-300'
+                      }`}
+                    >
+                      <span>{preset.label}</span>
+                    </button>
+                  ))}
+                  <div className="h-px bg-slate-200 dark:bg-white/10 my-1" />
+                  <button
+                    onClick={() => {
+                      handleExpandSheetBoundary(1.25);
+                      setBoundaryMenuOpen(false);
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-semibold text-[#7957F5] hover:bg-[#7957F5]/10 cursor-pointer transition-colors"
+                  >
+                    + Expand Boundary 25%
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="w-px h-3.5 bg-slate-200 dark:bg-white/10" />
+
+            <button
+              type="button"
+              onClick={() => handleCenterPage(1)}
+              className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+              title="Center Page at 100% Zoom"
+              aria-label="Center Page"
+            >
+              <Crosshair className="w-3.5 h-3.5" />
+            </button>
             <button
               type="button"
               onClick={handleFitToScreen}
               className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
-              title="Fit Content to Screen"
+              title="Fit Page to Screen (Auto Zoom & Center)"
               aria-label="Fit to Screen"
             >
               <Maximize2 className="w-3.5 h-3.5" />
@@ -1905,7 +2156,7 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
               type="button"
               onClick={handleResetZoom}
               className="px-2 py-1 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 font-mono text-[11px] text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
-              title="Click to Reset Zoom (100%)"
+              title="Click to Center Page at 100% Zoom"
               aria-label="Reset Zoom"
             >
               {Math.round(zoom * 100)}%
@@ -1953,6 +2204,18 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
         isOpen={stickerModalOpen}
         onClose={() => setStickerModalOpen(false)}
         onInsertSticker={handleInsertSticker}
+      />
+
+      {/* Central Shapes Library Modal */}
+      <ShapesLibraryModal
+        isOpen={shapesModalOpen}
+        onClose={() => setShapesModalOpen(false)}
+        activeShape={activeShape}
+        onSelectShape={(shape) => {
+          setActiveShape(shape);
+          handleSelectTool(shape as ToolType);
+        }}
+        onInsertShape={handleInsertShape}
       />
 
       {/* Dedicated Export Modal */}
