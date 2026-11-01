@@ -40,9 +40,7 @@ import { ToolDirectory } from './components/ToolDirectory.tsx';
 import { Footer } from './components/Footer.tsx';
 import { SearchModal } from './components/SearchModal.tsx';
 import { AboutModal } from './components/AboutModal.tsx';
-
 import { ClerkAuthPage } from './components/Auth/ClerkAuthPage.tsx';
-
 import { useI18n } from './i18n/I18nContext.tsx';
 import { Language, TRANSLATIONS } from './i18n/translations.ts';
 import {
@@ -274,7 +272,6 @@ export default function App() {
     }
     return 'home';
   });
- 
   const [historyNotebookToOpen, setHistoryNotebookToOpen] = useState<Notebook | null>(null);
   const [historyReviewAttempt, setHistoryReviewAttempt] = useState<PracticeHistoryEntry | null>(null);
   const { currentLang, setLang: setCurrentLang, t } = useI18n();
@@ -987,7 +984,6 @@ export default function App() {
             <ClerkAuthPage
               mode={isSignIn ? 'sign-in' : 'sign-up'}
               onNavigateHome={() => handleSelectTab('home')}
-              onNavigateHistory={() => handleSelectTab('history')}
               onSwitchMode={(mode) => handleSelectTab(mode)}
               darkMode={darkMode}
             />
@@ -1177,6 +1173,7 @@ export default function App() {
                     initialAttemptToReview={historyReviewAttempt}
                     onExitReview={() => setHistoryReviewAttempt(null)}
                     onNavigateToHistory={() => handleSelectTab('history')}
+                    onNavigateToAuth={() => handleSelectTab('sign-in')}
                   />
                 )}
 
@@ -1212,7 +1209,6 @@ export default function App() {
         }}
       />
 
-  
     </div>
   );
 }

@@ -6,23 +6,19 @@ import {
   Layout,
   CheckCircle2,
   Clock,
-  Sparkles,
   Shield,
   Layers,
   ChevronRight,
-  UserCheck,
 } from 'lucide-react';
 
 interface CinematicHistoryLandingProps {
   onSignIn: () => void;
   onRegister: () => void;
-  onDemoLogin: (demoId?: string) => void;
 }
 
 export const CinematicHistoryLanding: React.FC<CinematicHistoryLandingProps> = ({
   onSignIn,
   onRegister,
-  onDemoLogin,
 }) => {
   return (
     <div className="relative min-h-[calc(100vh-80px)] bg-[#07080D] text-white overflow-hidden py-10 sm:py-16 px-4 sm:px-6 lg:px-8 flex flex-col justify-between">
@@ -83,14 +79,7 @@ export const CinematicHistoryLanding: React.FC<CinematicHistoryLandingProps> = (
               <span>Create Free Account</span>
             </button>
 
-            <button
-              onClick={() => onDemoLogin('user-himanshu-001')}
-              className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-purple-500/10 hover:bg-purple-500/20 active:scale-95 text-[#C084FC] hover:text-white text-xs sm:text-sm font-medium border border-purple-500/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-              title="Instant login with demo scholar profile"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>1-Click Demo Login</span>
-            </button>
+
           </div>
         </div>
 

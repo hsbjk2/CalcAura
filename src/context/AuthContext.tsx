@@ -1,31 +1,11 @@
-
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-} from 'react';
-
+import React, { createContext, useContext, useEffect, useCallback } from 'react';
 import {
   ClerkProvider,
   useAuth as useClerkAuth,
   useUser as useClerkUser,
 } from '@clerk/clerk-react';
-
-import {
-  CLERK_PUBLISHABLE_KEY,
-  isClerkConfigured,
-  getClerkAppearance,
-} from '../lib/clerkConfig.ts';
-
-import {
-  setGlobalTokenProvider,
-} from '../lib/supabaseClient.ts';
-
-// ==========================================
-// USER PROFILE
-// ==========================================
+import { CLERK_PUBLISHABLE_KEY, isClerkConfigured, getClerkAppearance } from '../lib/clerkConfig.ts';
+import { setGlobalTokenProvider } from '../lib/supabaseClient.ts';
 
 export interface UserProfile {
   id: string;
@@ -37,241 +17,90 @@ export interface UserProfile {
   createdAt: number;
 }
 
-// ==========================================
-// AUTH CONTEXT TYPE
-// ==========================================
-
 export interface AuthContextType {
   user: UserProfile | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  isClerkActive: boolean;
-
-  login: (email: string, password?: string) => Promise<boolean>;
-  register: (
-    name: string,
-    email: string,
-    grade?: string,
-    password?: string
-  ) => Promise<boolean>;
-
   logout: () => void;
-
-  authModalOpen: boolean;
-  openAuthModal: (
-    mode?: 'signin' | 'register',
-    returnTo?: string
-  ) => void;
-  closeAuthModal: () => void;
-
-  authModalMode: 'signin' | 'register';
-  returnToDestination: string | null;
-
-  getClerkToken: () => Promise<string | null>;
+  getClerkToken?: () => Promise<string | null>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(
-  undefined
-);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const LS_ACTIVE_UID = 'calcaura_active_user_id';
+const LEGACY_LOCAL_AUTH_KEY = 'calcaura_auth_user_v1';
 
-// ==========================================
-// CLERK AUTHENTICATION
-// ==========================================
-
-const ClerkAuthBridge: React.FC<{
-  children: React.ReactNode;
-}> = ({ children }) => {
-
-  const {
-    isLoaded: clerkLoaded,
-    isSignedIn,
-    userId,
-    getToken,
-    signOut,
-  } = useClerkAuth();
-
+const ClerkAuthBridge: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isLoaded, isSignedIn, userId, getToken, signOut } = useClerkAuth();
   const { user: clerkUser } = useClerkUser();
 
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-
-  const [authModalMode, setAuthModalMode] = useState<
-    'signin' | 'register'
-  >('signin');
-
-  const [returnToDestination, setReturnToDestination] =
-    useState<string | null>(null);
-
-  // ==========================================
-  // CONNECT CLERK JWT TO SUPABASE
-  // ==========================================
-
+  // Supabase receives the authenticated Clerk session token. The Clerk user ID
+  // is the only user identifier used for ownership and RLS filtering.
   useEffect(() => {
-
-    if (!clerkLoaded) return;
-
     if (isSignedIn && userId) {
-
-      // This is the real Clerk user ID.
-      // It is only a cache identifier, not an authentication mechanism.
-      localStorage.setItem(
-        'calcaura_active_user_id',
-        userId
-      );
-
       setGlobalTokenProvider(async () => {
         try {
-          const token = await getToken();
-          return token || null;
+          return (await getToken()) || null;
         } catch (error) {
-          console.error(
-            'Unable to get Clerk token:',
-            error
-          );
+          console.error('Unable to obtain the Clerk session token for Supabase:', error);
           return null;
         }
       });
-
+      try {
+        window.localStorage.setItem(LS_ACTIVE_UID, userId);
+        // Remove old insecure demo/local-auth identity left by previous builds.
+        window.localStorage.removeItem(LEGACY_LOCAL_AUTH_KEY);
+      } catch (error) {
+        console.warn('Unable to update the local active-user cache:', error);
+      }
     } else {
-
       setGlobalTokenProvider(null);
-
-      localStorage.removeItem(
-        'calcaura_active_user_id'
-      );
+      try {
+        window.localStorage.removeItem(LS_ACTIVE_UID);
+        window.localStorage.removeItem(LEGACY_LOCAL_AUTH_KEY);
+      } catch (error) {
+        console.warn('Unable to clear the local active-user cache:', error);
+      }
     }
+  }, [isSignedIn, userId, getToken]);
 
-    return () => {
-      setGlobalTokenProvider(null);
-    };
-
-  }, [clerkLoaded, isSignedIn, userId, getToken]);
-
-  // ==========================================
-  // MAP REAL CLERK USER
-  // ==========================================
-
-  const mappedUser: UserProfile | null = clerkUser
+  const user: UserProfile | null = clerkUser
     ? {
         id: clerkUser.id,
-
         name:
           clerkUser.fullName ||
           clerkUser.firstName ||
           clerkUser.primaryEmailAddress?.emailAddress?.split('@')[0] ||
-          'User',
-
-        email:
-          clerkUser.primaryEmailAddress?.emailAddress || '',
-
-        role:
-          (
-            clerkUser.publicMetadata as Record<string, unknown>
-          )?.role as UserProfile['role'] || 'student',
-
-        avatar: clerkUser.imageUrl,
-
-        grade:
-          (
-            clerkUser.publicMetadata as Record<string, unknown>
-          )?.grade as string || '',
-
-        createdAt: clerkUser.createdAt
-          ? new Date(clerkUser.createdAt).getTime()
-          : Date.now(),
+          'Math Scholar',
+        email: clerkUser.primaryEmailAddress?.emailAddress || '',
+        role: ((clerkUser.publicMetadata as Record<string, unknown>)?.role as UserProfile['role']) || 'scholar',
+        avatar: clerkUser.imageUrl || '🎓',
+        grade: ((clerkUser.publicMetadata as Record<string, unknown>)?.grade as string) || '',
+        createdAt: clerkUser.createdAt ? new Date(clerkUser.createdAt).getTime() : Date.now(),
       }
     : null;
 
-  // ==========================================
-  // CLERK SIGN-IN / SIGN-UP ACTIONS
-  // ==========================================
-
-  const openAuthModal = useCallback(
-    (
-      mode: 'signin' | 'register' = 'signin',
-      returnTo = 'history'
-    ) => {
-      setAuthModalMode(mode);
-      setReturnToDestination(returnTo);
-      setAuthModalOpen(true);
-    },
-    []
-  );
-
-  const closeAuthModal = useCallback(() => {
-    setAuthModalOpen(false);
-  }, []);
-
-  // These compatibility methods open the Clerk UI.
-  // They do NOT authenticate users using local email/password.
-
-  const login = useCallback(
-    async (
-      _email: string,
-      _password?: string
-    ): Promise<boolean> => {
-      openAuthModal('signin');
-      return true;
-    },
-    [openAuthModal]
-  );
-
-  const register = useCallback(
-    async (
-      _name: string,
-      _email: string,
-      _grade?: string,
-      _password?: string
-    ): Promise<boolean> => {
-      openAuthModal('register');
-      return true;
-    },
-    [openAuthModal]
-  );
-
-  // ==========================================
-  // LOGOUT
-  // ==========================================
-
   const logout = useCallback(() => {
-    void signOut();
+    void signOut().catch((error) => {
+      console.error('Clerk sign-out failed:', error);
+    });
   }, [signOut]);
 
-  // ==========================================
-  // CONTEXT PROVIDER
-  // ==========================================
+  const getClerkToken = useCallback(async () => {
+    try {
+      return (await getToken()) || null;
+    } catch {
+      return null;
+    }
+  }, [getToken]);
 
   return (
     <AuthContext.Provider
       value={{
-        user: mappedUser,
-
-        isAuthenticated: !!isSignedIn,
-
-        isLoading: !clerkLoaded,
-
-        isClerkActive: true,
-
-        login,
-        register,
+        user,
+        isAuthenticated: Boolean(isSignedIn && user),
+        isLoading: !isLoaded,
         logout,
-
-        authModalOpen,
-        openAuthModal,
-        closeAuthModal,
-        authModalMode,
-        returnToDestination,
-
-        getClerkToken: async () => {
-          try {
-            return (await getToken()) || null;
-          } catch (error) {
-            console.error(
-              'Unable to retrieve Clerk token:',
-              error
-            );
-            return null;
-          }
-        },
+        getClerkToken,
       }}
     >
       {children}
@@ -279,70 +108,44 @@ const ClerkAuthBridge: React.FC<{
   );
 };
 
-// ==========================================
-// ROOT AUTH PROVIDER
-// CLERK ONLY - NO DEMO OR LOCAL FALLBACK
-// ==========================================
+// Fail closed when the Clerk publishable key is missing. No fake local login,
+// demo identity, or client-generated user ID is ever treated as authenticated.
+const ClerkSetupRequired: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <AuthContext.Provider
+    value={{
+      user: null,
+      isAuthenticated: false,
+      isLoading: false,
+      logout: () => undefined,
+    }}
+  >
+    {children}
+  </AuthContext.Provider>
+);
 
-export const AuthProvider: React.FC<{
-  children: React.ReactNode;
-}> = ({ children }) => {
-
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   if (!isClerkConfigured()) {
-    return (
-      <div
-        style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '24px',
-          background: '#f8fafc',
-          color: '#1e293b',
-          fontFamily: 'Arial, sans-serif',
-        }}
-      >
-        <div style={{ maxWidth: '480px', textAlign: 'center' }}>
-          <h2>Authentication Not Configured</h2>
-
-          <p>
-            CALCAURA requires Clerk authentication.
-            Add your Clerk Publishable Key to the
-            .env.local file and restart the application.
-          </p>
-
-          <code>
-            VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
-          </code>
-        </div>
-      </div>
-    );
+    return <ClerkSetupRequired>{children}</ClerkSetupRequired>;
   }
 
   return (
     <ClerkProvider
       publishableKey={CLERK_PUBLISHABLE_KEY}
       appearance={getClerkAppearance(true)}
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      signInFallbackRedirectUrl="/history"
+      signUpFallbackRedirectUrl="/history"
     >
-      <ClerkAuthBridge>
-        {children}
-      </ClerkAuthBridge>
+      <ClerkAuthBridge>{children}</ClerkAuthBridge>
     </ClerkProvider>
   );
 };
 
-// ==========================================
-// USE AUTH HOOK
-// ==========================================
-
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
-
   if (!context) {
-    throw new Error(
-      'useAuth must be used within an AuthProvider'
-    );
+    throw new Error('useAuth must be used within an AuthProvider');
   }
-
   return context;
 }

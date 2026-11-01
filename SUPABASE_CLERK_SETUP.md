@@ -40,7 +40,7 @@ VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
 
 # Supabase Project URL and Anon/Publishable Key (from https://supabase.com/dashboard)
 VITE_SUPABASE_URL=https://<your-project-ref>.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOi...
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 ```
 
 > **Security Note**: Never expose the Clerk Secret Key (`sk_live_...` or `sk_test_...`) or the Supabase Service Role key in frontend code or repository commits.
@@ -122,10 +122,10 @@ To apply the migration:
    - Listens to Clerk user and session status (`useClerkAuth()`, `useClerkUser()`).
    - When authenticated, registers the JWT token callback with the Supabase client and syncs the active user ID with localStorage.
    - On sign-out, clears the token provider, active user ID, and cleans up local caches.
-   - Includes graceful fallback for preview/testing environments before real API keys are configured.
+   - Clerk is the only authentication provider. When its publishable key is missing, the app remains signed out and displays setup instructions; there is no demo or local-only login fallback.
 
 3. **`src/data/historyStorage.ts` & `src/data/supabaseHistoryService.ts`**:
-   - Dual-persistence engine: Local IndexedDB for instant, zero-latency offline loading and offline-first responsiveness, seamlessly synced with remote Supabase cloud storage.
+   - User history is keyed by the real Clerk user ID (`sub`) and saved to Supabase. IndexedDB/localStorage are used as a local cache, not as a substitute for successful cloud persistence.
    - Practice attempts are saved **only upon final test submission** with detailed explanations, scoring, and questions. They are never saved beforehand, preventing test leaks.
    - Whiteboard saves are **strictly manual** (user presses "Save" or "Save As..."), preventing unintended storage bloat.
 
@@ -133,9 +133,9 @@ To apply the migration:
 
 ## 6. Verification Checklist
 
-- [x] Clerk prebuilt `<SignIn />` and `<SignUp />` styled with CalcAura dark obsidian theme.
+- [x] Clerk prebuilt `<SignIn />` and `<SignUp />` styled with CALCAURA theme; path routes use `/sign-in` and `/sign-up`.
 - [x] Dedicated `/sign-in` and `/sign-up` routes preserved with fallback redirect to `/history`.
 - [x] Desktop navbar updated with Clerk `<UserButton />`.
-- [x] Logged-out History view displays cinematic preview page with locked vault indicators and Sign In / Register buttons.
+- [x] Logged-out History view displays the cinematic private-vault landing page with Sign In / Create Account actions; no demo login option is present.
 - [x] Logged-in History view displays the user's completed practice attempts and saved whiteboards fetched from Supabase.
-- [x] All 46 unit test suites pass (`npm test`).
+- [ ] Run `npm install`, `npm run lint`, `npm test`, and `npm run build` after configuring the project environment.

@@ -44,6 +44,8 @@ import { NewSheetModal } from './NewSheetModal.tsx';
 import { StickerEmojiModal } from './StickerEmojiModal.tsx';
 import { ExportModal } from './ExportModal.tsx';
 import { AlertTriangle, Trash2, X, Copy, Check, Save, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext.tsx';
+import { isSupabaseConfigured } from '../../lib/supabaseClient.ts';
 import {
   saveWhiteboardToHistory,
   saveWhiteboardAsCopy,
@@ -66,6 +68,8 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
   initialNotebook,
   onNavigateToHistory,
 }) => {
+  const { user, isAuthenticated } = useAuth();
+
   // Main Notebook State
   const [notebook, setNotebook] = useState<Notebook>(() => initialNotebook || createDefaultNotebook());
   const [activeSheetId, setActiveSheetId] = useState<string>(() => (initialNotebook || notebook).sheets[0]?.id || '');
@@ -167,6 +171,16 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
 
   // Manual explicit save to History
   const handleManualSave = useCallback(async () => {
+    if (!isAuthenticated || !user?.id) {
+      setSaveToast('Sign in with Clerk before saving this whiteboard to your account.');
+      setTimeout(() => setSaveToast(null), 4000);
+      return;
+    }
+    if (!isSupabaseConfigured()) {
+      setSaveToast('Connect Supabase before saving whiteboards to the cloud.');
+      setTimeout(() => setSaveToast(null), 4000);
+      return;
+    }
     try {
       let thumbnail: string | undefined;
       if (activeSheet) {
@@ -174,7 +188,7 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
           thumbnail = await generateSheetThumbnail(activeSheet);
         } catch {}
       }
-      await saveWhiteboardToHistory(notebook, thumbnail);
+      await saveWhiteboardToHistory(notebook, thumbnail, user.id);
       setIsSaved(true);
       whiteboardSounds.playSaveSound();
       setSaveToast(`Board "${notebook.name}" saved to History!`);
@@ -184,7 +198,7 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
       setSaveToast('Failed to save whiteboard. Please try again.');
       setTimeout(() => setSaveToast(null), 3500);
     }
-  }, [notebook, activeSheet]);
+  }, [notebook, activeSheet, isAuthenticated, user?.id]);
 
   // Save As (Create a new copy in History)
   const handleOpenSaveAs = useCallback(() => {
@@ -194,6 +208,18 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
 
   const handleConfirmSaveAs = useCallback(async () => {
     if (!saveAsName.trim()) return;
+    if (!isAuthenticated || !user?.id) {
+      setSaveToast('Sign in with Clerk before saving a whiteboard copy.');
+      setTimeout(() => setSaveToast(null), 4000);
+      setSaveAsModalOpen(false);
+      return;
+    }
+    if (!isSupabaseConfigured()) {
+      setSaveToast('Connect Supabase before saving whiteboards to the cloud.');
+      setTimeout(() => setSaveToast(null), 4000);
+      setSaveAsModalOpen(false);
+      return;
+    }
     try {
       let thumbnail: string | undefined;
       if (activeSheet) {
@@ -201,7 +227,7 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
           thumbnail = await generateSheetThumbnail(activeSheet);
         } catch {}
       }
-      const newEntry = await saveWhiteboardAsCopy(notebook, saveAsName.trim(), thumbnail);
+      const newEntry = await saveWhiteboardAsCopy(notebook, saveAsName.trim(), thumbnail, user.id);
       setNotebook(newEntry.notebook);
       setActiveSheetId(newEntry.notebook.activeSheetId || newEntry.notebook.sheets[0]?.id);
       setIsSaved(true);
@@ -214,7 +240,7 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
       setSaveToast('Failed to save copy. Please try again.');
       setTimeout(() => setSaveToast(null), 3500);
     }
-  }, [notebook, saveAsName, activeSheet]);
+  }, [notebook, saveAsName, activeSheet, isAuthenticated, user?.id]);
 
   const handleRenameNotebook = useCallback(async (newName: string) => {
     setNotebook((prev) => ({ ...prev, name: newName }));

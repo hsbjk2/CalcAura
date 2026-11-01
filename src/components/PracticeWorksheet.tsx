@@ -41,6 +41,7 @@ import {
   PracticeHistoryEntry,
   savePracticeHistoryEntry,
 } from '../data/historyStorage.ts';
+import { useAuth } from '../context/AuthContext.tsx';
 
 type TestStatus = 'idle' | 'countdown' | 'in-progress' | 'completed';
 
@@ -58,13 +59,18 @@ export interface PracticeWorksheetProps {
   initialAttemptToReview?: PracticeHistoryEntry | null;
   onExitReview?: () => void;
   onNavigateToHistory?: () => void;
+  onNavigateToAuth?: () => void;
 }
 
 export const PracticeWorksheet: React.FC<PracticeWorksheetProps> = ({
   initialAttemptToReview,
   onExitReview,
   onNavigateToHistory,
+  onNavigateToAuth,
 }) => {
+  const { user, isAuthenticated } = useAuth();
+  const [historySaveStatus, setHistorySaveStatus] = useState<'saved' | 'sign-in-required' | 'error' | null>(null);
+
   // Current stage filter ('all' | '10th' | '12th' | 'engineering' | 'graduation')
   const [selectedStage, setSelectedStage] = useState<AcademicStage | 'all'>('all');
 
@@ -178,6 +184,7 @@ export const PracticeWorksheet: React.FC<PracticeWorksheetProps> = ({
 
   // Start test handler
   const handleStartTest = () => {
+    setHistorySaveStatus(null);
     const newQuestions = sampleRandomQuestions(6, selectedStage);
     setQuestions(newQuestions);
     setUserAnswers({});
@@ -203,6 +210,7 @@ export const PracticeWorksheet: React.FC<PracticeWorksheetProps> = ({
 
   // Retake the same exact 6 questions
   const handleRetakeSameSet = useCallback(() => {
+    setHistorySaveStatus(null);
     setUserAnswers({});
     setMarkedForReview({});
     setCurrentIdx(0);
@@ -214,6 +222,7 @@ export const PracticeWorksheet: React.FC<PracticeWorksheetProps> = ({
 
   // Practice only incorrect & unanswered questions
   const handlePracticeIncorrectOnly = useCallback(() => {
+    setHistorySaveStatus(null);
     const incorrectOrUnanswered = questions.filter(
       (q, idx) => userAnswers[idx] !== q.correctIdx
     );
@@ -315,13 +324,18 @@ export const PracticeWorksheet: React.FC<PracticeWorksheetProps> = ({
       timeLimitMinutes,
     };
 
-    savePracticeHistoryEntry(historyEntry).catch((err) => {
-      console.warn('Failed to save practice history entry', err);
-    });
-
-    try {
-      localStorage.setItem('calcaura_last_test_attempt', JSON.stringify(historyEntry));
-    } catch {}
+    if (isAuthenticated && user?.id) {
+      historyEntry.userId = user.id;
+      setHistorySaveStatus(null);
+      savePracticeHistoryEntry(historyEntry, user.id)
+        .then(() => setHistorySaveStatus('saved'))
+        .catch((err) => {
+          console.error('Failed to save practice history to Supabase:', err);
+          setHistorySaveStatus('error');
+        });
+    } else {
+      setHistorySaveStatus('sign-in-required');
+    }
 
     const el = document.getElementById('practice-worksheet-root');
     if (el) {
@@ -330,6 +344,7 @@ export const PracticeWorksheet: React.FC<PracticeWorksheetProps> = ({
   };
 
   const handleQuitToLobby = () => {
+    setHistorySaveStatus(null);
     setTestStatus('idle');
     setUserAnswers({});
     setMarkedForReview({});
@@ -895,6 +910,22 @@ export const PracticeWorksheet: React.FC<PracticeWorksheetProps> = ({
           ======================================================== */}
       {testStatus === 'completed' && (
         <div className="space-y-6 animate-in fade-in duration-200">
+          {historySaveStatus === 'saved' && (
+            <div className="p-3 rounded-2xl border border-emerald-500/25 bg-emerald-500/5 text-sm text-emerald-700 dark:text-emerald-300">
+              Your submitted result has been saved to your CALCAURA account and synced with Supabase.
+            </div>
+          )}
+          {historySaveStatus === 'sign-in-required' && (
+            <div className="p-4 rounded-2xl border border-amber-500/25 bg-amber-500/5 text-sm text-slate-700 dark:text-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <span>Sign in with Clerk to save this real result to your personal cloud history. Your score remains visible in this session.</span>
+              <button onClick={() => onNavigateToAuth ? onNavigateToAuth() : window.location.assign('/sign-in')} className="shrink-0 px-4 py-2 rounded-xl bg-[#7957F5] text-white text-xs font-bold">Sign in</button>
+            </div>
+          )}
+          {historySaveStatus === 'error' && (
+            <div className="p-3 rounded-2xl border border-rose-500/25 bg-rose-500/5 text-sm text-rose-700 dark:text-rose-300">
+              The result is not confirmed as cloud-saved. Check your Supabase connection and RLS setup, then submit a new attempt after fixing the issue.
+            </div>
+          )}
           {/* Executive Performance Card */}
           <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#111321] border border-slate-200 dark:border-white/10 shadow-lg text-center space-y-5">
             <div className="inline-flex p-3.5 rounded-2xl bg-gradient-to-br from-[#7957F5]/20 to-[#D94BCB]/20 border border-[#7957F5]/30 text-[#7957F5] dark:text-[#D94BCB]">

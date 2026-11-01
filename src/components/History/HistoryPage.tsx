@@ -87,7 +87,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
   onNavigateToAuth,
   darkMode,
 }) => {
-  const { user, isAuthenticated, isLoading: authLoading, openAuthModal, loginAsDemo, logout } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
 
   const [activeTab, setActiveTab] = useState<TabType>('practice');
   const [practiceEntries, setPracticeEntries] = useState<PracticeHistoryEntry[]>([]);
@@ -257,13 +257,12 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
       <CinematicHistoryLanding
         onSignIn={() => {
           if (onNavigateToAuth) onNavigateToAuth('sign-in');
-          else openAuthModal('signin', 'history');
+          else window.location.assign('/sign-in');
         }}
         onRegister={() => {
           if (onNavigateToAuth) onNavigateToAuth('sign-up');
-          else openAuthModal('register', 'history');
+          else window.location.assign('/sign-up');
         }}
-        onDemoLogin={loginAsDemo}
       />
     );
   }
