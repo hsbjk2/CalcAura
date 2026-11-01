@@ -1,8 +1,10 @@
 
-@import "tailwindcss";
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
 
-@custom-variant dark (&:where(.dark, .dark *));
-
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+});
 /* ==========================================
    GLOBAL RESPONSIVE FOUNDATION
 ========================================== */
