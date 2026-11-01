@@ -11,8 +11,6 @@ import {
   HistoryStep,
 } from './types.ts';
 import {
-  loadNotebook,
-  saveNotebook,
   createDefaultNotebook,
   generateId,
 } from './storage.ts';
@@ -145,87 +143,46 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
 
   const isMountedRef = useRef<boolean>(false);
 
-  // Load Notebook on mount
-  // Load the saved notebook when the workspace opens
-useEffect(() => {
-  let cancelled = false;
+  // Boundary notifications stay visible for exactly 1.5 seconds.
+  const boundaryToastTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
 
-  const initializeNotebook = async () => {
-    setNotebookReady(false);
+  const showBoundaryToast = useCallback((message: string) => {
+    if (boundaryToastTimerRef.current !== null) {
+      window.clearTimeout(boundaryToastTimerRef.current);
+    }
 
-    // Use the notebook selected from History when provided.
+    setSaveToast(message);
+
+    boundaryToastTimerRef.current = window.setTimeout(() => {
+      setSaveToast((current) => (current === message ? null : current));
+      boundaryToastTimerRef.current = null;
+    }, 1500);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (boundaryToastTimerRef.current !== null) {
+        window.clearTimeout(boundaryToastTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Load the notebook passed from History, if one was selected.
+  // New boards start fresh; there is no automatic draft loading or saving.
+  useEffect(() => {
     if (initialNotebook?.sheets?.length) {
       setNotebook(initialNotebook);
-
       setActiveSheetId(
         initialNotebook.activeSheetId || initialNotebook.sheets[0].id
       );
 
-      try {
-        const saved = await isWhiteboardSavedInHistory(initialNotebook.id);
-
-        if (!cancelled) {
-          setIsSaved(saved);
-        }
-      } catch {
-        if (!cancelled) setIsSaved(false);
-      }
-
-      if (!cancelled) setNotebookReady(true);
-      return;
-    }
-
-    // Otherwise restore the most recently saved local notebook.
-    try {
-      const savedNotebook = await loadNotebook();
-
-      if (cancelled) return;
-
-      const restoredNotebook =
-        savedNotebook?.sheets?.length
-          ? savedNotebook
-          : createDefaultNotebook();
-
-      setNotebook(restoredNotebook);
-
-      setActiveSheetId(
-        restoredNotebook.activeSheetId ||
-        restoredNotebook.sheets[0]?.id ||
-        ''
-      );
-
-      setIsSaved(false);
-    } catch (error) {
-      console.error('Unable to restore whiteboard:', error);
-
-      if (cancelled) return;
-
-      const freshNotebook = createDefaultNotebook();
-
-      setNotebook(freshNotebook);
-
-      setActiveSheetId(
-        freshNotebook.activeSheetId ||
-        freshNotebook.sheets[0]?.id ||
-        ''
-      );
-
-      setIsSaved(false);
-    }
-
-    if (!cancelled) {
-      setNotebookReady(true);
-    }
-  };
-
-  void initializeNotebook();
-
-  return () => {
-    cancelled = true;
-  };
-}, [initialNotebook]);
+      isWhiteboardSavedInHistory(initialNotebook.id)
+        .then((saved) => setIsSaved(saved))
+        .catch((error) => {
+          console.error('Unable to check whiteboard save status:', error);
+          setIsSaved(false);
+        });
     } else {
-      // Fresh new board is initially unsaved
       setIsSaved(false);
     }
   }, [initialNotebook]);
@@ -767,13 +724,9 @@ useEffect(() => {
       ),
     }));
 
-    setSaveToast(`Canvas boundary set to ${width} × ${height} px`);
-
-    window.setTimeout(() => {
-      setSaveToast(null);
-    }, 1500);
+    showBoundaryToast(`Canvas boundary set to ${width} × ${height} px`);
   },
-  [activeSheet, pushHistory]
+  [activeSheet, pushHistory, showBoundaryToast]
 );
 
   const handleExpandSheetBoundary = useCallback(
@@ -798,13 +751,9 @@ useEffect(() => {
       ),
     }));
 
-    setSaveToast(`Boundary expanded to ${nextW} × ${nextH} px`);
-
-    window.setTimeout(() => {
-      setSaveToast(null);
-    }, 1500);
+    showBoundaryToast(`Boundary expanded to ${nextW} × ${nextH} px`);
   },
-  [activeSheet, pushHistory]
+  [activeSheet, pushHistory, showBoundaryToast]
 );
   // Auto-center sheet boundary on initial mount
   const initialFitDoneRef = useRef<boolean>(false);
