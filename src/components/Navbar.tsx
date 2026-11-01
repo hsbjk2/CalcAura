@@ -140,10 +140,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>∑</span>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-sm sm:text-lg font-bold tracking-tight text-slate-900 dark:text-[#F6F7FB] group-hover:text-[#7957F5] dark:group-hover:text-white transition-colors"
-              CalcAura
-            </span>
-          </div>
+  <span className="text-sm sm:text-lg font-bold tracking-tight text-slate-900 dark:text-[#F6F7FB] group-hover:text-[#7957F5] dark:group-hover:text-white transition-colors">
+    CalcAura
+  </span>
+</div>
         </button>
 
         {/* Desktop Single-Line Navigation */}
