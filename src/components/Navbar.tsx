@@ -302,38 +302,68 @@ export const Navbar: React.FC<NavbarProps> = ({
           })}
 
           <div className="pt-2 border-t border-slate-200 dark:border-white/[0.08] flex flex-col gap-2">
-            {/* User Session inside Mobile Drawer */}
-            {isAuthenticated && user ? (
-              <div className="p-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-between mb-1">
-                <div className="flex items-center gap-2.5">
-                  <span className="text-xl">{user.avatar || '🎓'}</span>
-                  <div>
-                    <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight">{user.name}</div>
-                    <div className="text-[10px] text-slate-400 font-mono leading-none">{user.email}</div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    logout();
-                    setMobileMenuOpen(false);
-                  }}
-                  className="text-[11px] font-semibold text-rose-500 hover:text-rose-600 px-2 py-1 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
-                >
-                  Sign Out
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onSelectTab('sign-in');
-                }}
-                className="w-full py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-[#7957F5]/20 to-[#D94BCB]/20 text-[#7957F5] dark:text-[#D94BCB] border border-[#7957F5]/30 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer mb-1"
-              >
-                <LogIn className="w-4 h-4" />
-                <span>Sign In to CalcAura</span>
-              </button>
-            )}
+            
+{/* Mobile User Session - Clerk Profile */}
+{isAuthenticated && user ? (
+  <div className="p-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-between gap-3 mb-1">
+
+    <div className="flex items-center gap-3 min-w-0 flex-1">
+
+      {/* Actual Clerk Profile Image */}
+      {user.avatar &&
+      /^https?:\/\//i.test(user.avatar) ? (
+        <img
+          src={user.avatar}
+          alt={`${user.name}'s profile`}
+          className="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-white/10 shrink-0"
+          referrerPolicy="no-referrer"
+        />
+      ) : (
+        <div className="w-10 h-10 rounded-full bg-[#7957F5]/10 flex items-center justify-center text-xl shrink-0">
+          {user.avatar || '🎓'}
+        </div>
+      )}
+
+      {/* User Information */}
+      <div className="min-w-0 flex-1">
+
+        <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight truncate">
+          {user.name}
+        </div>
+
+        <div className="text-[10px] text-slate-400 font-mono leading-tight truncate mt-1">
+          {user.email}
+        </div>
+
+      </div>
+
+    </div>
+
+    {/* Clerk Sign Out */}
+    <button
+      onClick={() => {
+        logout();
+        setMobileMenuOpen(false);
+      }}
+      className="text-[11px] font-semibold text-rose-500 hover:text-rose-600 px-2 py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer shrink-0"
+    >
+      Sign Out
+    </button>
+
+  </div>
+) : (
+  <button
+    onClick={() => {
+      setMobileMenuOpen(false);
+      onSelectTab('sign-in');
+    }}
+    className="w-full py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-[#7957F5]/20 to-[#D94BCB]/20 text-[#7957F5] dark:text-[#D94BCB] border border-[#7957F5]/30 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer mb-1"
+  >
+    <LogIn className="w-4 h-4" />
+    <span>Sign In to CALCAURA</span>
+  </button>
+)}
+
             {/* Quick Theme Switcher inside Mobile Drawer */}
             <button
               onClick={onToggleDarkMode}
