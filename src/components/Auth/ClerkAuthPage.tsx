@@ -39,20 +39,22 @@ export const ClerkAuthPage: React.FC<ClerkAuthPageProps> = ({
           <div className="w-full flex justify-center shadow-2xl rounded-3xl overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0E101D]">
             {mode === 'sign-in' ? (
               <SignIn
-                routing="path"
-                path="/sign-in"
-                appearance={getClerkAppearance(darkMode)}
-                fallbackRedirectUrl="/history"
-                signUpUrl="/sign-up"
-              />
+  routing="path"
+  path="/sign-in"
+  appearance={getClerkAppearance(darkMode)}
+  forceRedirectUrl="/history"
+  fallbackRedirectUrl="/history"
+  signUpUrl="/sign-up"
+/>
             ) : (
               <SignUp
-                routing="path"
-                path="/sign-up"
-                appearance={getClerkAppearance(darkMode)}
-                fallbackRedirectUrl="/history"
-                signInUrl="/sign-in"
-              />
+  routing="path"
+  path="/sign-up"
+  appearance={getClerkAppearance(darkMode)}
+  forceRedirectUrl="/history"
+  fallbackRedirectUrl="/history"
+  signInUrl="/sign-in"
+/>
             )}
           </div>
         ) : (
