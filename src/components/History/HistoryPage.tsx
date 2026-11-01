@@ -297,7 +297,18 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
         <div className="flex flex-wrap items-center gap-3">
           {/* Authenticated User Chip */}
           <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
-            <span className="text-base">{user.avatar || '🎓'}</span>
+            {user.avatar && /^https?:\/\//i.test(user.avatar) ? (
+  <img
+    src={user.avatar}
+    alt={`${user.name}'s profile`}
+    className="w-9 h-9 rounded-full object-cover border border-white/10 shrink-0"
+    referrerPolicy="no-referrer"
+  />
+) : (
+  <span className="text-xl w-9 h-9 flex items-center justify-center shrink-0">
+    {user.avatar || '🎓'}
+  </span>
+)}
             <div className="text-left">
               <div className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-tight">
                 {user.name}
