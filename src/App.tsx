@@ -339,6 +339,17 @@ export default function App() {
       const path = (typeof window !== 'undefined' ? window.location.pathname : '').toLowerCase();
       const hash = (typeof window !== 'undefined' ? window.location.hash : '').toLowerCase();
       const combined = `${path} ${hash}`;
+      // IMPORTANT: Let Clerk control its own internal authentication routes.
+// Never rewrite nested verification URLs such as /sign-in/... or /sign-up/...
+if (path === '/sign-in' || path.startsWith('/sign-in/')) {
+  setActiveTab('sign-in');
+  return;
+}
+
+if (path === '/sign-up' || path.startsWith('/sign-up/')) {
+  setActiveTab('sign-up');
+  return;
+}
 
       if (combined.includes('calculator/basic') || combined.includes('basic-calculator') || combined.includes('calculator-basic')) {
         handleSelectTab('basic-calculator');
