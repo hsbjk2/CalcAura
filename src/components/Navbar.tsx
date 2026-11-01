@@ -113,11 +113,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-3 sm:top-4 z-50 w-full px-3 sm:px-6 max-w-7xl mx-auto transition-all">
+    <header className="sticky top-2 sm:top-4 z-50 w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 transition-all">
       {/* Floating Translucent Bar with light/dark adaptive styling */}
       <div
         id="navbar-main-bar"
-        className={`relative z-50 backdrop-blur-xl border rounded-2xl px-3 sm:px-5 py-2 sm:py-2.5 flex items-center justify-between gap-3 sm:gap-4 transition-all ${
+        className={`relative z-50 w-full min-w-0 backdrop-blur-xl border rounded-2xl px-2 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between gap-1.5 sm:gap-3 transition-all ${
           isAboutView
             ? scrolledPastHero
               ? 'bg-white/50 dark:bg-[#200D25]/60 backdrop-blur-md border border-white/50 dark:border-pink-900/30 text-[#200D25] dark:text-[#FFF9FD] shadow-[0_4px_24px_rgba(53,19,51,0.06)]'
@@ -133,14 +133,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             onSelectTab('home');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className="flex items-center gap-2.5 text-left group shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7957F5] rounded-lg cursor-pointer"
+          className="flex items-center gap-1.5 sm:gap-2.5 text-left group shrink-0 min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7957F5] rounded-lg cursor-pointer"
           aria-label="CalcAura Home"
         >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7957F5]/25 to-[#D94BCB]/20 border border-[#7957F5]/40 flex items-center justify-center text-[#7957F5] dark:text-white font-mono font-bold text-sm shadow-[0_0_12px_rgba(121,87,245,0.25)]">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-gradient-to-br from-[#7957F5]/25 to-[#D94BCB]/20 border border-[#7957F5]/40 flex items-center justify-center text-[#7957F5] dark:text-white font-mono font-bold text-sm shadow-[0_0_12px_rgba(121,87,245,0.25)]">
             <span>∑</span>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-[#F6F7FB] group-hover:text-[#7957F5] dark:group-hover:text-white transition-colors">
+            <span className="text-sm sm:text-lg font-bold tracking-tight text-slate-900 dark:text-[#F6F7FB] group-hover:text-[#7957F5] dark:group-hover:text-white transition-colors"
               CalcAura
             </span>
           </div>
@@ -174,7 +174,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </nav>
 
         {/* Right Section: Language + Search + Theme + Prominent CTA */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0 min-w-0">
           {/* Language Switcher */}
           <div className="relative">
             <button
