@@ -752,37 +752,60 @@ useEffect(() => {
   }, [activeSheet]);
 
   const handleSetSheetDimensions = useCallback(
-    (width: number, height: number) => {
-      if (!activeSheet) return;
-      pushHistory();
-      whiteboardSounds.playTapSound();
-      setNotebook((prev) => ({
-        ...prev,
-        sheets: prev.sheets.map((s) => (s.id === activeSheet.id ? { ...s, width, height } : s)),
-      }));
-      setSaveToast(`Canvas boundary set to ${width} × ${height} px`);
-    },
-    [activeSheet, pushHistory]
-  );
+  (width: number, height: number) => {
+    if (!activeSheet) return;
+
+    pushHistory();
+    whiteboardSounds.playTapSound();
+
+    setNotebook((prev) => ({
+      ...prev,
+      sheets: prev.sheets.map((s) =>
+        s.id === activeSheet.id
+          ? { ...s, width, height }
+          : s
+      ),
+    }));
+
+    setSaveToast(`Canvas boundary set to ${width} × ${height} px`);
+
+    window.setTimeout(() => {
+      setSaveToast(null);
+    }, 1500);
+  },
+  [activeSheet, pushHistory]
+);
 
   const handleExpandSheetBoundary = useCallback(
-    (factor: number = 1.25) => {
-      if (!activeSheet) return;
-      pushHistory();
-      whiteboardSounds.playTapSound();
-      const curW = activeSheet.width || 1920;
-      const curH = activeSheet.height || 1080;
-      const nextW = Math.round(curW * factor);
-      const nextH = Math.round(curH * factor);
-      setNotebook((prev) => ({
-        ...prev,
-        sheets: prev.sheets.map((s) => (s.id === activeSheet.id ? { ...s, width: nextW, height: nextH } : s)),
-      }));
-      setSaveToast(`Boundary expanded to ${nextW} × ${nextH} px`);
-    },
-    [activeSheet, pushHistory]
-  );
+  (factor: number = 1.25) => {
+    if (!activeSheet) return;
 
+    pushHistory();
+    whiteboardSounds.playTapSound();
+
+    const curW = activeSheet.width || 1920;
+    const curH = activeSheet.height || 1080;
+
+    const nextW = Math.round(curW * factor);
+    const nextH = Math.round(curH * factor);
+
+    setNotebook((prev) => ({
+      ...prev,
+      sheets: prev.sheets.map((s) =>
+        s.id === activeSheet.id
+          ? { ...s, width: nextW, height: nextH }
+          : s
+      ),
+    }));
+
+    setSaveToast(`Boundary expanded to ${nextW} × ${nextH} px`);
+
+    window.setTimeout(() => {
+      setSaveToast(null);
+    }, 1500);
+  },
+  [activeSheet, pushHistory]
+);
   // Auto-center sheet boundary on initial mount
   const initialFitDoneRef = useRef<boolean>(false);
   useEffect(() => {
