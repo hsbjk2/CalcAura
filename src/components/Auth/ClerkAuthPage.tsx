@@ -36,7 +36,7 @@ export const ClerkAuthPage: React.FC<ClerkAuthPageProps> = ({
 
       <div className="w-full max-w-md flex flex-col items-center">
         {clerkConfigured ? (
-          <div className="w-full flex justify-center shadow-2xl rounded-3xl overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0E101D]">
+          <div className="w-full flex justify-center">
             {mode === 'sign-in' ? (
               <SignIn
   routing="path"
