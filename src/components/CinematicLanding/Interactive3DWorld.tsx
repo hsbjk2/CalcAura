@@ -45,6 +45,12 @@ export const Interactive3DWorld: React.FC = () => {
   const [activeShape, setActiveShape] = useState<SurfaceShape>('saddle');
   const [wireframeMode, setWireframeMode] = useState<boolean>(true);
   const [autoRotate, setAutoRotate] = useState<boolean>(true);
+  const autoRotateRef = useRef<boolean>(true);
+
+  useEffect(() => {
+    autoRotateRef.current = autoRotate;
+  }, [autoRotate]);
+
   const shouldReduceMotion = useReducedMotion();
 
   const { scrollYProgress } = useScroll({
@@ -265,8 +271,8 @@ export const Interactive3DWorld: React.FC = () => {
       }
 
       if (meshGroupRef.current) {
-        if (autoRotate && !isDragging.current) {
-          manualRot.current.y += 0.006;
+        if (autoRotateRef.current && !isDragging.current) {
+          manualRot.current.y += 0.009;
         }
         meshGroupRef.current.rotation.y = manualRot.current.y;
         meshGroupRef.current.rotation.x = manualRot.current.x;
@@ -380,13 +386,13 @@ export const Interactive3DWorld: React.FC = () => {
                 onClick={() => setAutoRotate(!autoRotate)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-colors cursor-pointer ${
                   autoRotate
-                    ? 'bg-[#D94BCB]/15 text-[#D94BCB] dark:text-white dark:bg-[#D94BCB]/20 border border-[#D94BCB]/30'
+                    ? 'bg-[#D94BCB]/20 text-[#D94BCB] dark:text-white dark:bg-[#D94BCB]/30 border border-[#D94BCB]/50 shadow-[0_0_12px_rgba(217,75,203,0.3)]'
                     : 'bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-[#A6A9B8] hover:text-slate-900 dark:hover:text-white'
                 }`}
-                title="Toggle Auto Rotation"
+                title={autoRotate ? 'Pause Rotation' : 'Spin 3D Surface'}
               >
-                <RotateCw className="w-3.5 h-3.5" />
-                <span>Spin</span>
+                <RotateCw className={`w-3.5 h-3.5 ${autoRotate ? 'animate-spin' : ''}`} style={{ animationDuration: '4s' }} />
+                <span>{autoRotate ? 'Spinning' : 'Spin'}</span>
               </button>
             </div>
           </div>
