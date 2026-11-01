@@ -1,22 +1,104 @@
+
 <!doctype html>
 <html lang="en" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CalcAura — All-in-One Mathematics & STEM Workspace</title>
-    <meta name="description" content="Professional all-in-one mathematics, scientific computing, graphing, geometry visualizer, equation solver, and STEM workspace built by HSBJK." />
-    <meta property="og:title" content="CalcAura — All-in-One Mathematics & STEM Workspace" />
-    <meta property="og:description" content="Professional all-in-one mathematics, scientific computing, graphing, geometry visualizer, equation solver, and STEM workspace built by HSBJK." />
+
+    <!-- Primary SEO -->
+    <title>CALCAURA | Mathematics & STEM Learning Workspace</title>
+
+    <meta
+      name="description"
+      content="Explore scientific calculators, math problem-solving, graphing, geometry tools, interactive practice, and a digital whiteboard in one STEM workspace. Built by HSBJK."
+    />
+
+    <meta name="author" content="HSBJK" />
+    <meta name="creator" content="HSBJK" />
+    <meta name="application-name" content="CALCAURA" />
+    <meta
+      name="robots"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
+
+    <!-- Brand and Browser Appearance -->
+    <meta name="theme-color" content="#7957F5" />
+    <meta name="color-scheme" content="light dark" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/Logo.png" />
+    <link rel="apple-touch-icon" href="/Logo.png" />
+
+    <!-- Open Graph: Facebook, LinkedIn, WhatsApp -->
     <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <!-- Fonts with full CJK, Devanagari, and editorial serif support -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e293b'/%3E%3Cpath d='M9 16h6m-3-3v6m7-6l4 6m0-6l-4 6' stroke='%2338bdf8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+    <meta property="og:site_name" content="CALCAURA" />
+    <meta
+      property="og:title"
+      content="CALCAURA | Mathematics & STEM Learning Workspace"
+    />
+    <meta
+      property="og:description"
+      content="Calculate, visualize, practice, and explore mathematics with scientific calculators, graphing tools, geometry, and an interactive digital whiteboard. Built by HSBJK."
+    />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary" />
+    <meta
+      name="twitter:title"
+      content="CALCAURA | Mathematics & STEM Learning Workspace"
+    />
+    <meta
+      name="twitter:description"
+      content="Your all-in-one mathematics and STEM workspace. Explore calculators, interactive learning, graphing, and more. Built by HSBJK."
+    />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Structured Data: Search Engine Context -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "CALCAURA",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Web",
+        "description": "An all-in-one mathematics and STEM learning workspace featuring scientific calculators, mathematical problem-solving tools, graphing, geometry, interactive practice, and a digital whiteboard.",
+        "creator": {
+          "@type": "Organization",
+          "name": "HSBJK"
+        },
+        "featureList": [
+          "Scientific calculators",
+          "Mathematical problem-solving",
+          "Graphing tools",
+          "Geometry tools",
+          "Class 10 mathematics learning",
+          "Class 12 mathematics learning",
+          "Engineering mathematics",
+          "Interactive math playground",
+          "Digital whiteboard",
+          "Practice history"
+        ]
+      }
+    </script>
   </head>
-  <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased font-sans selection:bg-sky-500/20 selection:text-sky-700 dark:selection:text-sky-300">
+
+  <body
+    class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased font-sans selection:bg-sky-500/20 selection:text-sky-700 dark:selection:text-sky-300"
+  >
     <div id="root"></div>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
