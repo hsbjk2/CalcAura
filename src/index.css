@@ -1,4 +1,6 @@
+@import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 
