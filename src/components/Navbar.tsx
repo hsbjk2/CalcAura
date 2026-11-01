@@ -179,8 +179,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="relative">
             <button
               onClick={() => setLangMenuOpen(!langMenuOpen)}
-              className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200/80 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-[11px] font-mono font-semibold text-slate-700 dark:text-[#A6A9B8] hover:text-slate-900 dark:hover:text-[#F6F7FB] border border-slate-200 dark:border-white/[0.08] transition-colors cursor-pointer"
-              title="Select Language"
+              className="flex items-center gap-1 px-1.5 sm:px-2.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200/80 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-[10px] sm:text-[11px] font-mono font-semibold text-slate-700 dark:text-[#A6A9B8] border border-slate-200 dark:border-white/[0.08] transition-colors cursor-pointer"
               aria-label="Select Language"
             >
               <Globe className="w-3.5 h-3.5 text-[#7957F5]" />
@@ -222,8 +221,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={onToggleDarkMode}
             className="p-2 rounded-xl text-slate-700 hover:text-slate-900 dark:text-[#A6A9B8] dark:hover:text-[#F6F7FB] bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] border border-slate-200 dark:border-white/[0.08] transition-colors cursor-pointer shrink-0 flex items-center justify-center"
-            title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            aria-label={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
           >
             {darkMode ? (
               <Sun className="w-4 h-4 text-amber-400" />
@@ -243,12 +240,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           ) : (
             <button
               onClick={() => onSelectTab('sign-in')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#7957F5]/15 to-[#D94BCB]/15 hover:from-[#7957F5]/25 hover:to-[#D94BCB]/25 text-[#7957F5] dark:text-[#D94BCB] border border-[#7957F5]/30 text-xs font-bold transition-all cursor-pointer shrink-0"
-              title="Sign in to your account"
+              className="inline-flex items-center justify-center gap-1 px-2 sm:px-3 py-2 rounded-xl bg-gradient-to-r from-[#7957F5]/15 to-[#D94BCB]/15 hover:from-[#7957F5]/25 hover:to-[#D94BCB]/25 text-[#7957F5] dark:text-[#D94BCB] border border-[#7957F5]/30 text-xs font-bold transition-all cursor-pointer shrink-0"
               aria-label="Sign In"
             >
-              <LogIn className="w-3.5 h-3.5" />
-              <span>Sign In</span>
+             <LogIn className="w-4 h-4 shrink-0" />
+<span className="hidden sm:inline">Sign In</span>
             </button>
           )}
 
@@ -257,7 +253,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="xl:hidden p-2 rounded-xl text-slate-700 dark:text-[#A6A9B8] hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] border border-slate-200 dark:border-white/[0.08] transition-colors cursor-pointer shrink-0 flex items-center justify-center"
-            aria-label="Toggle navigation menu"
             title="Menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5 text-[#7957F5]" /> : <Menu className="w-5 h-5" />}
