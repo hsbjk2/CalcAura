@@ -18,7 +18,7 @@ export const Footer: React.FC<FooterProps> = ({ t, onSelectTab, onOpenAbout }) =
           <div className="max-w-md">
             <div className="flex items-center gap-2.5 mb-2.5">
               <img
-                src="/Logo1.png"
+                src={calcauraLogo}
                 alt=""
                 aria-hidden="true"
                 loading="lazy"
