@@ -1,3 +1,4 @@
+import calcauraLogo from '../../../Logo.png';
 import React from 'react';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -23,9 +24,13 @@ export const CinematicFinalCta: React.FC<CinematicFinalCtaProps> = ({
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Subtle resolving geometric visual circle */}
-        <div className="w-16 h-16 mx-auto mb-8 rounded-2xl bg-gradient-to-br from-[#7957F5]/25 to-[#D94BCB]/20 border border-[#7957F5]/50 flex items-center justify-center text-[#7957F5] dark:text-white font-mono text-2xl font-bold shadow-[0_0_30px_rgba(121,87,245,0.35)]">
-          ∑
-        </div>
+        <div className="w-14 h-14 rounded-2xl overflow-hidden border border-[#7957F5]/50 shadow-[0_0_25px_rgba(121,87,245,0.3)]">
+  <img
+    src={calcauraLogo}
+    alt="CALCAURA Logo"
+    className="w-full h-full object-contain p-1.5"
+  />
+</div>
 
         <motion.h2
           initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
