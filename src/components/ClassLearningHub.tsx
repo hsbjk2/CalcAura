@@ -267,8 +267,8 @@ export const ClassLearningHub: React.FC<ClassLearningHubProps> = ({
             </div>
           </div>
 
-          {/* Sub-Tabs: Concepts, Interactive Lab, Examples, Practice, Test */}
-          <div className="flex items-center gap-1 p-1.5 bg-slate-100 dark:bg-[#111321] rounded-2xl border border-slate-200 dark:border-white/10 overflow-x-auto thin-scrollbar">
+          {/* Responsive Sub-Tabs: shared by Classes 6, 7, 8 and 9 */}
+          <div className="grid w-full min-w-0 grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-2 p-2 bg-slate-100 dark:bg-[#111321] rounded-2xl border border-slate-200 dark:border-white/10">
             {[
               { id: 'concepts', label: '1. Concepts & Formulas', icon: BookOpen },
               { id: 'interactive', label: '2. Interactive Lab', icon: Sliders },
@@ -281,15 +281,19 @@ export const ClassLearningHub: React.FC<ClassLearningHubProps> = ({
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                  type="button"
+                  onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                  aria-pressed={isTabActive}
+                  className={`flex w-full min-w-0 min-h-[68px] flex-col items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-center text-xs sm:text-sm font-semibold leading-snug whitespace-normal break-words transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7957F5] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#111321] ${
                     isTabActive
-                      ? 'bg-gradient-to-r from-[#7957F5] to-[#D94BCB] text-white shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                      ? 'bg-gradient-to-r from-[#7957F5] to-[#D94BCB] text-white shadow-sm'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/80 dark:hover:bg-white/[0.06] hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{tab.label}</span>
+                  <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span className="block w-full min-w-0 whitespace-normal break-words text-center">
+                    {tab.label}
+                  </span>
                 </button>
               );
             })}
