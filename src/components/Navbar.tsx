@@ -137,7 +137,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           aria-label="CalcAura Home"
         >
           <img
-            src="/Logo.png"
+            src="/Logo1.png"
             alt=""
             aria-hidden="true"
             draggable={false}
