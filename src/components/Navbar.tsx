@@ -113,11 +113,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-2 sm:top-4 z-50 w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 transition-all">
+    <header className="sticky top-3 sm:top-4 z-50 w-full px-3 sm:px-6 max-w-7xl mx-auto transition-all">
       {/* Floating Translucent Bar with light/dark adaptive styling */}
       <div
         id="navbar-main-bar"
-        className={`relative z-50 w-full min-w-0 backdrop-blur-xl border rounded-2xl px-2 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between gap-1.5 sm:gap-3 transition-all ${
+        className={`relative z-50 backdrop-blur-xl border rounded-2xl px-3 sm:px-5 py-2 sm:py-2.5 flex items-center justify-between gap-3 sm:gap-4 transition-all ${
           isAboutView
             ? scrolledPastHero
               ? 'bg-white/50 dark:bg-[#200D25]/60 backdrop-blur-md border border-white/50 dark:border-pink-900/30 text-[#200D25] dark:text-[#FFF9FD] shadow-[0_4px_24px_rgba(53,19,51,0.06)]'
@@ -127,23 +127,25 @@ export const Navbar: React.FC<NavbarProps> = ({
             : 'bg-white/85 dark:bg-[#111321]/80 border-slate-200/90 dark:border-white/12 shadow-[0_4px_24px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]'
         }`}
       >
-        {/* Brand with small mathematical symbol */}
+        {/* CALCAURA Brand Logo */}
         <button
           onClick={() => {
             onSelectTab('home');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className="flex items-center gap-1.5 sm:gap-2.5 text-left group shrink-0 min-w-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7957F5] rounded-lg cursor-pointer"
+          className="flex items-center gap-2.5 text-left group shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7957F5] rounded-lg cursor-pointer"
           aria-label="CalcAura Home"
         >
-          <div className="w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-gradient-to-br from-[#7957F5]/25 to-[#D94BCB]/20 border border-[#7957F5]/40 flex items-center justify-center text-[#7957F5] dark:text-white font-mono font-bold text-sm shadow-[0_0_12px_rgba(121,87,245,0.25)]">
-            <span>∑</span>
-          </div>
-          <div className="flex items-baseline gap-1.5">
-  <span className="text-sm sm:text-lg font-bold tracking-tight text-slate-900 dark:text-[#F6F7FB] group-hover:text-[#7957F5] dark:group-hover:text-white transition-colors">
-    CalcAura
-  </span>
-</div>
+          <img
+            src="/Logo.png"
+            alt=""
+            aria-hidden="true"
+            draggable={false}
+            className="h-8 w-10 shrink-0 object-contain drop-shadow-[0_0_8px_rgba(121,87,245,0.22)]"
+          />
+          <span className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-[#F6F7FB] group-hover:text-[#7957F5] dark:group-hover:text-white transition-colors">
+            CalcAura
+          </span>
         </button>
 
         {/* Desktop Single-Line Navigation */}
@@ -174,12 +176,13 @@ export const Navbar: React.FC<NavbarProps> = ({
         </nav>
 
         {/* Right Section: Language + Search + Theme + Prominent CTA */}
-        <div className="flex items-center gap-1 sm:gap-2 shrink-0 min-w-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Language Switcher */}
           <div className="relative">
             <button
               onClick={() => setLangMenuOpen(!langMenuOpen)}
-              className="flex items-center gap-1 px-1.5 sm:px-2.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200/80 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-[10px] sm:text-[11px] font-mono font-semibold text-slate-700 dark:text-[#A6A9B8] border border-slate-200 dark:border-white/[0.08] transition-colors cursor-pointer"
+              className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200/80 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-[11px] font-mono font-semibold text-slate-700 dark:text-[#A6A9B8] hover:text-slate-900 dark:hover:text-[#F6F7FB] border border-slate-200 dark:border-white/[0.08] transition-colors cursor-pointer"
+              title="Select Language"
               aria-label="Select Language"
             >
               <Globe className="w-3.5 h-3.5 text-[#7957F5]" />
@@ -221,6 +224,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={onToggleDarkMode}
             className="p-2 rounded-xl text-slate-700 hover:text-slate-900 dark:text-[#A6A9B8] dark:hover:text-[#F6F7FB] bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] border border-slate-200 dark:border-white/[0.08] transition-colors cursor-pointer shrink-0 flex items-center justify-center"
+            title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            aria-label={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
           >
             {darkMode ? (
               <Sun className="w-4 h-4 text-amber-400" />
@@ -240,11 +245,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           ) : (
             <button
               onClick={() => onSelectTab('sign-in')}
-              className="inline-flex items-center justify-center gap-1 px-2 sm:px-3 py-2 rounded-xl bg-gradient-to-r from-[#7957F5]/15 to-[#D94BCB]/15 hover:from-[#7957F5]/25 hover:to-[#D94BCB]/25 text-[#7957F5] dark:text-[#D94BCB] border border-[#7957F5]/30 text-xs font-bold transition-all cursor-pointer shrink-0"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#7957F5]/15 to-[#D94BCB]/15 hover:from-[#7957F5]/25 hover:to-[#D94BCB]/25 text-[#7957F5] dark:text-[#D94BCB] border border-[#7957F5]/30 text-xs font-bold transition-all cursor-pointer shrink-0"
+              title="Sign in to your account"
               aria-label="Sign In"
             >
-             <LogIn className="w-4 h-4 shrink-0" />
-<span className="hidden sm:inline">Sign In</span>
+              <LogIn className="w-3.5 h-3.5" />
+              <span>Sign In</span>
             </button>
           )}
 
@@ -253,6 +259,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="xl:hidden p-2 rounded-xl text-slate-700 dark:text-[#A6A9B8] hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] border border-slate-200 dark:border-white/[0.08] transition-colors cursor-pointer shrink-0 flex items-center justify-center"
+            aria-label="Toggle navigation menu"
             title="Menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5 text-[#7957F5]" /> : <Menu className="w-5 h-5" />}
@@ -297,68 +304,38 @@ export const Navbar: React.FC<NavbarProps> = ({
           })}
 
           <div className="pt-2 border-t border-slate-200 dark:border-white/[0.08] flex flex-col gap-2">
-            
-{/* Mobile User Session - Clerk Profile */}
-{isAuthenticated && user ? (
-  <div className="p-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-between gap-3 mb-1">
-
-    <div className="flex items-center gap-3 min-w-0 flex-1">
-
-      {/* Actual Clerk Profile Image */}
-      {user.avatar &&
-      /^https?:\/\//i.test(user.avatar) ? (
-        <img
-          src={user.avatar}
-          alt={`${user.name}'s profile`}
-          className="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-white/10 shrink-0"
-          referrerPolicy="no-referrer"
-        />
-      ) : (
-        <div className="w-10 h-10 rounded-full bg-[#7957F5]/10 flex items-center justify-center text-xl shrink-0">
-          {user.avatar || '🎓'}
-        </div>
-      )}
-
-      {/* User Information */}
-      <div className="min-w-0 flex-1">
-
-        <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight truncate">
-          {user.name}
-        </div>
-
-        <div className="text-[10px] text-slate-400 font-mono leading-tight truncate mt-1">
-          {user.email}
-        </div>
-
-      </div>
-
-    </div>
-
-    {/* Clerk Sign Out */}
-    <button
-      onClick={() => {
-        logout();
-        setMobileMenuOpen(false);
-      }}
-      className="text-[11px] font-semibold text-rose-500 hover:text-rose-600 px-2 py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer shrink-0"
-    >
-      Sign Out
-    </button>
-
-  </div>
-) : (
-  <button
-    onClick={() => {
-      setMobileMenuOpen(false);
-      onSelectTab('sign-in');
-    }}
-    className="w-full py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-[#7957F5]/20 to-[#D94BCB]/20 text-[#7957F5] dark:text-[#D94BCB] border border-[#7957F5]/30 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer mb-1"
-  >
-    <LogIn className="w-4 h-4" />
-    <span>Sign In to CALCAURA</span>
-  </button>
-)}
-
+            {/* User Session inside Mobile Drawer */}
+            {isAuthenticated && user ? (
+              <div className="p-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl">{user.avatar || '🎓'}</span>
+                  <div>
+                    <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight">{user.name}</div>
+                    <div className="text-[10px] text-slate-400 font-mono leading-none">{user.email}</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    logout();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="text-[11px] font-semibold text-rose-500 hover:text-rose-600 px-2 py-1 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onSelectTab('sign-in');
+                }}
+                className="w-full py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-[#7957F5]/20 to-[#D94BCB]/20 text-[#7957F5] dark:text-[#D94BCB] border border-[#7957F5]/30 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer mb-1"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>Sign In to CalcAura</span>
+              </button>
+            )}
             {/* Quick Theme Switcher inside Mobile Drawer */}
             <button
               onClick={onToggleDarkMode}
