@@ -24,7 +24,7 @@ export const CinematicFinalCta: React.FC<CinematicFinalCtaProps> = ({
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Subtle resolving geometric visual circle */}
-        <div className="w-14 h-14 rounded-2xl overflow-hidden border border-[#7957F5]/50 shadow-[0_0_25px_rgba(121,87,245,0.3)]">
+        <div className="mx-auto w-14 h-14 rounded-2xl overflow-hidden border border-[#7957F5]/50 shadow-[0_0_25px_rgba(121,87,245,0.3)]"
   <img
     src={calcauraLogo}
     alt="CALCAURA Logo"
