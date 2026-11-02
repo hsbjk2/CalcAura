@@ -805,7 +805,7 @@ if (path === '/sign-up' || path.startsWith('/sign-up/')) {
             {/* Section 7: Final Call to Action */}
             <CinematicFinalCta
               onOpenPlatform={() => handleSelectTab('platform')}
-              onOpenAbout={() => setAboutOpen(true)}
+              onOpenAbout={() => handleSelectTab('about')}
             />
           </div>
         )}
