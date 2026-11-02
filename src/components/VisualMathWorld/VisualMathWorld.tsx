@@ -171,29 +171,33 @@ export const VisualMathWorld: React.FC<VisualMathWorldProps> = ({
       {/* If an activity is selected, show activity view with back button */}
       {activeActivity ? (
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
+          {/* Responsive activity navigation */}
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <button
+              type="button"
               onClick={() => setActiveActivity(null)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-all shadow-sm"
+              className="inline-flex min-h-11 w-fit shrink-0 items-center justify-center gap-2 whitespace-nowrap px-4 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Visual Math World
+              <ArrowLeft className="w-4 h-4 shrink-0" aria-hidden="true" />
+              <span>Back to Visual Math World</span>
             </button>
 
             {/* Quick switcher among activities */}
-            <div className="hidden sm:flex items-center gap-1.5 overflow-x-auto">
+            <div className="flex w-full min-w-0 items-center gap-2 overflow-x-auto pb-1 sm:flex-1 sm:justify-end">
               {ACTIVITIES.map((act) => (
                 <button
                   key={act.id}
+                  type="button"
                   onClick={() => setActiveActivity(act.id)}
                   title={act.title}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                  aria-pressed={activeActivity === act.id}
+                  className={`inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap px-3 py-2 rounded-lg text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                     activeActivity === act.id
                       ? 'bg-blue-600 text-white shadow-sm'
-                      : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50'
+                      : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/60'
                   }`}
                 >
-                  <span>{act.icon}</span>
+                  <span aria-hidden="true">{act.icon}</span>
                   <span className="hidden md:inline">{act.title.split(' ')[0]}</span>
                 </button>
               ))}
@@ -227,7 +231,6 @@ export const VisualMathWorld: React.FC<VisualMathWorldProps> = ({
                 Learn mathematics through original illustrations of fruits, animals, familiar toys, delicious food,
                 and everyday objects. Every visual picture connects directly to true mathematical equations.
               </p>
-
               {/* Fast links */}
               <div className="pt-2 flex flex-wrap gap-3">
                 {onNavigateTables && (
@@ -248,7 +251,6 @@ export const VisualMathWorld: React.FC<VisualMathWorldProps> = ({
                 )}
               </div>
             </div>
-
             {/* Decorative background visual elements */}
             <div className="absolute right-6 -bottom-6 opacity-20 pointer-events-none text-9xl select-none hidden md:block">
               🍎🍕📐
@@ -329,7 +331,6 @@ export const VisualMathWorld: React.FC<VisualMathWorldProps> = ({
                       {act.badge}
                     </span>
                   </div>
-
                   <div>
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                       {act.title}
@@ -342,7 +343,6 @@ export const VisualMathWorld: React.FC<VisualMathWorldProps> = ({
                     </p>
                   </div>
                 </div>
-
                 <div className="pt-4 border-t border-gray-100 dark:border-gray-700/60 flex items-center justify-between text-xs font-bold text-blue-600 dark:text-blue-400">
                   <span>Start Activity</span>
                   <span>→</span>
