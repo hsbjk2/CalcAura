@@ -25,11 +25,11 @@ export const CinematicFinalCta: React.FC<CinematicFinalCtaProps> = ({
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
         {/* Large Centered CALCAURA Logo */}
-<div className="mx-auto mb-8 w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-3xl overflow-hidden border border-[#7957F5]/50 shadow-[0_0_40px_rgba(121,87,245,0.4)]">
+<div className="mx-auto mb-8 w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-3xl overflow-hidden border border-[#7957F5]/50 shadow-[0_0_35px_rgba(121,87,245,0.35)]">
   <img
     src={calcauraLogo}
     alt="CALCAURA Logo"
-    className="w-full h-full object-contain p-3"
+    className="w-full h-full object-contain p-2.5"
   />
 </div>
 
