@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import calcauraLogo from '../../Logo.png';
 import {
   Search,
   Sun,
@@ -137,7 +138,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           aria-label="CalcAura Home"
         >
           <img
-            src="/Logo.png"
+            src={calcauraLogo}
             alt=""
             aria-hidden="true"
             draggable={false}
