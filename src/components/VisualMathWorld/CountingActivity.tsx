@@ -193,14 +193,16 @@ export const CountingActivity: React.FC<CountingActivityProps> = () => {
   ))}
 </div>
 
-          {/* Tally Progress Bar */}
-          <div className="flex items-center justify-between px-3">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono text-slate-500">Counted:</span>
-              <span className="text-base font-mono font-black text-amber-600 dark:text-amber-400">
-                {countedTotal} / {targetCount}
-              </span>
-            </div>
+          {/* Hint Button */}
+<div className="flex items-center justify-end px-3">
+  <button
+    onClick={() => setShowHint(true)}
+    className="text-xs text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
+  >
+    <Lightbulb className="w-3.5 h-3.5" />
+    <span>Need a hint?</span>
+  </button>
+</div>
 
             <button
               onClick={() => setShowHint(true)}
