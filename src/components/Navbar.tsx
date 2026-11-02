@@ -114,11 +114,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-3 sm:top-4 z-50 w-full px-3 sm:px-6 max-w-7xl mx-auto transition-all">
+    <header className="sticky top-2 sm:top-4 z-50 w-full min-w-0 px-2 sm:px-6 max-w-7xl mx-auto transition-all">
       {/* Floating Translucent Bar with light/dark adaptive styling */}
       <div
         id="navbar-main-bar"
-        className={`relative z-50 backdrop-blur-xl border rounded-2xl px-3 sm:px-5 py-2 sm:py-2.5 flex items-center justify-between gap-3 sm:gap-4 transition-all ${
+        className={`relative z-50 w-full min-w-0 backdrop-blur-xl border rounded-2xl px-2 sm:px-5 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-4 transition-all ${
           isAboutView
             ? scrolledPastHero
               ? 'bg-white/50 dark:bg-[#200D25]/60 backdrop-blur-md border border-white/50 dark:border-pink-900/30 text-[#200D25] dark:text-[#FFF9FD] shadow-[0_4px_24px_rgba(53,19,51,0.06)]'
@@ -134,7 +134,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             onSelectTab('home');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className="flex items-center gap-2.5 text-left group shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7957F5] rounded-lg cursor-pointer"
+          className="flex min-w-0 items-center gap-1.5 sm:gap-2.5 text-left group shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7957F5] rounded-lg cursor-pointer"
           aria-label="CalcAura Home"
         >
           <img
@@ -142,9 +142,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             alt=""
             aria-hidden="true"
             draggable={false}
-            className="h-8 w-10 shrink-0 object-contain drop-shadow-[0_0_8px_rgba(121,87,245,0.22)]"
+            className="h-7 w-8 sm:h-8 sm:w-10 shrink-0 object-contain drop-shadow-[0_0_8px_rgba(121,87,245,0.22)]"
           />
-          <span className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-[#F6F7FB] group-hover:text-[#7957F5] dark:group-hover:text-white transition-colors">
+          <span className="whitespace-nowrap text-sm sm:text-lg font-bold tracking-tight text-slate-900 dark:text-[#F6F7FB] group-hover:text-[#7957F5] dark:group-hover:text-white transition-colors">
             CalcAura
           </span>
         </button>
@@ -177,17 +177,17 @@ export const Navbar: React.FC<NavbarProps> = ({
         </nav>
 
         {/* Right Section: Language + Search + Theme + Prominent CTA */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <div className="ml-auto flex min-w-0 items-center justify-end gap-1 sm:gap-2 shrink-0">
           {/* Language Switcher */}
           <div className="relative">
             <button
               onClick={() => setLangMenuOpen(!langMenuOpen)}
-              className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200/80 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-[11px] font-mono font-semibold text-slate-700 dark:text-[#A6A9B8] hover:text-slate-900 dark:hover:text-[#F6F7FB] border border-slate-200 dark:border-white/[0.08] transition-colors cursor-pointer"
+              className="flex h-8 w-8 sm:h-9 sm:w-auto shrink-0 items-center justify-center gap-1 sm:px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200/80 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-[11px] font-mono font-semibold text-slate-700 dark:text-[#A6A9B8] hover:text-slate-900 dark:hover:text-[#F6F7FB] border border-slate-200 dark:border-white/[0.08] transition-colors cursor-pointer"
               title="Select Language"
               aria-label="Select Language"
             >
               <Globe className="w-3.5 h-3.5 text-[#7957F5]" />
-              <span>{currentLang.toUpperCase()}</span>
+              <span className="hidden sm:inline">{currentLang.toUpperCase()}</span>
             </button>
 
             {langMenuOpen && (
@@ -216,15 +216,17 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Premium Floating Global Search */}
-          <GlobalSearchDropdown
-            onSelectTab={onSelectTab}
-            darkMode={darkMode}
-          />
+          <div className="flex shrink-0 items-center">
+            <GlobalSearchDropdown
+              onSelectTab={onSelectTab}
+              darkMode={darkMode}
+            />
+          </div>
 
           {/* Theme Toggle - Light / Dark Mode Icon */}
           <button
             onClick={onToggleDarkMode}
-            className="p-2 rounded-xl text-slate-700 hover:text-slate-900 dark:text-[#A6A9B8] dark:hover:text-[#F6F7FB] bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] border border-slate-200 dark:border-white/[0.08] transition-colors cursor-pointer shrink-0 flex items-center justify-center"
+            className="h-8 w-8 sm:h-9 sm:w-9 p-1.5 sm:p-2 rounded-xl text-slate-700 hover:text-slate-900 dark:text-[#A6A9B8] dark:hover:text-[#F6F7FB] bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] border border-slate-200 dark:border-white/[0.08] transition-colors cursor-pointer shrink-0 flex items-center justify-center"
             title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             aria-label={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
           >
@@ -237,7 +239,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* User Auth Section */}
           {isAuthenticated ? (
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
               <UserButton
                 afterSignOutUrl="/"
                 appearance={getClerkAppearance(darkMode)}
@@ -246,7 +248,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           ) : (
             <button
               onClick={() => onSelectTab('sign-in')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#7957F5]/15 to-[#D94BCB]/15 hover:from-[#7957F5]/25 hover:to-[#D94BCB]/25 text-[#7957F5] dark:text-[#D94BCB] border border-[#7957F5]/30 text-xs font-bold transition-all cursor-pointer shrink-0"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#7957F5]/15 to-[#D94BCB]/15 hover:from-[#7957F5]/25 hover:to-[#D94BCB]/25 text-[#7957F5] dark:text-[#D94BCB] border border-[#7957F5]/30 text-xs font-bold transition-all cursor-pointer shrink-0"
               title="Sign in to your account"
               aria-label="Sign In"
             >
@@ -259,7 +261,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Mobile Menu Hamburger (for screens < xl) - 3 lines icon */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="xl:hidden p-2 rounded-xl text-slate-700 dark:text-[#A6A9B8] hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] border border-slate-200 dark:border-white/[0.08] transition-colors cursor-pointer shrink-0 flex items-center justify-center"
+            className="xl:hidden h-8 w-8 sm:h-9 sm:w-9 p-1.5 sm:p-2 rounded-xl text-slate-700 dark:text-[#A6A9B8] hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] border border-slate-200 dark:border-white/[0.08] transition-colors cursor-pointer shrink-0 flex items-center justify-center"
             aria-label="Toggle navigation menu"
             title="Menu"
           >
@@ -278,7 +280,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="xl:hidden relative z-50 mt-2 p-3 bg-white/95 dark:bg-[#111321]/95 backdrop-blur-2xl border border-slate-200 dark:border-white/12 rounded-2xl shadow-2xl space-y-1.5 animate-in fade-in slide-in-from-top-2">
+        <div className="xl:hidden absolute inset-x-0 top-full z-50 mt-2 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain p-3 bg-white/95 dark:bg-[#111321]/95 backdrop-blur-2xl border border-slate-200 dark:border-white/12 rounded-2xl shadow-2xl space-y-1.5 animate-in fade-in slide-in-from-top-2">
           {navLinks.map((item) => {
             const isActive = activeTab === item.id;
             return (
@@ -307,20 +309,34 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="pt-2 border-t border-slate-200 dark:border-white/[0.08] flex flex-col gap-2">
             {/* User Session inside Mobile Drawer */}
             {isAuthenticated && user ? (
-              <div className="p-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-between mb-1">
-                <div className="flex items-center gap-2.5">
-                  <span className="text-xl">{user.avatar || '🎓'}</span>
-                  <div>
-                    <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight">{user.name}</div>
-                    <div className="text-[10px] text-slate-400 font-mono leading-none">{user.email}</div>
+              <div className="mb-1 flex min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-slate-100 p-3 dark:border-white/10 dark:bg-white/5">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#7957F5]/15 text-lg">
+                  {typeof user.avatar === 'string' && /^(https?:\/\/|data:image\/)/i.test(user.avatar) ? (
+                    <img
+                      src={user.avatar}
+                      alt={`${user.name || 'User'} avatar`}
+                      className="h-full w-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <span>{user.avatar || '🎓'}</span>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1 overflow-hidden">
+                  <div className="truncate text-xs font-bold leading-tight text-slate-900 dark:text-white">
+                    {user.name || 'Signed in'}
+                  </div>
+                  <div className="mt-1 truncate text-[10px] font-mono leading-tight text-slate-500 dark:text-slate-400">
+                    {user.email || ''}
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => {
                     logout();
                     setMobileMenuOpen(false);
                   }}
-                  className="text-[11px] font-semibold text-rose-500 hover:text-rose-600 px-2 py-1 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
+                  className="shrink-0 rounded-lg px-2.5 py-2 text-[11px] font-semibold text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/30"
                 >
                   Sign Out
                 </button>
