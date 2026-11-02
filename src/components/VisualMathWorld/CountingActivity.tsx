@@ -180,19 +180,18 @@ export const CountingActivity: React.FC<CountingActivityProps> = () => {
           </div>
 
           {/* Interactive Collection Field */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-amber-500/[0.04] to-orange-500/[0.04] dark:from-white/[0.02] dark:to-white/[0.01] border-2 border-dashed border-amber-500/30 dark:border-white/10 min-h-[220px] flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-            {Array.from({ length: targetCount }).map((_, idx) => (
-              <VisualObject
-                key={idx}
-                type={assetType}
-                size="lg"
-                isCounted={countedIndices[idx] !== undefined}
-                countedNumber={countedIndices[idx]}
-                onClick={() => handleTapItem(idx)}
-                className="animate-in zoom-in-75 duration-300"
-              />
-            ))}
-          </div>
+<div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-amber-500/[0.04] to-orange-500/[0.04] dark:from-white/[0.02] dark:to-white/[0.01] border-2 border-dashed border-amber-500/30 dark:border-white/10 min-h-[220px] flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+  {Array.from({ length: targetCount }).map((_, idx) => (
+    <VisualObject
+      key={idx}
+      type={assetType}
+      size="lg"
+      isCounted={countedIndices[idx] !== undefined}
+      onClick={() => handleTapItem(idx)}
+      className="animate-in zoom-in-75 duration-300"
+    />
+  ))}
+</div>
 
           {/* Tally Progress Bar */}
           <div className="flex items-center justify-between px-3">
@@ -216,7 +215,7 @@ export const CountingActivity: React.FC<CountingActivityProps> = () => {
             <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-900 dark:text-amber-300 flex items-start gap-2">
               <Lightbulb className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
               <div>
-                <strong>Hint:</strong> Point your finger and count out loud: 1, 2, 3... Every time you tap an object, a number badge appears!
+                <strong>Hint:</strong> Point your finger and count out loud: 1, 2, 3... Every time you tap an object, it will be marked as counted!
               </div>
             </div>
           )}
