@@ -16,9 +16,14 @@ export const Footer: React.FC<FooterProps> = ({ t, onSelectTab, onOpenAbout }) =
           {/* Brand & One-line description */}
           <div className="max-w-md">
             <div className="flex items-center gap-2.5 mb-2.5">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#7957F5]/30 to-[#D94BCB]/20 border border-[#7957F5]/40 flex items-center justify-center text-[#7957F5] dark:text-white font-mono font-bold text-xs shadow-[0_0_10px_rgba(121,87,245,0.25)]">
-                ∑
-              </div>
+              <img
+                src="/Logo.png"
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                draggable={false}
+                className="h-8 w-10 shrink-0 object-contain drop-shadow-[0_0_8px_rgba(121,87,245,0.22)]"
+              />
               <span className="text-base font-bold tracking-tight text-slate-900 dark:text-[#F6F7FB]">
                 CalcAura
               </span>
