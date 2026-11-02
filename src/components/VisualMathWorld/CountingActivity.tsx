@@ -194,16 +194,7 @@ export const CountingActivity: React.FC<CountingActivityProps> = () => {
 </div>
 
           {/* Hint Button */}
-<div className="flex items-center justify-end px-3">
-  <button
-    onClick={() => setShowHint(true)}
-    className="text-xs text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
-  >
-    <Lightbulb className="w-3.5 h-3.5" />
-    <span>Need a hint?</span>
-  </button>
-</div>
-
+          <div className="flex items-center justify-end px-3">
             <button
               onClick={() => setShowHint(true)}
               className="text-xs text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
