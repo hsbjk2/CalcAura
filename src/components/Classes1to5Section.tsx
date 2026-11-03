@@ -21,10 +21,12 @@ import {
   XCircle,
   ChevronDown,
   ChevronUp,
+  ArrowRight,
 } from 'lucide-react';
 import { useI18n } from '../i18n/I18nContext.tsx';
 import { VisualActivityId } from './VisualMathWorld/VisualMathWorld.tsx';
 import { getCurriculumLearningContent } from '../data/juniorLearningModules.ts';
+import '../styles/curriculum.css';
 
 interface Classes1to5SectionProps {
   onOpenVisualMath?: (activityId?: VisualActivityId, classLevel?: number) => void;
@@ -625,6 +627,24 @@ const GRADE_CHAPTERS: Record<number, InteractiveChapter[]> = {
   ],
 };
 
+/* Decorative pictographs belong to the game pieces, not the page chrome.
+   Keep the lesson data typographic so headings and cards stay in the
+   industrial type system. */
+const stripPictographs = (value: string) =>
+  value
+    .replace(/[\p{Extended_Pictographic}\uFE0F\u200D]/gu, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
+Object.values(GRADE_CHAPTERS)
+  .flat()
+  .forEach((chapter) => {
+    chapter.title = stripPictographs(chapter.title);
+    chapter.themeBadge = stripPictographs(chapter.themeBadge);
+    chapter.animal = stripPictographs(chapter.animal);
+    chapter.toy = stripPictographs(chapter.toy);
+  });
+
 export const Classes1to5Section: React.FC<Classes1to5SectionProps> = ({
   onOpenVisualMath,
   onOpenTables,
@@ -682,120 +702,116 @@ export const Classes1to5Section: React.FC<Classes1to5SectionProps> = ({
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto font-inter">
-      {/* 🎪 TOY SHOP PLAYFUL HERO BANNER (Inspired by image_f7950b58.png) */}
-      <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-100/90 via-purple-50 to-pink-100/90 dark:from-[#1A1836] dark:via-[#19152B] dark:to-[#2A1733] border-2 border-indigo-200/80 dark:border-purple-800/40 p-6 sm:p-10 shadow-[0_12px_40px_rgba(99,102,241,0.12)]">
-        {/* Floating Playful Decors */}
-        <div className="absolute top-4 right-8 text-4xl sm:text-6xl animate-float-slow select-none opacity-90">
-          🎈
-        </div>
-        <div className="absolute top-1/2 right-32 text-3xl sm:text-5xl animate-bounce-gentle select-none opacity-80 hidden md:block">
-          🧸
-        </div>
-        <div className="absolute bottom-6 right-16 text-4xl sm:text-6xl animate-float-slow select-none opacity-90 hidden sm:block">
-          🚀
-        </div>
+      {/* Foundation hero: editorial paper with a toy-shop cabinet of objects. */}
+      <section className="kids-hero">
+        <span className="kids-hero__wash" aria-hidden="true" />
+        <span className="kids-hero__grid" aria-hidden="true" />
 
-        <div className="relative z-10 max-w-2xl space-y-4">
-          <div className="flex items-center gap-3 flex-wrap">
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 dark:bg-white/10 text-indigo-700 dark:text-indigo-300 font-bold text-xs uppercase tracking-wider shadow-xs border border-indigo-200/60 dark:border-white/10">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
-              <span>{t.kidsFoundationBadge || 'Foundation Mathematics & Toy Shop 🎪'}</span>
+        <div className="kids-hero__copy">
+          <div className="kids-hero__badges">
+            <span className="kids-hero__badge">
+              <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+              {t.kidsFoundationBadge || 'Foundation mathematics & toy shop'}
             </span>
 
-            {/* Stars Counter Badge */}
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-100/90 dark:bg-amber-950/60 border border-amber-300 text-amber-900 dark:text-amber-200 text-xs font-bold shadow-xs">
-              <Star className="w-4 h-4 text-amber-500 fill-amber-400 animate-spin-slow" />
-              <span>{stars} Stars Earned!</span>
-            </div>
+            <span className="kids-hero__stars">
+              <Star className="w-3.5 h-3.5" aria-hidden="true" />
+              {stars} stars earned
+            </span>
 
-            {/* Voice Sound Toggle */}
             <button
+              type="button"
               onClick={() => {
                 setSoundEnabled(!soundEnabled);
                 if (!soundEnabled) speak('Sound turned on!');
               }}
-              className="p-1.5 rounded-full bg-white/80 dark:bg-white/10 border border-indigo-200/60 dark:border-white/10 text-indigo-700 dark:text-indigo-300 hover:scale-105 transition-all cursor-pointer"
+              className="kids-hero__sound"
               title="Voice sound guidance"
+              aria-pressed={soundEnabled}
             >
-              {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-600" /> : <VolumeX className="w-4 h-4 text-slate-400" />}
+              {soundEnabled ? <Volume2 className="w-4 h-4" aria-hidden="true" /> : <VolumeX className="w-4 h-4" aria-hidden="true" />}
+              <span>{soundEnabled ? 'Voice on' : 'Voice off'}</span>
             </button>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
-            {t.kidsHeroTitle || 'Little Steps. Big Discoveries! 🎈'}
-          </h1>
-          <p className="text-sm sm:text-base md:text-lg text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
-            {t.kidsHeroSubtitle || 'Learn mathematics with friendly animals, blooming flowers, colorful toys, and playful interactive games!'}
+          <h1 className="kids-hero__title">{t.kidsHeroTitle || 'Little steps. Big discoveries.'}</h1>
+
+          <p className="kids-hero__lead">
+            {t.kidsHeroSubtitle ||
+              'Learn mathematics with friendly animals, blooming flowers, colourful toys and playful interactive games.'}
           </p>
 
-          <div className="flex flex-wrap items-center gap-3 pt-3">
+          <div className="kids-hero__actions">
             {onOpenVisualMath && (
               <button
+                type="button"
+                className="btn"
                 onClick={() => onOpenVisualMath(undefined, selectedGrade)}
-                className="px-5 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg hover:shadow-indigo-500/25 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
               >
-                <Sparkles className="w-4 h-4" />
-                <span>{t.kidsOpenVisual || 'Visual Math World 🎨'}</span>
+                <Sparkles className="w-4 h-4" aria-hidden="true" />
+                <span>{t.kidsOpenVisual || 'Visual Math World'}</span>
+                <ArrowRight className="w-4 h-4" aria-hidden="true" />
               </button>
             )}
             {onOpenTables && (
-              <button
-                onClick={onOpenTables}
-                className="px-5 py-3 rounded-2xl bg-white dark:bg-slate-800 border-2 border-indigo-200 dark:border-purple-800 text-indigo-900 dark:text-purple-200 font-bold text-xs uppercase tracking-wider hover:bg-indigo-50 dark:hover:bg-purple-950/40 transition-all flex items-center gap-2 shadow-sm hover:scale-[1.02] active:scale-95 cursor-pointer"
-              >
-                <Grid3X3 className="w-4 h-4 text-indigo-600" />
-                <span>{t.kidsOpenTables || 'Tables 1–30 Studio 🖩'}</span>
+              <button type="button" className="btn btn--ghost" onClick={onOpenTables}>
+                <Grid3X3 className="w-4 h-4" aria-hidden="true" />
+                <span>{t.kidsOpenTables || 'Tables 1–30 studio'}</span>
               </button>
             )}
             {onOpenPlayground && (
-              <button
-                onClick={onOpenPlayground}
-                className="px-5 py-3 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold text-xs uppercase tracking-wider hover:scale-[1.02] active:scale-95 shadow-md transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <span>{t.kidsOpenPlayground || 'Toy Playground 🧸'}</span>
+              <button type="button" className="btn btn--ghost" onClick={onOpenPlayground}>
+                <span>{t.kidsOpenPlayground || 'Toy playground'}</span>
               </button>
             )}
           </div>
         </div>
-      </div>
 
-      {/* 🎪 GRADE SELECTOR PILLS (Classes 1 to 5) */}
-      <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-3xl p-4 sm:p-5 shadow-sm space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
-            <span>{t.kidsSelectGrade || 'Choose Grade:'}</span>
-          </span>
-          <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
-            <Heart className="w-3.5 h-3.5 fill-current text-rose-500" /> Active: Class {selectedGrade}
+        <div className="kids-hero__shelf" aria-hidden="true">
+          <span className="kids-hero__shelf-item kids-hero__shelf-item--a">π</span>
+          <span className="kids-hero__shelf-item kids-hero__shelf-item--b">√</span>
+          <span className="kids-hero__shelf-item kids-hero__shelf-item--c">∑</span>
+          <span className="kids-hero__shelf-item kids-hero__shelf-item--d">×</span>
+          <span className="kids-hero__shelf-item kids-hero__shelf-item--e">÷</span>
+          <span className="kids-hero__shelf-base" />
+          <span className="kids-hero__shelf-note">1 · 2 · 3 · 4 · 5</span>
+        </div>
+      </section>
+
+      {/* Grade selector */}
+      <div className="kids-grades">
+        <div className="kids-grades__head">
+          <span>{t.kidsSelectGrade || 'Choose grade'}</span>
+          <span className="kids-grades__active">
+            <Heart className="w-3.5 h-3.5" aria-hidden="true" />
+            Active · Class {selectedGrade}
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+        <div className="kids-grades__grid" role="tablist" aria-label="Class selector">
           {[
-            { grade: 1, label: t.kidsClass1Title || 'Class 1: Friendly Animals 🐶', icon: '🐶' },
-            { grade: 2, label: t.kidsClass2Title || 'Class 2: Numbers & Garden 🌻', icon: '🌻' },
-            { grade: 3, label: t.kidsClass3Title || 'Class 3: Magic Shapes 🎁', icon: '🎁' },
-            { grade: 4, label: t.kidsClass4Title || 'Class 4: Multiplication 🚀', icon: '🚀' },
-            { grade: 5, label: t.kidsClass5Title || 'Class 5: Fractions & Time ⏱️', icon: '⏱️' },
+            { grade: 1, label: t.kidsClass1Title || 'Class 1: Friendly Animals', icon: '1' },
+            { grade: 2, label: t.kidsClass2Title || 'Class 2: Numbers & Garden', icon: '2' },
+            { grade: 3, label: t.kidsClass3Title || 'Class 3: Magic Shapes', icon: '3' },
+            { grade: 4, label: t.kidsClass4Title || 'Class 4: Multiplication', icon: '4' },
+            { grade: 5, label: t.kidsClass5Title || 'Class 5: Fractions & Time', icon: '5' },
           ].map((item) => {
             const isSelected = selectedGrade === item.grade;
             return (
               <button
                 key={item.grade}
+                role="tab"
+                aria-selected={isSelected}
                 onClick={() => {
                   setSelectedGrade(item.grade);
                   const firstChId = GRADE_CHAPTERS[item.grade]?.[0]?.id || 'g1-ch1';
                   setActiveInteractiveChapter(firstChId);
                   speak(`Class ${item.grade} selected!`);
                 }}
-                className={`p-3 rounded-2xl text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer border-2 ${
-                  isSelected
-                    ? 'bg-gradient-to-b from-indigo-500 to-purple-600 text-white border-indigo-400 shadow-md scale-105'
-                    : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-300 hover:bg-indigo-50/60 dark:hover:bg-slate-800'
-                }`}
+                className={`kids-grade ${isSelected ? 'is-active' : ''}`}
               >
-                <span className="text-2xl animate-wiggle-toy">{item.icon}</span>
-                <span className="text-center font-bold">{item.label.split(':')[0]}</span>
+                <span className="kids-grade__icon">{item.icon}</span>
+                <span className="kids-grade__label">{item.label.split(':')[0]}</span>
               </button>
             );
           })}
@@ -803,20 +819,15 @@ export const Classes1to5Section: React.FC<Classes1to5SectionProps> = ({
       </div>
 
 
-      {/* 🎪 REAL-WORLD INTERACTIVE CHAPTERS & TOY SHOP CARDS */}
+      {/* Real-world interactive chapters and toy-shop cards */}
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-              Class {selectedGrade} Playful Curriculum & Toy Adventures
-            </h2>
-            <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
-              Interactive Mode
-            </span>
+        <div className="kids-chapter-head">
+          <div className="kids-chapter-head__left">
+            <span className="kids-chapter-head__dot" aria-hidden="true" />
+            <h2>Class {selectedGrade} playful curriculum</h2>
+            <span className="kids-chapter-head__tag">Interactive mode</span>
           </div>
-          <span className="text-xs font-semibold text-slate-500">
-            {currentChapters.length} Fun Activities
-          </span>
+          <span className="kids-chapter-head__count">{currentChapters.length} activities</span>
         </div>
 
         {/* Chapters Cards Grid */}
@@ -844,7 +855,7 @@ export const Classes1to5Section: React.FC<Classes1to5SectionProps> = ({
                   <div className="space-y-1">
                     <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center justify-between">
                       <span>{ch.title}</span>
-                      <span className="text-xl">{ch.animal.split(' ')[0]}</span>
+                      
                     </h3>
                     <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                       {ch.subtitle}
@@ -883,11 +894,11 @@ export const Classes1to5Section: React.FC<Classes1to5SectionProps> = ({
                         {/* Subtab Navigation */}
                         <div className="flex items-center gap-1 overflow-x-auto thin-scrollbar pb-1 border-b border-slate-100 dark:border-white/10 text-[11px] font-bold">
                           {[
-                            { id: 'activity', label: '🎮 Activity' },
-                            { id: 'concept', label: '📘 Concept & Outcomes' },
-                            { id: 'example', label: '🎨 Example' },
-                            { id: 'practice', label: '✍️ Practice' },
-                            { id: 'quiz', label: '📝 Quiz' },
+                            { id: 'activity', label: 'Activity' },
+                            { id: 'concept', label: 'Concept & Outcomes' },
+                            { id: 'example', label: 'Example' },
+                            { id: 'practice', label: 'Practice' },
+                            { id: 'quiz', label: 'Quiz' },
                           ].map((tItem) => (
                             <button
                               key={tItem.id}
@@ -908,7 +919,7 @@ export const Classes1to5Section: React.FC<Classes1to5SectionProps> = ({
                           <div className="space-y-2.5 text-xs text-slate-700 dark:text-slate-300 py-1">
                             <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 space-y-1">
                               <span className="font-bold text-indigo-700 dark:text-indigo-300 block">
-                                🎯 Learning Objective:
+                                Learning Objective:
                               </span>
                               <p className="leading-relaxed">{curr.learningObjective}</p>
                             </div>
@@ -968,7 +979,7 @@ export const Classes1to5Section: React.FC<Classes1to5SectionProps> = ({
                             </div>
                             {isHintVisible && (
                               <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/30 text-amber-800 dark:text-amber-200 text-[11px]">
-                                💡 Hint: {curr.guidedPractice.hint}
+                                Hint: {curr.guidedPractice.hint}
                               </div>
                             )}
                             <div className="p-2 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-[11px]">
@@ -1429,7 +1440,7 @@ export const Classes1to5Section: React.FC<Classes1to5SectionProps> = ({
                         : 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 hover:bg-slate-100'
                     }`}
                   >
-                    <span>{isActive ? 'Close Game ✕' : 'Play Activity 🎮'}</span>
+                    <span>{isActive ? 'Close Game ✕' : 'Play Activity'}</span>
                   </button>
 
                   {onOpenVisualMath && (

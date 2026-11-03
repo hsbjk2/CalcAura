@@ -67,17 +67,22 @@ export const ScrollProgressBar: React.FC = () => {
       className="fixed left-0 right-0 z-40 pointer-events-none transition-[top] duration-150"
       style={{ top: `${topOffset}px` }}
       role="progressbar"
-      aria-label="Homepage scroll progress"
+      aria-label="Page scroll progress"
       aria-valuenow={Math.round(scaleX * 100)}
       aria-valuemin={0}
       aria-valuemax={100}
     >
       {/* Background Track: subtle translucent track */}
-      <div className="w-full h-[2.5px] bg-slate-300/30 dark:bg-white/[0.06] backdrop-blur-xs overflow-hidden">
+      <div
+        className="w-full h-[2.5px] overflow-hidden"
+        style={{ background: 'color-mix(in srgb, var(--ink) 12%, transparent)' }}
+      >
         {/* Hairline indicator using scaleX and transformOrigin */}
         <div
-          className="h-full w-full bg-gradient-to-r from-[#7957F5] via-[#8B5CF6] to-[#D94BCB] shadow-[0_0_8px_rgba(121,87,245,0.8)] will-change-transform"
+          className="h-full w-full will-change-transform"
           style={{
+            background: 'linear-gradient(90deg, var(--accent) 0%, var(--accent-strong) 100%)',
+            boxShadow: '0 0 10px color-mix(in srgb, var(--accent) 55%, transparent)',
             transform: `scaleX(${scaleX})`,
             transformOrigin: '0% 50%',
             transition: 'transform 60ms linear',

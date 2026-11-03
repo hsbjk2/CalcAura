@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { MathView } from './MathView.tsx';
+import { Tilt3D, Reveal, GlassPanel, Aurora } from './ui/Depth.tsx';
+import '../styles/practice.css';
 import {
   sampleRandomQuestions,
   PracticeQuestion,
@@ -12,29 +14,21 @@ import {
   CheckCircle2,
   XCircle,
   RotateCw,
-  Award,
   ChevronLeft,
   ChevronRight,
   Clock,
   Sparkles,
   RefreshCw,
-  BookOpen,
-  GraduationCap,
   Layers,
   ArrowRight,
   Check,
   AlertCircle,
   Play,
   Timer,
-  Zap,
   RotateCcw,
   ShieldCheck,
-  Flame,
   Bookmark,
   BookmarkCheck,
-  HelpCircle,
-  ListFilter,
-  BarChart3,
   History,
 } from 'lucide-react';
 import {
@@ -61,6 +55,61 @@ export interface PracticeWorksheetProps {
   onNavigateToHistory?: () => void;
   onNavigateToAuth?: () => void;
 }
+
+/* A quiet SVG ring used for the live answered count and the final score. */
+const ProgressRing: React.FC<{
+  value: number;
+  size?: number;
+  label: string;
+  caption?: string;
+}> = ({ value, size = 92, label, caption }) => {
+  const clamped = Math.max(0, Math.min(100, Math.round(value)));
+  const radius = 34;
+  const circumference = 2 * Math.PI * radius;
+  const dash = (clamped / 100) * circumference;
+
+  return (
+    <div
+      className={`practice-ring ${size >= 120 ? 'practice-ring--lg' : ''}`}
+      style={{ width: size, height: size }}
+    >
+      <svg viewBox="0 0 80 80" role="img" aria-label={`${label}${caption ? ` ${caption}` : ''}, ${clamped}%`}>
+        <circle className="practice-ring__track" cx="40" cy="40" r={radius} />
+        <circle
+          className="practice-ring__value"
+          cx="40"
+          cy="40"
+          r={radius}
+          strokeDasharray={`${dash} ${circumference}`}
+        />
+      </svg>
+      <span className="practice-ring__center">
+        <span className="practice-ring__num">{label}</span>
+        {caption && <span className="practice-ring__cap">{caption}</span>}
+      </span>
+    </div>
+  );
+};
+
+const STAGE_ORDER = ['all', '6th', '7th', '8th', '9th', '10th', '12th', 'engineering', 'graduation'] as const;
+
+const TIME_OPTIONS = [
+  { label: '5 min · sprint', val: 5 },
+  { label: '10 min · standard', val: 10 },
+  { label: '15 min · full', val: 15 },
+  { label: 'Untimed', val: 0 },
+];
+
+const STAGE_LABELS: Record<AcademicStage, string> = {
+  '6th': 'Class 6th',
+  '7th': 'Class 7th',
+  '8th': 'Class 8th',
+  '9th': 'Class 9th',
+  '10th': 'Class 10th',
+  '12th': 'Class 12th',
+  engineering: 'Engineering',
+  graduation: 'Graduation',
+};
 
 export const PracticeWorksheet: React.FC<PracticeWorksheetProps> = ({
   initialAttemptToReview,
@@ -279,6 +328,9 @@ export const PracticeWorksheet: React.FC<PracticeWorksheetProps> = ({
       description: 'Practice assessment and mathematics worksheet.',
     };
   const stagePoolCount = getQuestionCountByStage(selectedStage);
+  const accuracyPct = questions.length ? Math.round((score / questions.length) * 100) : 0;
+  const answeredPct = questions.length ? (answeredCount / questions.length) * 100 : 0;
+  const markedCount = Object.values(markedForReview).filter(Boolean).length;
 
   // Trigger submission confirmation check
   const handleRequestSubmit = () => {
@@ -373,109 +425,78 @@ export const PracticeWorksheet: React.FC<PracticeWorksheetProps> = ({
 
   const OPTION_LETTERS = ['A', 'B', 'C', 'D'];
 
-  const stageBadges: Record<AcademicStage, { label: string; bg: string; text: string; border: string }> = {
-    '6th': {
-      label: 'Class 6th',
-      bg: 'bg-teal-500/10 dark:bg-teal-500/20',
-      text: 'text-teal-600 dark:text-teal-400',
-      border: 'border-teal-500/30',
-    },
-    '7th': {
-      label: 'Class 7th',
-      bg: 'bg-emerald-500/10 dark:bg-emerald-500/20',
-      text: 'text-emerald-600 dark:text-emerald-400',
-      border: 'border-emerald-500/30',
-    },
-    '8th': {
-      label: 'Class 8th',
-      bg: 'bg-indigo-500/10 dark:bg-indigo-500/20',
-      text: 'text-indigo-600 dark:text-indigo-400',
-      border: 'border-indigo-500/30',
-    },
-    '9th': {
-      label: 'Class 9th',
-      bg: 'bg-cyan-500/10 dark:bg-cyan-500/20',
-      text: 'text-cyan-600 dark:text-cyan-400',
-      border: 'border-cyan-500/30',
-    },
-    '10th': {
-      label: 'Class 10th',
-      bg: 'bg-blue-500/10 dark:bg-blue-500/20',
-      text: 'text-blue-600 dark:text-blue-400',
-      border: 'border-blue-500/30',
-    },
-    '12th': {
-      label: 'Class 12th',
-      bg: 'bg-purple-500/10 dark:bg-purple-500/20',
-      text: 'text-purple-600 dark:text-purple-400',
-      border: 'border-purple-500/30',
-    },
-    engineering: {
-      label: 'Engineering',
-      bg: 'bg-amber-500/10 dark:bg-amber-500/20',
-      text: 'text-amber-600 dark:text-amber-400',
-      border: 'border-amber-500/30',
-    },
-    graduation: {
-      label: 'Graduation',
-      bg: 'bg-emerald-500/10 dark:bg-emerald-500/20',
-      text: 'text-emerald-600 dark:text-emerald-400',
-      border: 'border-emerald-500/30',
-    },
-  };
-
   const isLowTime = timeLimitMinutes > 0 && remainingSeconds < 60;
+  const reviewFilters = [
+    { id: 'all' as const, label: `All (${questions.length})` },
+    { id: 'incorrect' as const, label: `Missed (${questions.length - score})` },
+    { id: 'correct' as const, label: `Correct (${score})` },
+  ];
 
   return (
-    <div id="practice-worksheet-root" className="w-full max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 transition-all">
+    <div id="practice-worksheet-root" className="practice-root">
       {/* ========================================================
           CONFIRMATION MODAL BEFORE FINAL SUBMISSION
           ======================================================== */}
       {showSubmitConfirmModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="w-full max-w-md bg-white dark:bg-[#111321] rounded-3xl border border-slate-200 dark:border-white/10 shadow-2xl p-6 space-y-5 animate-in zoom-in-95">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                <AlertCircle className="w-6 h-6" />
-              </div>
+        <div
+          className="practice-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="practice-submit-title"
+        >
+          <div className="practice-modal__panel">
+            <div className="practice-modal__head">
+              <span className="practice-modal__icon" aria-hidden="true">
+                <AlertCircle />
+              </span>
               <div>
-                <h4 className="text-lg font-bold text-slate-900 dark:text-white">
-                  Unanswered Questions
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Confirmation required before grading
-                </p>
+                <h4 id="practice-submit-title">Unanswered questions</h4>
+                <p>Confirmation required before grading</p>
               </div>
             </div>
 
-            <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-              You have <strong className="text-amber-600 dark:text-amber-400 font-bold">{unansweredCount}</strong> unanswered question{unansweredCount > 1 ? 's' : ''} out of {questions.length}. Any unattempted questions will receive 0 marks.
+            <p className="practice-modal__copy">
+              You have <strong>{unansweredCount}</strong> unanswered question
+              {unansweredCount > 1 ? 's' : ''} out of {questions.length}. Anything left blank is
+              marked zero, and the proofs are revealed on submission.
             </p>
 
-            <div className="p-3 bg-slate-100 dark:bg-white/[0.04] rounded-xl text-xs font-mono text-slate-600 dark:text-slate-400 flex items-center justify-between">
-              <span>Attempted: <strong>{answeredCount}</strong></span>
-              <span>Unanswered: <strong>{unansweredCount}</strong></span>
-              <span>Marked for Review: <strong>{Object.values(markedForReview).filter(Boolean).length}</strong></span>
-            </div>
+            <dl className="practice-modal__stats">
+              <div>
+                <dt>Attempted</dt>
+                <dd>{answeredCount}</dd>
+              </div>
+              <div>
+                <dt>Unanswered</dt>
+                <dd>{unansweredCount}</dd>
+              </div>
+              <div>
+                <dt>Marked</dt>
+                <dd>{markedCount}</dd>
+              </div>
+            </dl>
 
-            <div className="flex items-center justify-end gap-3 pt-2">
+            <div className="practice-modal__actions">
               <button
+                type="button"
+                className="practice-btn practice-btn--ghost practice-btn--sm"
                 onClick={() => {
                   setShowSubmitConfirmModal(false);
                   // Find first unanswered question
                   const firstUnans = questions.findIndex((_, idx) => userAnswers[idx] === undefined);
                   if (firstUnans !== -1) setCurrentIdx(firstUnans);
                 }}
-                className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-white/10 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
               >
-                Review Unanswered
+                Review unanswered
               </button>
 
               <button
+                type="button"
+                className="practice-btn practice-btn--sm"
                 onClick={finishTestSubmission}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#7957F5] to-[#D94BCB] hover:brightness-110 active:scale-95 text-white text-xs font-bold shadow-md transition-all cursor-pointer"
               >
-                Confirm & Submit Test
+                <Check />
+                Confirm &amp; submit
               </button>
             </div>
           </div>
@@ -483,765 +504,800 @@ export const PracticeWorksheet: React.FC<PracticeWorksheetProps> = ({
       )}
 
       {/* ========================================================
-          1. PRE-TEST COUNTDOWN ANIMATION SCREEN (3... 2... 1... GO!)
+          1. PRE-TEST COUNTDOWN (3... 2... 1... GO!)
           ======================================================== */}
       {testStatus === 'countdown' && (
-        <div className="min-h-[420px] flex flex-col items-center justify-center p-8 text-center bg-white dark:bg-[#111321] rounded-3xl border border-slate-200 dark:border-white/10 shadow-2xl animate-in zoom-in-95 duration-200">
-          <div className="relative mb-6">
-            <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-gradient-to-tr from-[#7957F5] to-[#D94BCB] p-1 flex items-center justify-center shadow-[0_0_40px_rgba(121,87,245,0.4)] animate-pulse">
-              <div className="w-full h-full rounded-full bg-white dark:bg-[#0B0D16] flex items-center justify-center">
-                <span className="text-5xl sm:text-7xl font-black font-mono bg-gradient-to-r from-[#7957F5] to-[#D94BCB] bg-clip-text text-transparent">
-                  {preCountdown > 0 ? preCountdown : 'GO!'}
-                </span>
-              </div>
+        <Reveal>
+          <GlassPanel className="practice-countdown">
+            <span className="practice-kicker">Zero-leak sitting</span>
+
+            <div className="practice-countdown__dial">
+              <span key={preCountdown} className="practice-countdown__num">
+                {preCountdown > 0 ? preCountdown : 'GO'}
+              </span>
             </div>
-          </div>
 
-          <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mb-2">
-            {preCountdown > 0 ? 'Get Ready for Examination' : 'Starting Now!'}
-          </h3>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-md">
-            Stage: <strong className="text-[#7957F5]">{stageConfig.label}</strong> · 6 Questions ·{' '}
-            {timeLimitMinutes > 0 ? `${timeLimitMinutes} Minutes Timer` : 'Untimed'}
-          </p>
+            <h2 className="practice-title practice-title--md">
+              {preCountdown > 0 ? 'The sheet is about to open.' : 'Starting now.'}
+            </h2>
+            <p className="practice-countdown__meta">
+              Stage <strong>{stageConfig.label}</strong> · {questions.length} questions ·{' '}
+              {timeLimitMinutes > 0 ? `${timeLimitMinutes}-minute clock` : 'Untimed'}
+            </p>
 
-          <button
-            onClick={() => {
-              setTestStatus('in-progress');
-              setRemainingSeconds(timeLimitMinutes > 0 ? timeLimitMinutes * 60 : 0);
-              setTimeSpentSeconds(0);
-            }}
-            className="mt-6 text-xs text-slate-500 hover:text-slate-800 dark:hover:text-white underline cursor-pointer"
-          >
-            Skip Countdown
-          </button>
-        </div>
+            <button
+              type="button"
+              className="practice-link"
+              onClick={() => {
+                setTestStatus('in-progress');
+                setRemainingSeconds(timeLimitMinutes > 0 ? timeLimitMinutes * 60 : 0);
+                setTimeSpentSeconds(0);
+              }}
+            >
+              Skip the countdown
+            </button>
+          </GlassPanel>
+        </Reveal>
       )}
 
       {/* ========================================================
-          2. PRE-TEST LOBBY SCREEN (OPTION TO START TEST)
+          2. PRE-TEST LOBBY
           ======================================================== */}
       {testStatus === 'idle' && (
-        <div className="space-y-6 animate-in fade-in duration-200">
-          {/* Header Card */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#111321] border border-slate-200 dark:border-white/10 shadow-md">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-md bg-[#7957F5]/10 dark:bg-[#7957F5]/20 border border-[#7957F5]/30 text-[#7957F5] dark:text-[#D94BCB] text-[11px] font-mono font-bold flex items-center gap-1">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    Automated Evaluation Engine
+        <div className="practice-lobby">
+          <Reveal>
+            <GlassPanel className="practice-hero">
+              <Aurora className="practice-hero__aurora" />
+
+              <div className="practice-hero__copy">
+                <div className="practice-hero__tags">
+                  <span className="practice-chip">
+                    <Sparkles />
+                    Zero-leak evaluation
                   </span>
-                  <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[11px] font-mono font-semibold">
-                    Backup Pool: {PRACTICE_QUESTIONS_BANK.length} Questions
+                  <span className="practice-chip">
+                    <ShieldCheck />
+                    {PRACTICE_QUESTIONS_BANK.length} verified questions
                   </span>
                 </div>
 
-                <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
-                  <GraduationCap className="w-8 h-8 text-[#7957F5]" />
-                  <span>Mathematics Examination Portal</span>
+                <h2 className="practice-title">
+                  Six questions,
+                  <br />
+                  no answers in sight.
                 </h2>
 
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-[#A6A9B8] max-w-2xl leading-relaxed">
-                  Test your mathematical problem solving under realistic exam conditions. Correct answers and step-by-step proofs remain strictly hidden during the test until final confirmed submission.
+                <p className="practice-lead">
+                  A real sitting for Class 6 through graduation mathematics. Set the stage and the
+                  clock, submit once, then read every worked proof.
                 </p>
+
+                <div className="practice-hero__actions">
+                  <button type="button" className="practice-btn" onClick={handleStartTest}>
+                    <Play />
+                    Start the sheet
+                    <ArrowRight />
+                  </button>
+                  <a className="practice-btn practice-btn--ghost" href="#practice-how">
+                    How practice works
+                  </a>
+                </div>
+
+                <dl className="practice-hero__meta">
+                  <div>
+                    <dt>Sheet</dt>
+                    <dd>{questions.length} questions</dd>
+                  </div>
+                  <div>
+                    <dt>Stage</dt>
+                    <dd>{stageConfig.shortLabel}</dd>
+                  </div>
+                  <div>
+                    <dt>Clock</dt>
+                    <dd>{timeLimitMinutes > 0 ? `${timeLimitMinutes} minutes` : 'Untimed'}</dd>
+                  </div>
+                  <div>
+                    <dt>Proofs</dt>
+                    <dd>After submission</dd>
+                  </div>
+                </dl>
               </div>
 
-              {/* Big Start Test CTA Button */}
-              <div className="shrink-0 flex flex-col items-center sm:items-end gap-2">
-                <button
-                  onClick={handleStartTest}
-                  className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-[#7957F5] via-[#9E46EF] to-[#D94BCB] hover:brightness-110 active:scale-95 text-white text-base font-extrabold shadow-[0_0_25px_rgba(121,87,245,0.4)] cursor-pointer transition-all flex items-center justify-center gap-3 group"
-                >
-                  <Play className="w-5 h-5 fill-white group-hover:scale-110 transition-transform" />
-                  <span>Start Test (6 Questions)</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </button>
-                <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                  <Timer className="w-3.5 h-3.5 text-sky-500" />
-                  Countdown starts immediately on click
-                </span>
+              {/* Calm 3D "worked page" */}
+              <div className="depth-stage practice-hero__stage" aria-hidden="true">
+                <span className="practice-hero__ring" />
+                <Tilt3D className="practice-page" strength={7}>
+                  <div className="practice-page__sheet practice-page__sheet--back" />
+                  <div className="practice-page__sheet practice-page__sheet--mid" />
+
+                  <div className="practice-page__sheet practice-page__sheet--main">
+                    <div className="practice-page__grid" />
+
+                    <div className="practice-page__head">
+                      <span>Sheet 08 · Practice</span>
+                      <strong>CalcAura</strong>
+                    </div>
+
+                    <div className="practice-page__line">
+                      <span className="practice-page__num">01</span>
+                      <span>x² − 5x + 6 = 0</span>
+                    </div>
+                    <div className="practice-page__line">
+                      <span className="practice-page__num">02</span>
+                      <span>(x − 2)(x − 3) = 0</span>
+                    </div>
+                    <div className="practice-page__rule" />
+                    <div className="practice-page__line">
+                      <span className="practice-page__num">03</span>
+                      <span>∫ 2x dx = x² + C</span>
+                    </div>
+                    <div className="practice-page__line">
+                      <span className="practice-page__num">04</span>
+                      <span>sin²θ + cos²θ = 1</span>
+                    </div>
+
+                    <span className="practice-page__answer">
+                      <Check />
+                      x = 2, 3 · marked
+                    </span>
+                  </div>
+
+                  <span className="practice-page__glyph practice-page__glyph--sum">∑</span>
+                  <span className="practice-page__glyph practice-page__glyph--pi">π</span>
+                </Tilt3D>
               </div>
-            </div>
+            </GlassPanel>
+          </Reveal>
 
-            {/* Academic Stage Selector */}
-            <div className="mt-6 pt-5 border-t border-slate-100 dark:border-white/[0.06] space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-[#7957F5]" />
-                  Select Stage to Solve:
-                </span>
-                <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
-                  Pool: <strong>{stagePoolCount}</strong> verified questions
-                </span>
+          <Reveal delay={90}>
+            <GlassPanel className="practice-setup">
+              <div className="practice-setup__head">
+                <div>
+                  <span className="practice-kicker">Sheet setup</span>
+                  <h3 className="practice-title practice-title--sm">
+                    Choose the paper, then the clock.
+                  </h3>
+                </div>
+                <span className="practice-chip">{stagePoolCount} in this pool</span>
               </div>
 
-              {/* Stage Pills */}
-              <div className="flex items-center gap-2 overflow-x-auto thin-scrollbar pb-1 max-w-full">
-                {(['all', '6th', '7th', '8th', '9th', '10th', '12th', 'engineering', 'graduation'] as const).map((stageKey) => {
-                  const cfg = STAGES_CONFIG[stageKey];
-                  const isSelected = selectedStage === stageKey;
-                  const count = getQuestionCountByStage(stageKey);
+              <div className="practice-setup__group">
+                <span className="practice-setup__label">
+                  <Layers />
+                  Academic stage
+                </span>
+                <div className="practice-pills" role="group" aria-label="Academic stage">
+                  {STAGE_ORDER.map((stageKey) => {
+                    const cfg = STAGES_CONFIG[stageKey];
+                    const isSelected = selectedStage === stageKey;
+                    const count = getQuestionCountByStage(stageKey);
 
-                  return (
-                    <button
-                      key={stageKey}
-                      onClick={() => handleSelectStage(stageKey)}
-                      className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
-                        isSelected
-                          ? 'bg-gradient-to-r from-[#7957F5] to-[#D94BCB] text-white shadow-md shadow-[#7957F5]/25 font-bold scale-[1.02]'
-                          : 'bg-slate-100 dark:bg-white/[0.05] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/[0.09] border border-slate-200/70 dark:border-white/10'
-                      }`}
-                    >
-                      <span>{cfg.label}</span>
-                      <span
-                        className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
-                          isSelected
-                            ? 'bg-white/20 text-white'
-                            : 'bg-slate-200/80 dark:bg-white/10 text-slate-600 dark:text-slate-400'
-                        }`}
+                    return (
+                      <button
+                        key={stageKey}
+                        type="button"
+                        onClick={() => handleSelectStage(stageKey)}
+                        aria-pressed={isSelected}
+                        className={`practice-pill ${isSelected ? 'is-active' : ''}`}
                       >
-                        {count} Qs
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 italic">
-                {stageConfig.description}
-              </p>
-            </div>
-
-            {/* Countdown Duration Configuration */}
-            <div className="mt-5 pt-4 border-t border-slate-100 dark:border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300">
-                <Clock className="w-4 h-4 text-sky-500" />
-                <span>Countdown Timer Limit:</span>
+                        <span>{cfg.shortLabel}</span>
+                        <span className="practice-pill__count">{count}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="practice-setup__hint">{stageConfig.description}</p>
               </div>
 
-              <div className="flex items-center gap-2 flex-wrap">
-                {[
-                  { label: '5 Mins (Sprint)', val: 5 },
-                  { label: '10 Mins (Standard)', val: 10 },
-                  { label: '15 Mins (Comprehensive)', val: 15 },
-                  { label: 'Untimed', val: 0 },
-                ].map((tOpt) => {
-                  const isSelected = timeLimitMinutes === tOpt.val;
-                  return (
-                    <button
-                      key={tOpt.val}
-                      onClick={() => setTimeLimitMinutes(tOpt.val)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-sky-600 text-white shadow-xs font-bold'
-                          : 'bg-slate-100 dark:bg-white/[0.05] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10'
-                      }`}
-                    >
-                      {tOpt.label}
-                    </button>
-                  );
-                })}
+              <div className="practice-setup__row">
+                <span className="practice-setup__label">
+                  <Clock />
+                  Clock limit
+                </span>
+                <div className="practice-pills practice-pills--time" role="group" aria-label="Clock limit">
+                  {TIME_OPTIONS.map((tOpt) => {
+                    const isSelected = timeLimitMinutes === tOpt.val;
+                    return (
+                      <button
+                        key={tOpt.val}
+                        type="button"
+                        onClick={() => setTimeLimitMinutes(tOpt.val)}
+                        aria-pressed={isSelected}
+                        className={`practice-pill practice-pill--time ${isSelected ? 'is-active' : ''}`}
+                      >
+                        {tOpt.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          </div>
+            </GlassPanel>
+          </Reveal>
 
-          {/* Test Structure & Instructions Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#111321] border border-slate-200 dark:border-white/10 space-y-2">
-              <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
-                1
+          <Reveal delay={150}>
+            <section className="practice-how" id="practice-how" aria-labelledby="practice-how-title">
+              <div className="practice-how__head">
+                <span className="practice-kicker">How practice works</span>
+                <h3 id="practice-how-title" className="practice-title practice-title--sm">
+                  A real sitting, then the proofs.
+                </h3>
               </div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                Strict Zero-Leak Mode
-              </h4>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                No answers, hints, or solution steps are revealed during the test. Change answers anytime before submission.
-              </p>
-            </div>
 
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#111321] border border-slate-200 dark:border-white/10 space-y-2">
-              <div className="w-9 h-9 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold">
-                2
-              </div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                Mark for Review & Palette
-              </h4>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Flag questions to revisit later. Unanswered, answered, and review states are distinctly color-coded.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#111321] border border-slate-200 dark:border-white/10 space-y-2">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
-                3
-              </div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                Detailed Review & Retry
-              </h4>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Full step proofs, formula rules, mistake analysis, and instant retry mode for incorrect questions upon submission.
-              </p>
-            </div>
-          </div>
+              <ol className="practice-how__list">
+                <li>
+                  <span className="practice-how__num">01</span>
+                  <div>
+                    <h4>Zero leaks while you sit</h4>
+                    <p>
+                      No hints, ticks or worked steps until you submit. Every choice can be changed
+                      while the clock runs.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <span className="practice-how__num">02</span>
+                  <div>
+                    <h4>Mark what needs another look</h4>
+                    <p>
+                      Flag a question for review, jump with the palette, and see answered and
+                      untouched questions at a glance.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <span className="practice-how__num">03</span>
+                  <div>
+                    <h4>Read the working, then retry</h4>
+                    <p>
+                      After submission every question opens its own proof, and mistakes can be
+                      retried as a shorter sheet.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+            </section>
+          </Reveal>
         </div>
       )}
 
       {/* ========================================================
-          3. ACTIVE SOLVER VIEW (SOLVING THE QUESTIONS)
+          3. ACTIVE SOLVER
           ======================================================== */}
       {testStatus === 'in-progress' && (
-        <div className="space-y-5 animate-in fade-in duration-200">
-          {/* Top Test Control Bar */}
-          <div className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#111321] border border-slate-200 dark:border-white/10 shadow-xs flex flex-wrap items-center justify-between gap-3">
-            {/* Quick-Jump Question Palette */}
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-              {questions.map((_, idx) => {
-                const isCurrent = idx === currentIdx;
-                const isAnswered = userAnswers[idx] !== undefined;
-                const isReview = markedForReview[idx];
+        <div className="practice-active">
+          <Reveal>
+            <GlassPanel className="practice-toolbar">
+              <div className="practice-toolbar__top">
+                <div className="practice-toolbar__status">
+                  <span className="practice-chip practice-chip--accent">
+                    {currentIdx + 1} / {questions.length}
+                  </span>
+                  <span className="practice-toolbar__topic">{currentQ?.topic}</span>
+                </div>
 
-                let btnClass = 'bg-slate-100 dark:bg-white/[0.05] border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10';
+                <div className="practice-toolbar__actions">
+                  <div className="practice-toolbar__progress">
+                    <ProgressRing
+                      value={answeredPct}
+                      size={52}
+                      label={`${answeredCount}/${questions.length}`}
+                      caption="done"
+                    />
+                    <span className="practice-toolbar__progress-text">
+                      <span>{unansweredCount}</span>
+                      <span>left</span>
+                    </span>
+                  </div>
 
-                if (isCurrent) {
-                  btnClass = 'bg-gradient-to-r from-[#7957F5] to-[#D94BCB] text-white shadow-md shadow-[#7957F5]/30 ring-2 ring-[#7957F5]/40 font-bold';
-                } else if (isReview) {
-                  btnClass = 'bg-amber-500/15 border-amber-500/60 text-amber-700 dark:text-amber-300 font-bold';
-                } else if (isAnswered) {
-                  btnClass = 'bg-sky-500/15 border-sky-500/50 text-sky-700 dark:text-sky-300 font-bold';
-                }
-
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentIdx(idx)}
-                    className={`relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl font-mono text-xs transition-all cursor-pointer flex items-center justify-center border ${btnClass}`}
-                    title={`Question ${idx + 1}${isAnswered ? ' (Answered)' : ' (Unanswered)'}${isReview ? ' [Marked for Review]' : ''}`}
+                  <span
+                    className={`practice-timer ${isLowTime ? 'is-low' : ''}`}
+                    title={timeLimitMinutes > 0 ? 'Remaining time' : 'Elapsed time'}
                   >
-                    <span>{idx + 1}</span>
-                    {isReview ? (
-                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-500 text-[8px] flex items-center justify-center text-white">
-                        ★
-                      </span>
-                    ) : isAnswered ? (
-                      <span className="absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full bg-sky-500" />
-                    ) : null}
+                    <Timer />
+                    <span>
+                      {timeLimitMinutes > 0
+                        ? formatTime(remainingSeconds)
+                        : formatTime(timeSpentSeconds)}
+                    </span>
+                  </span>
+
+                  <button
+                    type="button"
+                    className="practice-btn practice-btn--sm"
+                    onClick={handleRequestSubmit}
+                  >
+                    <Check />
+                    Submit ({answeredCount}/{questions.length})
                   </button>
-                );
-              })}
-            </div>
+                </div>
+              </div>
 
-            {/* Countdown Clock Display & Submit Button */}
-            <div className="flex items-center gap-3">
               <div
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl border font-mono text-xs font-bold transition-all ${
-                  isLowTime
-                    ? 'bg-rose-500/15 border-rose-500 text-rose-600 dark:text-rose-400 animate-pulse'
-                    : 'bg-slate-100 dark:bg-white/[0.05] border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-200'
-                }`}
-                title={timeLimitMinutes > 0 ? 'Remaining Time' : 'Elapsed Time'}
+                className="practice-rail"
+                role="progressbar"
+                aria-label="Answered questions"
+                aria-valuemin={0}
+                aria-valuemax={questions.length}
+                aria-valuenow={answeredCount}
               >
-                <Timer className={`w-4 h-4 ${isLowTime ? 'text-rose-500' : 'text-sky-500'}`} />
-                <span>
-                  {timeLimitMinutes > 0
-                    ? `Remaining: ${formatTime(remainingSeconds)}`
-                    : `Time: ${formatTime(timeSpentSeconds)}`}
-                </span>
+                {questions.map((_, idx) => {
+                  const isCurrent = idx === currentIdx;
+                  const isAnswered = userAnswers[idx] !== undefined;
+                  return (
+                    <span
+                      key={idx}
+                      className={`practice-rail__seg ${isAnswered ? 'is-answered' : ''} ${
+                        isCurrent ? 'is-current' : ''
+                      }`}
+                    />
+                  );
+                })}
               </div>
 
-              {/* Submit / Finish Button */}
-              <button
-                onClick={handleRequestSubmit}
-                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#7957F5] to-[#D94BCB] hover:brightness-110 active:scale-95 text-white text-xs font-bold shadow-xs cursor-pointer transition-all flex items-center gap-1.5"
-              >
-                <Check className="w-3.5 h-3.5" />
-                <span>Submit Exam ({answeredCount}/{questions.length})</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Active Question Card */}
-          <div className="p-5 sm:p-8 rounded-3xl bg-white dark:bg-[#111321] border border-slate-200 dark:border-white/10 shadow-lg space-y-5">
-            {/* Question Header Meta */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100 dark:border-white/[0.06]">
-              <div className="flex items-center gap-2">
-                <span className="px-3 py-1 rounded-lg bg-[#7957F5]/10 text-[#7957F5] dark:text-[#D94BCB] font-mono text-xs font-bold">
-                  Question {currentIdx + 1} of {questions.length}
-                </span>
-                <span
-                  className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
-                    stageBadges[currentQ.stage].bg
-                  } ${stageBadges[currentQ.stage].text} border ${stageBadges[currentQ.stage].border}`}
-                >
-                  {stageBadges[currentQ.stage].label}
-                </span>
-                <span className="text-xs text-slate-500 dark:text-slate-400 hidden sm:inline">
-                  {currentQ.category}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {/* Mark for Review Toggle Button */}
-                <button
-                  onClick={handleToggleMarkForReview}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border ${
-                    markedForReview[currentIdx]
-                      ? 'bg-amber-500/15 border-amber-500/40 text-amber-700 dark:text-amber-300'
-                      : 'bg-slate-100 dark:bg-white/[0.05] border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  <Bookmark className={`w-3.5 h-3.5 ${markedForReview[currentIdx] ? 'fill-amber-500' : ''}`} />
-                  <span>{markedForReview[currentIdx] ? 'Marked for Review' : 'Mark for Review'}</span>
-                </button>
-
-                <span
-                  className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md ${
-                    currentQ.difficulty === 'Basic'
-                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                      : currentQ.difficulty === 'Intermediate'
-                      ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400'
-                      : 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
-                  }`}
-                >
-                  {currentQ.difficulty}
-                </span>
-              </div>
-            </div>
-
-            {/* Problem Statement */}
-            <div>
-              <span className="text-xs font-bold text-[#7957F5] dark:text-[#D94BCB] uppercase tracking-wider block mb-1.5">
-                {currentQ.topic}
-              </span>
-              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-relaxed">
-                {currentQ.problem}
-              </h3>
-            </div>
-
-
-            {/* Multiple Choice Options (4 Choices) - ZERO correctness leaks */}
-            <div className="space-y-2.5 pt-2">
-              <span className="text-xs font-mono text-slate-500 uppercase tracking-wider block">
-                Select Your Answer (Click to choose or change):
-              </span>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {currentQ.options.map((opt, optIdx) => {
-                  const isSelected = userAnswers[currentIdx] === optIdx;
+              <div className="practice-palette" role="group" aria-label="Question palette">
+                {questions.map((_, idx) => {
+                  const isCurrent = idx === currentIdx;
+                  const isAnswered = userAnswers[idx] !== undefined;
+                  const isReview = markedForReview[idx];
 
                   return (
                     <button
-                      key={optIdx}
-                      onClick={() => handleSelectOption(optIdx)}
-                      className={`p-3.5 sm:p-4 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between gap-3 min-h-[52px] ${
-                        isSelected
-                          ? 'bg-[#7957F5]/10 dark:bg-[#7957F5]/20 border-[#7957F5] dark:border-[#D94BCB] ring-2 ring-[#7957F5]/30 shadow-xs'
-                          : 'bg-slate-50 hover:bg-slate-100/80 dark:bg-white/[0.03] dark:hover:bg-white/[0.06] border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-200'
+                      key={idx}
+                      type="button"
+                      onClick={() => setCurrentIdx(idx)}
+                      aria-current={isCurrent ? 'step' : undefined}
+                      aria-label={`Question ${idx + 1}${isAnswered ? ', answered' : ', unanswered'}${
+                        isReview ? ', marked for review' : ''
                       }`}
+                      title={`Question ${idx + 1}${isAnswered ? ' (Answered)' : ' (Unanswered)'}${
+                        isReview ? ' [Marked for review]' : ''
+                      }`}
+                      className={`practice-palette__btn ${isAnswered ? 'is-answered' : ''} ${
+                        isReview ? 'is-marked' : ''
+                      } ${isCurrent ? 'is-current' : ''}`}
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <span
-                          className={`w-7 h-7 rounded-xl flex items-center justify-center font-mono text-xs font-bold shrink-0 transition-colors ${
-                            isSelected
-                              ? 'bg-gradient-to-r from-[#7957F5] to-[#D94BCB] text-white'
-                              : 'bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-slate-300'
-                          }`}
-                        >
-                          {OPTION_LETTERS[optIdx]}
-                        </span>
-                        <span className="text-sm font-medium leading-snug break-words">
-                          {opt}
-                        </span>
-                      </div>
-                      {isSelected && (
-                        <div className="w-5 h-5 rounded-full bg-[#7957F5] dark:bg-[#D94BCB] flex items-center justify-center text-white shrink-0">
-                          <Check className="w-3 h-3 stroke-[3]" />
-                        </div>
-                      )}
+                      {idx + 1}
+                      {isReview && <span className="practice-palette__flag" aria-hidden="true" />}
                     </button>
                   );
                 })}
               </div>
-            </div>
+            </GlassPanel>
+          </Reveal>
 
-            {/* Bottom Navigation Controls */}
-            <div className="pt-4 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between gap-3">
-              <button
-                onClick={() => setCurrentIdx((prev) => Math.max(0, prev - 1))}
-                disabled={currentIdx === 0}
-                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5 cursor-pointer"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                <span className="hidden sm:inline">Previous Question</span>
-              </button>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleQuitToLobby}
-                  className="px-3 py-2 rounded-xl text-xs text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer"
-                >
-                  Exit Exam
-                </button>
-
-                {currentIdx < questions.length - 1 ? (
-                  <button
-                    onClick={() => setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1))}
-                    className="px-4 sm:px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+          <Reveal delay={80}>
+            <GlassPanel className="practice-question">
+              <div className="practice-question__meta">
+                <div className="practice-question__tags">
+                  <span className="practice-chip practice-chip--accent">
+                    Question {currentIdx + 1}
+                  </span>
+                  <span className="practice-chip">{STAGE_LABELS[currentQ.stage]}</span>
+                  <span className="practice-chip">{currentQ.category}</span>
+                  <span
+                    className={`practice-chip practice-chip--${currentQ.difficulty.toLowerCase()}`}
                   >
-                    <span>Next Question</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                ) : (
+                    {currentQ.difficulty}
+                  </span>
+                </div>
+
+                <div className="practice-question__tools">
                   <button
-                    onClick={handleRequestSubmit}
-                    className="px-5 sm:px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#7957F5] to-[#D94BCB] hover:brightness-110 active:scale-95 text-white text-xs sm:text-sm font-bold shadow-md cursor-pointer transition-all flex items-center gap-2"
+                    type="button"
+                    onClick={handleToggleMarkForReview}
+                    aria-pressed={Boolean(markedForReview[currentIdx])}
+                    className={`practice-chip practice-chip--button ${
+                      markedForReview[currentIdx] ? 'is-marked' : ''
+                    }`}
                   >
-                    <Check className="w-4 h-4 stroke-[3]" />
-                    <span>Submit Exam</span>
+                    {markedForReview[currentIdx] ? <BookmarkCheck /> : <Bookmark />}
+                    {markedForReview[currentIdx] ? 'Marked for review' : 'Mark for review'}
                   </button>
+                </div>
+              </div>
+
+              <div className="practice-question__body">
+                <span className="practice-question__topic">{currentQ.topic}</span>
+                <h3 className="practice-question__problem">{currentQ.problem}</h3>
+
+                {currentQ.latex && (
+                  <div className="practice-math">
+                    <MathView math={currentQ.latex} displayMode={true} />
+                  </div>
                 )}
               </div>
-            </div>
-          </div>
+
+              <div className="practice-options">
+                <span className="practice-options__label">Choose one answer</span>
+
+                <div className="practice-options__grid">
+                  {currentQ.options.map((opt, optIdx) => {
+                    const isSelected = userAnswers[currentIdx] === optIdx;
+
+                    return (
+                      <button
+                        key={optIdx}
+                        type="button"
+                        onClick={() => handleSelectOption(optIdx)}
+                        aria-pressed={isSelected}
+                        className={`practice-option ${isSelected ? 'is-selected' : ''}`}
+                      >
+                        <span className="practice-option__letter">{OPTION_LETTERS[optIdx]}</span>
+                        <span className="practice-option__text">{opt}</span>
+                        <span className="practice-option__check" aria-hidden="true">
+                          {isSelected ? <Check /> : null}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="practice-question__footer">
+                <button
+                  type="button"
+                  onClick={() => setCurrentIdx((prev) => Math.max(0, prev - 1))}
+                  disabled={currentIdx === 0}
+                  className="practice-btn practice-btn--ghost practice-btn--sm"
+                >
+                  <ChevronLeft />
+                  Previous
+                </button>
+
+                <div className="practice-question__footer-right">
+                  <button type="button" className="practice-link" onClick={handleQuitToLobby}>
+                    Leave sheet
+                  </button>
+
+                  {currentIdx < questions.length - 1 ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCurrentIdx((prev) => Math.min(questions.length - 1, prev + 1))
+                      }
+                      className="practice-btn practice-btn--sm"
+                    >
+                      Next question
+                      <ChevronRight />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleRequestSubmit}
+                      className="practice-btn practice-btn--sm"
+                    >
+                      <Check />
+                      Submit sheet
+                    </button>
+                  )}
+                </div>
+              </div>
+            </GlassPanel>
+          </Reveal>
         </div>
       )}
 
       {/* ========================================================
-          4. RESULTS VIEW (SHOWN AFTER SUBMITTING OR TIMEOUT)
+          4. RESULTS
           ======================================================== */}
       {testStatus === 'completed' && (
-        <div className="space-y-6 animate-in fade-in duration-200">
+        <div className="practice-results">
           {historySaveStatus === 'saved' && (
-            <div className="p-3 rounded-2xl border border-emerald-500/25 bg-emerald-500/5 text-sm text-emerald-700 dark:text-emerald-300">
-              Your submitted result has been saved to your CALCAURA account and synced with Supabase.
-            </div>
-          )}
-          {historySaveStatus === 'sign-in-required' && (
-            <div className="p-4 rounded-2xl border border-amber-500/25 bg-amber-500/5 text-sm text-slate-700 dark:text-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <span>Sign in with Clerk to save this real result to your personal cloud history. Your score remains visible in this session.</span>
-              <button onClick={() => onNavigateToAuth ? onNavigateToAuth() : window.location.assign('/sign-in')} className="shrink-0 px-4 py-2 rounded-xl bg-[#7957F5] text-white text-xs font-bold">Sign in</button>
-            </div>
-          )}
-          {historySaveStatus === 'error' && (
-            <div className="p-3 rounded-2xl border border-rose-500/25 bg-rose-500/5 text-sm text-rose-700 dark:text-rose-300">
-              The result is not confirmed as cloud-saved. Check your Supabase connection and RLS setup, then submit a new attempt after fixing the issue.
-            </div>
-          )}
-          {/* Executive Performance Card */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#111321] border border-slate-200 dark:border-white/10 shadow-lg text-center space-y-5">
-            <div className="inline-flex p-3.5 rounded-2xl bg-gradient-to-br from-[#7957F5]/20 to-[#D94BCB]/20 border border-[#7957F5]/30 text-[#7957F5] dark:text-[#D94BCB]">
-              <Award className="w-10 h-10" />
-            </div>
-
-            <div>
-              {timedOut && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-bold border border-rose-500/20 mb-2">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  Time Limit Expired · Automatically Evaluated
-                </span>
-              )}
-              <span className="text-xs font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400 block mb-1">
-                Official Assessment Results · Stage: {stageConfig.label}
+            <div className="practice-banner practice-banner--ok">
+              <span className="practice-banner__text">
+                <ShieldCheck />
+                Saved to your CalcAura account and synced with Supabase.
               </span>
-              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
-                {score === questions.length
-                  ? `Mastery Achieved! Perfect ${score}/${questions.length}`
-                  : score >= Math.ceil(questions.length * 0.65)
-                  ? 'Great Job! Strong Problem Solving'
-                  : score >= Math.ceil(questions.length * 0.35)
-                  ? 'Good Effort! Keep Practicing'
-                  : 'Review the Step Proofs & Retake'}
-              </h3>
             </div>
+          )}
 
-            {/* Score Ring / Metric Highlights */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 max-w-2xl mx-auto pt-2">
-              <div className="p-3 sm:p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/10 text-center">
-                <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">
-                  Score
-                </span>
-                <span className="text-2xl sm:text-3xl font-extrabold font-mono text-slate-900 dark:text-white block mt-0.5">
-                  {score} <span className="text-sm text-slate-400 font-normal">/ {questions.length}</span>
-                </span>
-              </div>
-
-              <div className="p-3 sm:p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/10 text-center">
-                <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">
-                  Accuracy
-                </span>
-                <span className="text-2xl sm:text-3xl font-extrabold font-mono text-[#7957F5] dark:text-[#D94BCB] block mt-0.5">
-                  {Math.round((score / questions.length) * 100)}%
-                </span>
-              </div>
-
-              <div className="p-3 sm:p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/10 text-center">
-                <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">
-                  Time Spent
-                </span>
-                <span className="text-2xl sm:text-3xl font-extrabold font-mono text-sky-600 dark:text-sky-400 block mt-0.5">
-                  {formatTime(timeSpentSeconds)}
-                </span>
-              </div>
-
-              <div className="p-3 sm:p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/10 text-center">
-                <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">
-                  Status
-                </span>
-                <span className="text-xs font-mono font-bold block mt-2 text-slate-700 dark:text-slate-300">
-                  <span className="text-emerald-600 dark:text-emerald-400">✓ {score}</span> ·{' '}
-                  <span className="text-rose-500">✗ {answeredCount - score}</span> ·{' '}
-                  <span className="text-amber-500">? {unansweredCount}</span>
-                </span>
-              </div>
+          {historySaveStatus === 'sign-in-required' && (
+            <div className="practice-banner practice-banner--warn">
+              <span className="practice-banner__text">
+                <ShieldCheck />
+                Sign in to keep this sheet in your cloud history. Your score stays visible in this
+                session either way.
+              </span>
+              <button
+                type="button"
+                className="practice-btn practice-btn--sm"
+                onClick={() => (onNavigateToAuth ? onNavigateToAuth() : window.location.assign('/sign-in'))}
+              >
+                Sign in
+              </button>
             </div>
+          )}
 
-            {/* Chapter-wise Performance Breakdown */}
-            {topicBreakdown.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-white/[0.06] max-w-2xl mx-auto text-left">
-                <span className="text-xs font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold block mb-2">
-                  Topic & Chapter-wise Performance:
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {historySaveStatus === 'error' && (
+            <div className="practice-banner practice-banner--error">
+              <span className="practice-banner__text">
+                <AlertCircle />
+                The result is not confirmed as cloud-saved. Check the Supabase connection and RLS
+                setup, then submit a new attempt.
+              </span>
+            </div>
+          )}
+
+          <Reveal>
+            <GlassPanel className="practice-score">
+              <div className="practice-score__ring">
+                <ProgressRing value={accuracyPct} size={148} label={`${accuracyPct}%`} caption="accuracy" />
+              </div>
+
+              <div className="practice-score__copy">
+                {timedOut && (
+                  <span className="practice-chip practice-chip--intermediate">
+                    <AlertCircle />
+                    Time expired · auto-evaluated
+                  </span>
+                )}
+
+                <span className="practice-kicker">Marked · {stageConfig.label}</span>
+
+                <h2 className="practice-title practice-title--md">
+                  {score === questions.length
+                    ? `Every one. ${score}/${questions.length}.`
+                    : score >= Math.ceil(questions.length * 0.65)
+                    ? 'Strong paper, a few proofs to read.'
+                    : score >= Math.ceil(questions.length * 0.35)
+                    ? 'A fair start. Walk the working.'
+                    : 'Read the proofs, then retake.'}
+                </h2>
+
+                <p className="practice-score__sub">
+                  {score === questions.length
+                    ? 'Every answer matched. The working below is still worth reading — it is the same method without the time pressure.'
+                    : 'The score is only half the sheet. Every question below carries its own step-by-step proof and the method behind the answer.'}
+                </p>
+
+                <div className="practice-score__metrics">
+                  <div>
+                    <span>Score</span>
+                    <strong>
+                      {score}
+                      <em>/{questions.length}</em>
+                    </strong>
+                  </div>
+                  <div>
+                    <span>Accuracy</span>
+                    <strong>
+                      {accuracyPct}
+                      <em>%</em>
+                    </strong>
+                  </div>
+                  <div>
+                    <span>Time</span>
+                    <strong>{formatTime(timeSpentSeconds)}</strong>
+                  </div>
+                  <div>
+                    <span>Answers</span>
+                    <strong className="practice-score__status">
+                      <span className="is-correct">✓ {score}</span>
+                      <span className="is-wrong">✗ {answeredCount - score}</span>
+                      <span className="is-skipped">? {unansweredCount}</span>
+                    </strong>
+                  </div>
+                </div>
+              </div>
+            </GlassPanel>
+          </Reveal>
+
+          {topicBreakdown.length > 0 && (
+            <Reveal delay={80}>
+              <GlassPanel className="practice-topics">
+                <div className="practice-topics__head">
+                  <span className="practice-kicker">Topic breakdown</span>
+                  <span className="practice-chip">{topicBreakdown.length} topics in this sheet</span>
+                </div>
+
+                <div className="practice-topics__grid">
                   {topicBreakdown.map((t) => (
-                    <div
-                      key={t.topic}
-                      className="p-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.06] flex items-center justify-between text-xs"
-                    >
-                      <span className="font-medium text-slate-800 dark:text-slate-200 truncate pr-2">
-                        {t.topic}
-                      </span>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="font-mono text-slate-500">
-                          {t.correct}/{t.total}
+                    <div key={t.topic} className="practice-topic">
+                      <div className="practice-topic__row">
+                        <span>{t.topic}</span>
+                        <span>
+                          {t.correct}/{t.total} · {t.pct}%
                         </span>
-                        <span
-                          className={`font-mono font-bold px-1.5 py-0.5 rounded text-[10px] ${
-                            t.pct === 100
-                              ? 'bg-emerald-500/15 text-emerald-600'
-                              : t.pct >= 50
-                              ? 'bg-sky-500/15 text-sky-600'
-                              : 'bg-rose-500/15 text-rose-600'
-                          }`}
-                        >
-                          {t.pct}%
-                        </span>
+                      </div>
+                      <div className="practice-topic__bar">
+                        <span style={{ width: `${t.pct}%` }} />
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
+              </GlassPanel>
+            </Reveal>
+          )}
 
-            {/* Action Buttons: Retake, Practice Mistakes, New Test */}
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
-              <button
-                onClick={handleStartTest}
-                className="px-5 sm:px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#7957F5] to-[#D94BCB] hover:brightness-110 active:scale-95 text-white text-xs sm:text-sm font-bold shadow-md cursor-pointer transition-all flex items-center gap-2"
-              >
-                <RefreshCw className="w-4 h-4" />
-                <span>Start New 6-Question Test</span>
+          <Reveal delay={140}>
+            <div className="practice-actions">
+              <button type="button" className="practice-btn practice-btn--sm" onClick={handleStartTest}>
+                <RefreshCw />
+                New sheet
               </button>
 
               {score < questions.length && (
                 <button
+                  type="button"
+                  className="practice-btn practice-btn--ghost practice-btn--sm"
                   onClick={handlePracticeIncorrectOnly}
-                  className="px-4 sm:px-5 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30 text-xs sm:text-sm font-bold cursor-pointer transition-all flex items-center gap-1.5"
                 >
-                  <RotateCw className="w-4 h-4" />
-                  <span>Retry Incorrect Questions ({questions.length - score})</span>
+                  <RotateCw />
+                  Retry mistakes ({questions.length - score})
                 </button>
               )}
 
               <button
+                type="button"
+                className="practice-btn practice-btn--ghost practice-btn--sm"
                 onClick={handleRetakeSameSet}
-                className="px-4 sm:px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-slate-800 dark:text-white text-xs sm:text-sm font-semibold cursor-pointer transition-all flex items-center gap-1.5"
               >
-                <RotateCcw className="w-4 h-4" />
-                <span>Retake Exact Set</span>
+                <RotateCcw />
+                Retake this set
               </button>
 
-              <button
-                onClick={handleQuitToLobby}
-                className="px-4 sm:px-5 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-semibold cursor-pointer transition-all"
-              >
-                Change Stage / Settings
+              <button type="button" className="practice-link" onClick={handleQuitToLobby}>
+                Change stage
               </button>
 
               {onNavigateToHistory && (
                 <button
+                  type="button"
+                  className="practice-btn practice-btn--ghost practice-btn--sm"
                   onClick={onNavigateToHistory}
-                  className="px-4 sm:px-5 py-2.5 rounded-xl bg-[#7957F5]/10 hover:bg-[#7957F5]/20 text-[#7957F5] dark:text-[#D94BCB] border border-[#7957F5]/30 text-xs sm:text-sm font-bold cursor-pointer transition-all flex items-center gap-1.5"
-                  title="View completed tests in History"
+                  title="View completed sheets in History"
                 >
-                  <History className="w-4 h-4" />
-                  <span>View in History</span>
+                  <History />
+                  View in history
                 </button>
               )}
 
               {onExitReview && (
                 <button
+                  type="button"
+                  className="practice-btn practice-btn--ghost practice-btn--sm"
                   onClick={onExitReview}
-                  className="px-4 sm:px-5 py-2.5 rounded-xl bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 text-slate-800 dark:text-white text-xs sm:text-sm font-semibold cursor-pointer transition-all flex items-center gap-1.5"
                 >
-                  <span>Back to History</span>
+                  <ChevronLeft />
+                  Back to history
                 </button>
               )}
             </div>
-          </div>
+          </Reveal>
 
-          {/* Detailed Question Review List */}
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200 dark:border-white/10">
-              <h4 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-[#7957F5]" />
-                <span>Question-by-Question Solution Breakdown & Step Proofs</span>
-              </h4>
+          <div className="practice-review">
+            <Reveal>
+              <div className="practice-review__head">
+                <div>
+                  <span className="practice-kicker">Worked proofs</span>
+                  <h3 className="practice-title practice-title--sm">Question by question</h3>
+                </div>
 
-              {/* Review Filter Pills */}
-              <div className="flex items-center gap-1.5">
-                {[
-                  { id: 'all', label: `All (${questions.length})` },
-                  { id: 'incorrect', label: `Incorrect/Skipped (${questions.length - score})` },
-                  { id: 'correct', label: `Correct (${score})` },
-                ].map((f) => (
-                  <button
-                    key={f.id}
-                    onClick={() => setResultsFilter(f.id as any)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-                      resultsFilter === f.id
-                        ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold'
-                        : 'bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                    }`}
-                  >
-                    {f.label}
-                  </button>
-                ))}
+                <div
+                  className="practice-pills practice-pills--filters"
+                  role="group"
+                  aria-label="Filter worked proofs"
+                >
+                  {reviewFilters.map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => setResultsFilter(f.id)}
+                      aria-pressed={resultsFilter === f.id}
+                      className={`practice-pill ${resultsFilter === f.id ? 'is-active' : ''}`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            </Reveal>
 
             {questions.map((q, idx) => {
               const selectedOptIdx = userAnswers[idx];
               const isCorrect = selectedOptIdx === q.correctIdx;
               const isUnanswered = selectedOptIdx === undefined;
-              const qBadge = stageBadges[q.stage];
 
               if (resultsFilter === 'correct' && !isCorrect) return null;
               if (resultsFilter === 'incorrect' && isCorrect) return null;
 
               return (
-                <div
-                  key={q.id}
-                  className={`p-5 sm:p-6 rounded-3xl border transition-all space-y-4 ${
-                    isCorrect
-                      ? 'bg-emerald-500/[0.04] border-emerald-500/30'
-                      : isUnanswered
-                      ? 'bg-amber-500/[0.04] border-amber-500/30'
-                      : 'bg-rose-500/[0.04] border-rose-500/30'
-                  }`}
-                >
-                  {/* Top Status & Topic Bar */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400">
-                        Question {idx + 1} of {questions.length}
-                      </span>
+                <Reveal key={q.id} delay={Math.min(idx * 60, 240)}>
+                  <article
+                    className={`practice-review-card ${
+                      isCorrect ? 'is-correct' : isUnanswered ? 'is-skipped' : 'is-wrong'
+                    }`}
+                  >
+                    <div className="practice-review-card__head">
+                      <div className="practice-review-card__meta">
+                        <span className="practice-review-card__index">
+                          Q{String(idx + 1).padStart(2, '0')}
+                        </span>
+                        <span className="practice-chip">{STAGE_LABELS[q.stage]}</span>
+                        <span className="practice-review-card__topic">{q.topic}</span>
+                      </div>
+
                       <span
-                        className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${qBadge.bg} ${qBadge.text} border ${qBadge.border}`}
+                        className={`practice-state ${
+                          isCorrect
+                            ? 'practice-state--correct'
+                            : isUnanswered
+                            ? 'practice-state--skipped'
+                            : 'practice-state--wrong'
+                        }`}
                       >
-                        {qBadge.label}
+                        {isCorrect ? (
+                          <>
+                            <CheckCircle2 />
+                            Correct
+                          </>
+                        ) : isUnanswered ? (
+                          <>
+                            <AlertCircle />
+                            Not attempted
+                          </>
+                        ) : (
+                          <>
+                            <XCircle />
+                            Incorrect
+                          </>
+                        )}
                       </span>
-                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {q.topic}
-                      </span>
                     </div>
 
-                    <div className="shrink-0">
-                      {isCorrect ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold border border-emerald-500/20">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          Correct (+1 Mark)
-                        </span>
-                      ) : isUnanswered ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-semibold border border-amber-500/20">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          Not Attempted (0 Marks)
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-bold border border-rose-500/20">
-                          <XCircle className="w-3.5 h-3.5" />
-                          Incorrect (0 Marks)
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                    <h4 className="practice-review-card__problem">{q.problem}</h4>
 
-                  {/* Original Question Statement */}
-                  <div>
-                    <h5 className="text-base font-bold text-slate-900 dark:text-white leading-relaxed">
-                      {q.problem}
-                    </h5>
-                  </div>
+                    {q.latex && (
+                      <div className="practice-math">
+                        <MathView math={q.latex} displayMode={true} />
+                      </div>
+                    )}
 
-                  {q.latex && (
-                    <div className="p-3 bg-slate-100 dark:bg-black/30 rounded-xl text-center overflow-x-auto thin-scrollbar">
-                      <MathView math={q.latex} displayMode={true} />
-                    </div>
-                  )}
+                    <div className="practice-review-card__options">
+                      {q.options.map((opt, optIdx) => {
+                        const isOptionSelected = selectedOptIdx === optIdx;
+                        const isOptionCorrect = optIdx === q.correctIdx;
 
-                  {/* Options List with submitted vs correct status */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {q.options.map((opt, optIdx) => {
-                      const isOptionSelected = selectedOptIdx === optIdx;
-                      const isOptionCorrect = optIdx === q.correctIdx;
-
-                      let optClass = 'bg-slate-50 dark:bg-white/[0.03] border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300';
-
-                      if (isOptionCorrect) {
-                        optClass = 'bg-emerald-500/15 border-emerald-500/60 text-emerald-800 dark:text-emerald-200 font-bold';
-                      } else if (isOptionSelected && !isCorrect) {
-                        optClass = 'bg-rose-500/15 border-rose-500/60 text-rose-800 dark:text-rose-200 line-through';
-                      }
-
-                      return (
-                        <div
-                          key={optIdx}
-                          className={`p-3 rounded-xl border text-xs flex items-center justify-between gap-2 ${optClass}`}
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <span className="w-5 h-5 rounded-lg flex items-center justify-center font-mono font-bold text-[10px] shrink-0 bg-slate-200 dark:bg-white/10">
+                        return (
+                          <div
+                            key={optIdx}
+                            className={`practice-review-option ${
+                              isOptionCorrect
+                                ? 'is-correct'
+                                : isOptionSelected && !isCorrect
+                                ? 'is-chosen'
+                                : ''
+                            }`}
+                          >
+                            <span className="practice-review-option__letter">
                               {OPTION_LETTERS[optIdx]}
                             </span>
-                            <span className="truncate">{opt}</span>
+                            <span className="practice-review-option__text">{opt}</span>
+                            {isOptionCorrect && (
+                              <span className="practice-review-option__tag">Correct</span>
+                            )}
+                            {isOptionSelected && !isOptionCorrect && (
+                              <span className="practice-review-option__tag">Yours</span>
+                            )}
                           </div>
-                          {isOptionCorrect && (
-                            <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
-                              ✓ Correct Answer
-                            </span>
-                          )}
-                          {isOptionSelected && !isOptionCorrect && (
-                            <span className="text-[10px] font-mono font-bold text-rose-600 dark:text-rose-400 shrink-0">
-                              ✗ Your Choice
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Step Solution & Mathematical Proof */}
-                  <div className="p-4 rounded-2xl bg-slate-100/80 dark:bg-white/[0.04] border border-slate-200/60 dark:border-white/10 text-xs text-slate-700 dark:text-slate-300 space-y-2">
-                    <div className="flex items-center gap-2 font-bold text-[#7957F5] dark:text-[#D94BCB]">
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>Step-by-Step Proof & Solution:</span>
+                        );
+                      })}
                     </div>
-                    <p className="leading-relaxed whitespace-pre-line">{q.explanation}</p>
 
-                    {/* Rule, Formula & Concept */}
-                    <div className="pt-2 border-t border-slate-200/60 dark:border-white/10 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-slate-400 font-mono">
-                      <span>Standard Rule: {q.topic} verified standard theorem</span>
-                      <span>Target Level: {stageBadges[q.stage].label}</span>
+                    <div className="practice-proof">
+                      <div className="practice-proof__head">
+                        <Sparkles />
+                        Worked proof &amp; step solution
+                      </div>
+                      <p>{q.explanation}</p>
+
+                      <div className="practice-proof__foot">
+                        <span>{q.topic}</span>
+                        <span>{STAGE_LABELS[q.stage]}</span>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  </article>
+                </Reveal>
               );
             })}
           </div>

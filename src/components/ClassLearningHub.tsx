@@ -19,6 +19,7 @@ import {
   ArrowRight,
   Lightbulb,
 } from 'lucide-react';
+import '../styles/curriculum.css';
 
 interface ClassLearningHubProps {
   classLevelTitle: string;
@@ -131,7 +132,7 @@ export const ClassLearningHub: React.FC<ClassLearningHubProps> = ({
   return (
     <div className="w-full space-y-6">
       {/* Top Class Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#111321] border border-slate-200 dark:border-white/10 shadow-xs">
+      <div className="curr-banner flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#7957F5]/10 border border-[#7957F5]/30 text-[#7957F5] dark:text-[#D94BCB] text-xs font-mono font-semibold mb-2">
             <BookOpen className="w-3.5 h-3.5" />

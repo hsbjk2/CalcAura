@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { VisualObject, VisualAssetType, VISUAL_ASSETS } from './VisualAssetLibrary.tsx';
-import { X, Equal, RotateCw, CheckCircle2, ArrowRight, Grid, Layers, Sparkles } from 'lucide-react';
+import { RotateCw, CheckCircle2 } from 'lucide-react';
+import { Reveal, Tilt3D } from '../ui/Depth.tsx';
+import '../../styles/visual-activities-b.css';
 
 export const PictureMultiplicationActivity: React.FC = () => {
   const [assetType, setAssetType] = useState<VisualAssetType>('strawberry');
@@ -11,6 +13,9 @@ export const PictureMultiplicationActivity: React.FC = () => {
 
   const totalProduct = numGroups * itemsPerGroup;
   const meta = VISUAL_ASSETS[assetType];
+  const isAnswered = userAnswer !== null;
+  const isCorrect = userAnswer === totalProduct;
+  const progress = isAnswered ? (isCorrect ? 100 : 82) : 56;
 
   const handleRandomize = () => {
     const assets: VisualAssetType[] = ['strawberry', 'apple', 'banana', 'orange', 'cookie', 'block', 'car', 'star'];
@@ -32,89 +37,98 @@ export const PictureMultiplicationActivity: React.FC = () => {
     ])
   ).sort((a, b) => a - b);
 
+  const viewOptions = [
+    { id: 'groups' as const, label: 'Groups' },
+    { id: 'array' as const, label: 'Array' },
+    { id: 'repeatedAddition' as const, label: 'Addition' },
+  ];
+
   return (
-    <div className="w-full max-w-4xl mx-auto p-4 sm:p-6 bg-white dark:bg-[#111321] rounded-3xl border border-slate-200 dark:border-white/10 shadow-lg space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-white/[0.06]">
-        <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-500 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-purple-500/25">
+    <Reveal as="article" className="vma">
+      <header className="vma-head">
+        <div className="vma-head__lead">
+          <span className="vma-mark" aria-hidden="true">
             ×
-          </div>
+          </span>
           <div>
-            <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-              <span>Multiplication with Groups & Arrays</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-mono font-semibold">
-                Class 2–4
-              </span>
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Explore multiplication as equal groups, repeated addition, and visual arrays!
+            <p className="vma-eyebrow">
+              <span className="vma-eyebrow__rule" aria-hidden="true" />
+              Visual Math World · 02
             </p>
+            <h3 className="vma-title">Multiplication with groups &amp; arrays</h3>
+            <p className="vma-sub">Read equal groups, arrays and repeated addition.</p>
           </div>
         </div>
 
-        {/* View mode toggle */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 text-xs">
-            <button
-              onClick={() => setViewFormat('groups')}
-              className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
-                viewFormat === 'groups'
-                  ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400'
-              }`}
-            >
-              Groups
-            </button>
-            <button
-              onClick={() => setViewFormat('array')}
-              className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
-                viewFormat === 'array'
-                  ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400'
-              }`}
-            >
-              Array
-            </button>
-            <button
-              onClick={() => setViewFormat('repeatedAddition')}
-              className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
-                viewFormat === 'repeatedAddition'
-                  ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400'
-              }`}
-            >
-              Addition
-            </button>
+        <div className="vma-head__tools">
+          <span className="vma-chip">Class 2–4</span>
+          <div className="vma-seg" role="group" aria-label="Representation">
+            {viewOptions.map((view) => (
+              <button
+                key={view.id}
+                type="button"
+                onClick={() => setViewFormat(view.id)}
+                aria-pressed={viewFormat === view.id}
+                className={viewFormat === view.id ? 'is-active' : ''}
+              >
+                {view.label}
+              </button>
+            ))}
           </div>
-
-          <button
-            onClick={handleRandomize}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95"
-          >
-            <RotateCw className="w-3.5 h-3.5" />
-            <span>Randomize</span>
+          <button type="button" onClick={handleRandomize} className="vma-btn vma-btn--ink">
+            <RotateCw aria-hidden="true" />
+            <span>New set</span>
           </button>
         </div>
+      </header>
+
+      <div className="vma-instruction">
+        <span className="vma-instruction__dot" aria-hidden="true" />
+        <p>
+          <strong>Explore first.</strong> Change the groups and objects, then choose the total at the bottom.
+        </p>
+        <span className="vma-instruction__meta">
+          {numGroups} groups · {itemsPerGroup} each
+        </span>
       </div>
 
-      {/* Interactive Controls for Groups & Items */}
-      <div className="p-4 rounded-2xl bg-purple-500/[0.04] border border-purple-500/20 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Number of Groups:</span>
-          <div className="flex items-center gap-1">
+      <div className="vma-rail" role="group" aria-label="Activity progress">
+        <span className="vma-rail__track" aria-hidden="true">
+          <span style={{ width: `${progress}%` }} />
+        </span>
+        <ol>
+          <li className="is-done">
+            <span className="vma-rail__dot" aria-hidden="true" />
+            Explore
+          </li>
+          <li className="is-done">
+            <span className="vma-rail__dot" aria-hidden="true" />
+            Model
+          </li>
+          <li className={isCorrect ? 'is-done' : 'is-active'} aria-current={isCorrect ? undefined : 'step'}>
+            <span className="vma-rail__dot" aria-hidden="true" />
+            Answer
+          </li>
+        </ol>
+      </div>
+
+      {/* Interactive controls for groups and items */}
+      <section className="vma-controls" aria-label="Set the multiplication model">
+        <div className="vma-control">
+          <span className="vma-control__label" id="vma-groups-label">
+            Number of groups
+          </span>
+          <div className="vma-num-row" role="group" aria-labelledby="vma-groups-label">
             {[2, 3, 4, 5].map((g) => (
               <button
                 key={g}
+                type="button"
                 onClick={() => {
                   setNumGroups(g);
                   setUserAnswer(null);
                 }}
-                className={`w-8 h-8 rounded-lg font-mono text-xs font-bold transition-all cursor-pointer ${
-                  numGroups === g
-                    ? 'bg-purple-600 text-white shadow-xs'
-                    : 'bg-white dark:bg-[#0B0D16] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300'
-                }`}
+                aria-pressed={numGroups === g}
+                className={`vma-num ${numGroups === g ? 'is-active' : ''}`}
               >
                 {g}
               </button>
@@ -122,189 +136,198 @@ export const PictureMultiplicationActivity: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Objects in Each Group:</span>
-          <div className="flex items-center gap-1">
+        <div className="vma-control">
+          <span className="vma-control__label" id="vma-items-label">
+            Objects in each group
+          </span>
+          <div className="vma-num-row" role="group" aria-labelledby="vma-items-label">
             {[2, 3, 4, 5, 6].map((i) => (
               <button
                 key={i}
+                type="button"
                 onClick={() => {
                   setItemsPerGroup(i);
                   setUserAnswer(null);
                 }}
-                className={`w-8 h-8 rounded-lg font-mono text-xs font-bold transition-all cursor-pointer ${
-                  itemsPerGroup === i
-                    ? 'bg-purple-600 text-white shadow-xs'
-                    : 'bg-white dark:bg-[#0B0D16] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300'
-                }`}
+                aria-pressed={itemsPerGroup === i}
+                className={`vma-num ${itemsPerGroup === i ? 'is-active' : ''}`}
               >
                 {i}
               </button>
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Visualization Canvas */}
+      {/* Visualisation canvas */}
       {viewFormat === 'groups' && (
-        <div className="space-y-4">
-          <div className="text-center">
-            <span className="text-xs font-mono uppercase tracking-wider text-purple-600 dark:text-purple-400 font-bold block mb-1">
-              Equal Groups Representation
-            </span>
-            <h4 className="text-lg font-bold text-slate-900 dark:text-white">
-              {numGroups} baskets with {itemsPerGroup} {itemsPerGroup === 1 ? meta.name : meta.plural} in each basket
+        <section className="vma-view">
+          <div className="vma-view__head">
+            <span className="vma-view__kicker">Equal groups</span>
+            <h4 className="vma-view__title">
+              {numGroups} baskets with {itemsPerGroup} {itemsPerGroup === 1 ? meta.name : meta.plural} in each
             </h4>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 p-4 rounded-3xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10">
-            {Array.from({ length: numGroups }).map((_, groupIdx) => (
-              <div
-                key={groupIdx}
-                className="p-4 rounded-2xl bg-white dark:bg-[#0B0D16] border-2 border-purple-500/30 text-center shadow-xs space-y-2 animate-in zoom-in-95"
-              >
-                <span className="text-[11px] font-mono font-bold text-purple-600 uppercase">
-                  Basket #{groupIdx + 1} ({itemsPerGroup} items)
-                </span>
-                <div className="flex flex-wrap items-center justify-center gap-1.5 min-h-[50px]">
-                  {Array.from({ length: itemsPerGroup }).map((_, i) => (
-                    <VisualObject key={i} type={assetType} size="md" />
-                  ))}
+          <Tilt3D className="vma-tray" strength={5}>
+            <div className="vma-groups">
+              {Array.from({ length: numGroups }).map((_, groupIdx) => (
+                <div
+                  key={groupIdx}
+                  className="vma-basket"
+                  style={{ '--i': groupIdx } as React.CSSProperties}
+                >
+                  <div className="vma-basket__head">
+                    <span className="vma-basket__tag">Basket {String(groupIdx + 1).padStart(2, '0')}</span>
+                    <span className="vma-basket__count">{itemsPerGroup} each</span>
+                  </div>
+                  <div className="vma-objects" aria-hidden="true">
+                    {Array.from({ length: itemsPerGroup }).map((_, i) => (
+                      <VisualObject key={i} type={assetType} size="md" className="vma-obj" />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
+              ))}
+            </div>
+          </Tilt3D>
+        </section>
       )}
 
       {viewFormat === 'array' && (
-        <div className="space-y-4">
-          <div className="text-center">
-            <span className="text-xs font-mono uppercase tracking-wider text-purple-600 dark:text-purple-400 font-bold block mb-1">
-              Multiplication Array (Rows × Columns)
-            </span>
-            <h4 className="text-lg font-bold text-slate-900 dark:text-white">
-              {numGroups} Rows of {itemsPerGroup} Columns
+        <section className="vma-view">
+          <div className="vma-view__head">
+            <span className="vma-view__kicker">Rows × columns</span>
+            <h4 className="vma-view__title">
+              {numGroups} rows of {itemsPerGroup} columns
             </h4>
           </div>
 
-          <div className="p-6 rounded-3xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 flex flex-col items-center justify-center gap-2">
-            {Array.from({ length: numGroups }).map((_, rowIdx) => (
-              <div key={rowIdx} className="flex items-center gap-2 p-1 rounded-xl bg-purple-500/[0.05]">
-                <span className="text-[10px] font-mono text-purple-400 w-8 text-right pr-1">R{rowIdx + 1}:</span>
-                {Array.from({ length: itemsPerGroup }).map((_, colIdx) => (
-                  <VisualObject key={colIdx} type={assetType} size="md" />
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
+          <Tilt3D className="vma-tray" strength={5}>
+            <div className="vma-array">
+              {Array.from({ length: numGroups }).map((_, rowIdx) => (
+                <div key={rowIdx} className="vma-array__row">
+                  <span className="vma-array__label">R{rowIdx + 1}</span>
+                  {Array.from({ length: itemsPerGroup }).map((_, colIdx) => (
+                    <VisualObject key={colIdx} type={assetType} size="md" className="vma-obj" />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </Tilt3D>
+        </section>
       )}
 
       {viewFormat === 'repeatedAddition' && (
-        <div className="space-y-4">
-          <div className="text-center">
-            <span className="text-xs font-mono uppercase tracking-wider text-purple-600 dark:text-purple-400 font-bold block mb-1">
-              Repeated Addition Model
-            </span>
-            <h4 className="text-lg font-bold text-slate-900 dark:text-white">
-              Adding {itemsPerGroup} repeatedly {numGroups} times
+        <section className="vma-view">
+          <div className="vma-view__head">
+            <span className="vma-view__kicker">Repeated addition</span>
+            <h4 className="vma-view__title">
+              Adding {itemsPerGroup} again and again, {numGroups} times
             </h4>
           </div>
 
-          <div className="p-6 rounded-3xl bg-purple-500/[0.05] border border-purple-500/20 text-center space-y-3">
-            <div className="flex flex-wrap items-center justify-center gap-2 text-xl sm:text-2xl font-black font-mono">
+          <Tilt3D className="vma-tray" strength={5}>
+            <div
+              className="vma-sum"
+              role="math"
+              aria-label={`${itemsPerGroup} added ${numGroups} times equals ${totalProduct}`}
+            >
               {Array.from({ length: numGroups }).map((_, i) => (
                 <React.Fragment key={i}>
-                  <span className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#0B0D16] border border-purple-500/30 text-purple-600">
-                    {itemsPerGroup}
-                  </span>
-                  {i < numGroups - 1 && <span className="text-slate-400">+</span>}
+                  <span className="vma-sum__term">{itemsPerGroup}</span>
+                  {i < numGroups - 1 && (
+                    <span className="vma-sum__op" aria-hidden="true">
+                      +
+                    </span>
+                  )}
                 </React.Fragment>
               ))}
-              <span className="text-slate-400">=</span>
-              <span className="px-3 py-1.5 rounded-xl bg-purple-600 text-white font-extrabold">
-                {totalProduct}
+              <span className="vma-sum__op" aria-hidden="true">
+                =
               </span>
+              <span className="vma-sum__total">{totalProduct}</span>
             </div>
-            <p className="text-xs text-slate-500">
-              Skip counting by {itemsPerGroup}: {Array.from({ length: numGroups }, (_, i) => (i + 1) * itemsPerGroup).join(', ')}
+            <p className="vma-sum__note">
+              Skip counting by {itemsPerGroup}:{' '}
+              {Array.from({ length: numGroups }, (_, i) => (i + 1) * itemsPerGroup).join(', ')}
             </p>
-          </div>
-        </div>
+          </Tilt3D>
+        </section>
       )}
 
-      {/* Equation Banner */}
-      <div className="text-center pt-2">
-        <div className="inline-flex items-center gap-3 px-6 py-2.5 rounded-2xl bg-white dark:bg-[#0B0D16] border border-purple-500/30 text-xl sm:text-3xl font-black font-mono shadow-sm">
-          <span className="text-purple-600">{numGroups}</span>
-          <span className="text-slate-400">×</span>
-          <span className="text-indigo-600">{itemsPerGroup}</span>
-          <span className="text-slate-400">=</span>
-          <span className="text-purple-600 font-extrabold">{userAnswer !== null ? userAnswer : '?'}</span>
+      {/* Equation strip */}
+      <div className="vma-equation-wrap">
+        <div
+          className="vma-equation"
+          role="math"
+          aria-label={`${numGroups} times ${itemsPerGroup} equals ${userAnswer ?? 'unknown'}`}
+        >
+          <span className="vma-equation__num">{numGroups}</span>
+          <span className="vma-equation__op" aria-hidden="true">
+            ×
+          </span>
+          <span className="vma-equation__num">{itemsPerGroup}</span>
+          <span className="vma-equation__op" aria-hidden="true">
+            =
+          </span>
+          <span className={`vma-equation__answer ${isCorrect ? 'is-correct' : ''}`}>
+            {userAnswer !== null ? userAnswer : '?'}
+          </span>
         </div>
       </div>
 
-      {/* Answer Selector */}
-      <div className="space-y-3 pt-2">
-        <span className="text-xs font-mono uppercase tracking-wider text-slate-400 block text-center">
+      {/* Answer selector */}
+      <section className="vma-quiz">
+        <span className="vma-quiz__label" id="vma-mul-answer-label">
           What is the total number of {meta.plural.toLowerCase()}?
         </span>
 
-        <div className="grid grid-cols-4 gap-3 max-w-md mx-auto">
+        <div className="vma-options" role="group" aria-labelledby="vma-mul-answer-label">
           {options.map((opt) => {
             const isSelected = userAnswer === opt;
-            const isCorrect = isSelected && opt === totalProduct;
-            const isWrong = isSelected && opt !== totalProduct;
+            const correct = isSelected && opt === totalProduct;
+            const wrong = isSelected && opt !== totalProduct;
 
             return (
               <button
                 key={opt}
+                type="button"
                 onClick={() => setUserAnswer(opt)}
-                className={`py-3 rounded-2xl font-mono text-xl font-black transition-all cursor-pointer ${
-                  isCorrect
-                    ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 scale-105'
-                    : isWrong
-                    ? 'bg-rose-500 text-white'
-                    : 'bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.05] dark:hover:bg-white/10 text-slate-800 dark:text-white border border-slate-200 dark:border-white/10'
-                }`}
+                aria-pressed={isSelected}
+                className={`vma-option ${correct ? 'is-correct' : ''} ${wrong ? 'is-wrong' : ''}`}
               >
                 {opt}
               </button>
             );
           })}
         </div>
-      </div>
+      </section>
 
       {/* Feedback */}
-      {userAnswer !== null && (
-        <div
-          className={`p-4 rounded-2xl text-center space-y-1 animate-in zoom-in-95 ${
-            userAnswer === totalProduct
-              ? 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-800 dark:text-emerald-300'
-              : 'bg-rose-500/15 border border-rose-500/40 text-rose-800 dark:text-rose-300'
-          }`}
-        >
-          {userAnswer === totalProduct ? (
-            <>
-              <div className="flex items-center justify-center gap-1.5 font-bold text-base">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                <span>Brilliant! {numGroups} × {itemsPerGroup} = {totalProduct} {meta.plural.toLowerCase()}!</span>
-              </div>
-              <p className="text-xs">
-                {numGroups} equal groups of {itemsPerGroup} adds up to exactly {totalProduct} objects in total.
-              </p>
-            </>
-          ) : (
-            <>
-              <div className="font-bold text-sm">Check your count!</div>
-              <p className="text-xs">
-                Count the items across all {numGroups} groups: {numGroups} groups of {itemsPerGroup} equals {totalProduct}.
-              </p>
-            </>
-          )}
+      {isAnswered && (
+        <div className={`vma-feedback ${isCorrect ? 'is-correct' : 'is-wrong'}`} role="status" aria-live="polite">
+          {isCorrect && <CheckCircle2 aria-hidden="true" />}
+          <div>
+            {isCorrect ? (
+              <>
+                <strong>
+                  Correct — {numGroups} × {itemsPerGroup} = {totalProduct}.
+                </strong>
+                <p>
+                  {numGroups} equal groups of {itemsPerGroup} add up to exactly {totalProduct} objects in total.
+                </p>
+              </>
+            ) : (
+              <>
+                <strong>Not quite. Count across all {numGroups} groups.</strong>
+                <p>
+                  {numGroups} groups of {itemsPerGroup} equals {totalProduct}; each group adds {itemsPerGroup} more.
+                </p>
+              </>
+            )}
+          </div>
         </div>
       )}
-    </div>
+    </Reveal>
   );
 };

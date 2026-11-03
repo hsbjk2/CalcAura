@@ -1,0 +1,611 @@
+/* =========================================================================
+   CALCAURA — secondary page skin
+   Every route that is not the landing page shares the landing design
+   language: stone paper, ink, one chartreuse signal, Bodoni display type,
+   hairline rules, sharp cards and a quiet page transition.
+   Loaded after index.css so it can settle the remaining legacy utilities.
+   ========================================================================= */
+
+:root {
+  --nav-clear: 74px;
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --nav-clear: 66px;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Shell + page transition
+   ------------------------------------------------------------------------- */
+
+.page-shell {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  padding-top: var(--nav-clear);
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(70% 440px at 50% -40px, color-mix(in srgb, var(--accent) 12%, transparent), transparent 72%),
+    linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
+  color: var(--ink);
+  animation: page-shell-in 620ms var(--ease-expo) both;
+}
+
+.dark .page-shell {
+  background-color: var(--ink);
+  background-image:
+    radial-gradient(70% 440px at 50% -40px, color-mix(in srgb, var(--accent) 8%, transparent), transparent 72%),
+    linear-gradient(180deg, var(--ink) 0%, var(--ink-2) 100%);
+  color: var(--paper);
+}
+
+@keyframes page-shell-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* The fixed nav is 74px on desktop; the workspace ribbon has to sit under it. */
+.page-shell .workspace-ribbon {
+  top: var(--nav-clear) !important;
+}
+
+/* -------------------------------------------------------------------------
+   Type: display headings, text body
+   ------------------------------------------------------------------------- */
+
+.page-shell h1,
+.page-shell h2 {
+  font-family: var(--font-display);
+  font-weight: 500 !important;
+  letter-spacing: -0.025em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.page-shell h1 {
+  font-size: clamp(2.1rem, 4.4vw, 4.2rem);
+}
+
+.page-shell h3,
+.page-shell h4,
+.page-shell h5 {
+  font-family: var(--font-text);
+  letter-spacing: -0.01em;
+}
+
+.page-shell .page-head h1 {
+  font-size: clamp(2.2rem, 4.6vw, 4.4rem);
+}
+
+.dark .page-head p,
+.dark .page-shell p {
+  color: var(--muted-ink);
+}
+
+/* Page headers clear the fixed navigation and arrive in sequence. */
+.page-head {
+  padding-top: clamp(12px, 2vw, 24px);
+}
+
+.page-head > * {
+  animation: page-head-in 640ms var(--ease-expo) both;
+}
+
+.page-head > *:nth-child(1) {
+  animation-delay: 40ms;
+}
+
+.page-head > *:nth-child(2) {
+  animation-delay: 120ms;
+}
+
+@keyframes page-head-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Surfaces
+   Big legacy cards become paper panels with hairline edges and sharp corners.
+   Small controls keep their tighter radius.
+   ------------------------------------------------------------------------- */
+
+.page-shell :where([class~='bg-white']) {
+  background-color: color-mix(in srgb, #ffffff 62%, var(--paper)) !important;
+}
+
+.dark .page-shell :where([class~='bg-white']) {
+  background-color: var(--ink-2) !important;
+}
+
+.page-shell :where([class~='bg-slate-50'], [class~='bg-slate-100'], [class~='bg-gray-50'], [class~='bg-gray-100']) {
+  background-color: var(--paper-2) !important;
+}
+
+.dark .page-shell :where([class~='bg-slate-50'], [class~='bg-slate-100'], [class~='bg-gray-50'], [class~='bg-gray-100']) {
+  background-color: var(--ink-3) !important;
+}
+
+.page-shell :where([class~='bg-slate-200'], [class~='bg-gray-200']) {
+  background-color: var(--paper-3) !important;
+}
+
+.dark .page-shell :where([class~='bg-slate-200'], [class~='bg-gray-200']) {
+  background-color: var(--ink-3) !important;
+}
+
+/* Legacy dark surfaces, only when the dark theme is active. */
+.dark .page-shell :where(
+  [class~='dark:bg-[#111321]'],
+  [class~='dark:bg-[#0B0D16]'],
+  [class~='dark:bg-[#0c0e17]'],
+  [class~='dark:bg-[#0c0e18]'],
+  [class~='dark:bg-[#18181B]'],
+  [class~='dark:bg-[#181a29]'],
+  [class~='dark:bg-[#1E1E22]'],
+  [class~='dark:bg-slate-900'],
+  [class~='dark:bg-slate-800'],
+  [class~='dark:bg-gray-800']
+) {
+  background-color: var(--ink-2) !important;
+}
+
+/* Large blocks are sharp; pills, buttons and activity tiles stay friendly. */
+.page-shell :where(
+  [class~='rounded-3xl'],
+  [class~='rounded-[2.5rem]'],
+  [class~='rounded-[2rem]']
+) {
+  border-radius: 3px !important;
+}
+
+.page-shell :where([class~='shadow-2xl'], [class~='shadow-xl']) {
+  box-shadow: 0 2px 8px rgba(10, 12, 9, 0.06) !important;
+}
+
+.dark .page-shell :where([class~='shadow-2xl'], [class~='shadow-xl']) {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28) !important;
+}
+
+/* -------------------------------------------------------------------------
+   Legacy gradients
+   Primary controls take the chartreuse signal. Panels become ink or paper
+   instead of a flat block of accent.
+   ------------------------------------------------------------------------- */
+
+.page-shell [class*='bg-gradient-to-'] {
+  background-image: none !important;
+  background-color: var(--paper-2) !important;
+}
+
+.dark .page-shell [class*='bg-gradient-to-'] {
+  background-color: var(--ink-3) !important;
+}
+
+.page-shell :is(button, a, [role='button'])[class*='bg-gradient-to-'] {
+  background-image: linear-gradient(120deg, var(--accent) 0%, var(--accent-strong) 100%) !important;
+  background-color: var(--accent) !important;
+  color: var(--ink) !important;
+  border-color: transparent !important;
+}
+
+.page-shell :is(button, a, [role='button'])[class*='bg-gradient-to-']:hover {
+  background-image: linear-gradient(120deg, var(--accent-strong) 0%, var(--accent) 100%) !important;
+  filter: none;
+}
+
+/* The two full-bleed legacy heroes become ink panels. */
+.page-shell .bg-gradient-to-br[class~='from-slate-950'],
+.page-shell .bg-gradient-to-br[class~='from-indigo-900'] {
+  background-image:
+    radial-gradient(90% 130% at 10% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 62%),
+    linear-gradient(150deg, var(--ink-3) 0%, var(--ink) 100%) !important;
+  background-color: var(--ink) !important;
+  color: var(--paper) !important;
+  border-color: var(--line-ink) !important;
+}
+
+.page-shell .bg-gradient-to-br[class~='from-slate-950'] h1,
+.page-shell .bg-gradient-to-br[class~='from-indigo-900'] h1,
+.page-shell .bg-gradient-to-br[class~='from-slate-950'] p,
+.page-shell .bg-gradient-to-br[class~='from-indigo-900'] p {
+  color: var(--paper);
+}
+
+/* Soft tint panels (junior learning notes, reward strips) stay paper. */
+.page-shell [class*='bg-gradient-to-'][class*='/5']:not(:is(button, a, [role='button'])),
+.page-shell [class*='bg-gradient-to-'][class*='/10']:not(:is(button, a, [role='button'])) {
+  background-color: color-mix(in srgb, var(--accent) 8%, var(--paper-2)) !important;
+}
+
+.dark .page-shell [class*='bg-gradient-to-'][class*='/5']:not(:is(button, a, [role='button'])),
+.dark .page-shell [class*='bg-gradient-to-'][class*='/10']:not(:is(button, a, [role='button'])) {
+  background-color: var(--ink-3) !important;
+}
+
+/* -------------------------------------------------------------------------
+   Cards: a slow lift on hover and a hairline edge
+   ------------------------------------------------------------------------- */
+
+.page-shell :is(article, section, div)[class~='shadow-sm']:not(:is(button, a)) {
+  transition:
+    transform 320ms var(--ease-out),
+    box-shadow 320ms var(--ease-out),
+    border-color 320ms var(--ease-out);
+  will-change: transform;
+}
+
+@media (hover: hover) {
+  .page-shell :is(article, section, div)[class~='shadow-sm']:not(:is(button, a)):hover {
+    transform: translate3d(0, -3px, 0);
+    box-shadow: 0 18px 38px rgba(10, 12, 9, 0.12);
+  }
+
+  .dark .page-shell :is(article, section, div)[class~='shadow-sm']:not(:is(button, a)):hover {
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.42);
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Workspace ribbon
+   ------------------------------------------------------------------------- */
+
+.page-shell .workspace-ribbon {
+  background: color-mix(in srgb, var(--paper) 90%, transparent);
+  border-bottom: 1px solid var(--line);
+  -webkit-backdrop-filter: blur(14px) saturate(1.08);
+  backdrop-filter: blur(14px) saturate(1.08);
+}
+
+.dark .page-shell .workspace-ribbon {
+  background: color-mix(in srgb, var(--ink) 88%, transparent);
+  border-bottom-color: var(--line-ink);
+}
+
+.page-shell .workspace-ribbon button {
+  border-radius: 999px !important;
+}
+
+/* -------------------------------------------------------------------------
+   Small interactive polish
+   ------------------------------------------------------------------------- */
+
+.page-shell .btn svg,
+.page-shell .text-link svg {
+  transition: transform var(--t-hover) var(--ease-out);
+}
+
+.page-shell .btn:hover svg {
+  transform: translateX(2px);
+}
+
+.page-shell :is(button, a)[class*='transition'] {
+  transition-timing-function: var(--ease-out);
+}
+
+/* -------------------------------------------------------------------------
+   Reduced motion
+   ------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .page-shell,
+  .page-head > * {
+    animation: none !important;
+  }
+
+  .page-shell :is(article, section, div)[class~='shadow-sm']:hover {
+    transform: none !important;
+  }
+}
+
+/* =========================================================================
+   Shared depth, glass and motion utilities
+   Used by the secondary pages so every route reads as the same product.
+   ========================================================================= */
+
+.depth-stage {
+  perspective: 1100px;
+  perspective-origin: 50% 40%;
+}
+
+.depth-card {
+  --rx: 0deg;
+  --ry: 0deg;
+  --mx: 50%;
+  --my: 50%;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: perspective(1100px) rotateX(var(--rx)) rotateY(var(--ry)) translateZ(0);
+  transition:
+    transform 460ms var(--ease-out),
+    box-shadow 460ms var(--ease-out),
+    border-color 460ms var(--ease-out);
+}
+
+.depth-card[data-tilting='true'] {
+  transition-duration: 90ms;
+}
+
+.depth-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    380px circle at var(--mx) var(--my),
+    color-mix(in srgb, var(--accent) 18%, transparent),
+    transparent 66%
+  );
+  transition: opacity 320ms ease;
+}
+
+.depth-card:hover::after {
+  opacity: 0.9;
+}
+
+.depth-layer {
+  transform: translateZ(34px);
+  transform-style: preserve-3d;
+}
+
+.depth-layer--soft {
+  transform: translateZ(18px);
+}
+
+/* Quiet glass: translucent fill, hairline edge, inner highlight. Large
+   surfaces deliberately avoid backdrop blur so text stays crisp and cheap. */
+.glass-surface {
+  position: relative;
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, #ffffff 46%, var(--paper)) 0%,
+      color-mix(in srgb, var(--paper-2) 88%, transparent) 100%
+    );
+  border: 1px solid color-mix(in srgb, var(--ink) 13%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #ffffff 62%, transparent),
+    0 2px 10px rgba(10, 12, 9, 0.06);
+}
+
+.dark .glass-surface {
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--ink-3) 92%, transparent) 0%,
+      color-mix(in srgb, var(--ink-2) 96%, transparent) 100%
+    );
+  border-color: var(--line-ink);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 2px 10px rgba(0, 0, 0, 0.28);
+}
+
+.glass-chip {
+  background: color-mix(in srgb, var(--paper) 72%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  backdrop-filter: blur(14px) saturate(1.1);
+}
+
+.dark .glass-chip {
+  background: color-mix(in srgb, var(--ink-3) 78%, transparent);
+  border-color: var(--line-ink);
+}
+
+/* Accent edge used on premium cards and active rails. */
+.accent-edge {
+  position: relative;
+}
+
+.accent-edge::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, var(--accent), transparent);
+  pointer-events: none;
+}
+
+/* Faint engineering grid for empty or numeric sections. */
+.math-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--ink) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--ink) 7%, transparent) 1px, transparent 1px);
+  background-size: 30px 30px;
+  background-position: center;
+}
+
+.dark .math-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--paper) 8%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--paper) 8%, transparent) 1px, transparent 1px);
+}
+
+/* Scroll entrance. The element is only hidden once JS has mounted it. */
+.ui-reveal {
+  opacity: 1;
+  transform: none;
+}
+
+.ui-reveal.is-in {
+  animation: ui-reveal-in 720ms var(--ease-expo) backwards;
+  animation-delay: var(--ui-delay, 0ms);
+}
+
+@keyframes ui-reveal-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Hero-scale atmospheric field for secondary page headers. */
+.aurora {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.aurora__blob {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  filter: blur(42px);
+  opacity: 0.55;
+  animation: aurora-drift 16s var(--ease-in-out) infinite alternate;
+}
+
+.aurora__blob--a {
+  width: clamp(220px, 34vw, 520px);
+  aspect-ratio: 1;
+  top: -22%;
+  left: -8%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 42%, transparent), transparent 68%);
+}
+
+.aurora__blob--b {
+  width: clamp(180px, 26vw, 400px);
+  aspect-ratio: 1;
+  top: 8%;
+  right: -6%;
+  background: radial-gradient(circle, color-mix(in srgb, #ffffff 30%, transparent), transparent 70%);
+  animation-delay: -6s;
+}
+
+.aurora__blob--c {
+  width: clamp(200px, 30vw, 460px);
+  aspect-ratio: 1;
+  bottom: -34%;
+  left: 34%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--stone) 44%, transparent), transparent 70%);
+  animation-delay: -11s;
+}
+
+.dark .aurora__blob {
+  opacity: 0.3;
+}
+
+.aurora__ring {
+  position: absolute;
+  width: clamp(240px, 34vw, 520px);
+  aspect-ratio: 1;
+  right: -10%;
+  top: -28%;
+  border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+  border-radius: 50%;
+  transform: rotateX(62deg) rotateZ(-18deg);
+  animation: aurora-ring 22s linear infinite;
+}
+
+.dark .aurora__ring {
+  border-color: var(--line-ink);
+}
+
+@keyframes aurora-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(4%, 6%, 0) scale(1.12);
+  }
+}
+
+@keyframes aurora-ring {
+  from {
+    transform: rotateX(62deg) rotateZ(0deg);
+  }
+  to {
+    transform: rotateX(62deg) rotateZ(360deg);
+  }
+}
+
+/* Gentle float for 3D objects and decorative glyphs. */
+.float-3d {
+  animation: float-3d 7s var(--ease-in-out) infinite;
+}
+
+.float-3d--slow {
+  animation-duration: 11s;
+}
+
+@keyframes float-3d {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0) rotateX(2deg) rotateY(-3deg);
+  }
+}
+
+/* Sheen that travels across a card edge once on hover. */
+.sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.sheen::after {
+  content: '';
+  position: absolute;
+  inset: -40% -60%;
+  background: linear-gradient(
+    115deg,
+    transparent 38%,
+    color-mix(in srgb, #ffffff 34%, transparent) 50%,
+    transparent 62%
+  );
+  transform: translateX(-70%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 760ms var(--ease-out), opacity 300ms ease;
+}
+
+.sheen:hover::after {
+  transform: translateX(70%);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .depth-card,
+  .float-3d,
+  .aurora__blob,
+  .aurora__ring {
+    animation: none !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .ui-reveal,
+  .ui-reveal.is-in {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+
+  .sheen::after {
+    display: none;
+  }
+}
+

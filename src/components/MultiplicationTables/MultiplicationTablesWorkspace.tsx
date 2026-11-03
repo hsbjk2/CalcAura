@@ -19,14 +19,27 @@ import {
   Copy,
   Check,
   X,
-  FileText
+  FileText,
+  BookOpen,
+  Zap,
+  Play,
+  RotateCcw,
+  Timer
 } from 'lucide-react';
-import { VisualObject, VisualAssetType } from '../VisualMathWorld/VisualAssetLibrary.tsx';
+import { Reveal, GlassPanel, Tilt3D, Aurora } from '../ui/Depth.tsx';
+import '../../styles/multiplication.css';
 
 type TableMode = 'learn' | 'practice' | 'challenge' | 'missing';
 type MultiplierRange = 10 | 12 | 20 | 25;
 type PrintSheetMode = 'answers' | 'blanks' | 'missing';
 type PrintScope = 'single' | '1to10' | '11to20' | '21to30';
+
+const MODES: { id: TableMode; label: string; icon: React.ReactNode }[] = [
+  { id: 'learn', label: 'Learn table', icon: <BookOpen className="mult-icon" /> },
+  { id: 'practice', label: 'Flashcards', icon: <Zap className="mult-icon" /> },
+  { id: 'missing', label: 'Missing number', icon: <HelpCircle className="mult-icon" /> },
+  { id: 'challenge', label: 'Speed drill', icon: <Trophy className="mult-icon" /> }
+];
 
 export const MultiplicationTablesWorkspace: React.FC = () => {
   const [selectedTable, setSelectedTable] = useState<number>(7);
@@ -184,12 +197,19 @@ export const MultiplicationTablesWorkspace: React.FC = () => {
     }
   };
 
+  const currentProduct = selectedTable * selectedMultiplier;
+  const squareValue = selectedTable * selectedTable;
+  const nineAnchor = Math.min(9, multiplierRange);
+  const nineProduct = 9 * nineAnchor;
+  const nineDigitSum = String(nineProduct)
+    .split('')
+    .reduce((sum, digit) => sum + Number(digit), 0);
+  const miniTable = Array.from({ length: 9 }, (_, i) => selectedTable * (i + 1));
+
   return (
     <div
       ref={containerRef}
-      className={`bg-slate-50 dark:bg-slate-950 min-h-screen text-slate-900 dark:text-slate-100 transition-colors p-3 sm:p-6 md:p-8 space-y-6 ${
-        isFullscreen ? 'p-4 sm:p-8 overflow-y-auto' : ''
-      }`}
+      className={`mult-studio ${isFullscreen ? 'is-fullscreen' : ''}`}
     >
       {/* Print Stylesheet injection for clean paper print */}
       <style>{`
@@ -205,476 +225,688 @@ export const MultiplicationTablesWorkspace: React.FC = () => {
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
+            max-width: none !important;
             padding: 24px !important;
+            border: 0 !important;
             background: white !important;
             color: black !important;
+            box-shadow: none !important;
+          }
+          .mult-studio .mult-modal,
+          .mult-studio .mult-modal__panel,
+          .mult-studio .mult-modal__preview {
+            position: static !important;
+            display: block !important;
+            overflow: visible !important;
+            max-height: none !important;
+            padding: 0 !important;
+            border: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+          }
+          .mult-studio .mult-modal__scrim {
+            display: none !important;
           }
         }
       `}</style>
 
-      {/* Top Banner / Navigation */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-wider mb-2">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-500" /> Complete 1 to 30 Workspace
-          </div>
-          <h1 className="text-xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-3 flex-wrap">
-            Multiplication Tables Studio
-            <span className="text-xs sm:text-sm font-semibold px-2.5 sm:px-3 py-1 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300">
-              Table of {selectedTable}
-            </span>
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">
-            Visual arrays, repeated addition, audio pronunciation, and interactive speed drills for all 30 tables.
-          </p>
-        </div>
+      {/* ------------------------------------------------------------------ */}
+      {/* Hero                                                               */}
+      {/* ------------------------------------------------------------------ */}
+      <Reveal as="section" className="mult-hero">
+        <Aurora />
 
-        {/* Global Controls: Audio, Fullscreen, Print Sheet */}
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={() => setSoundEnabled(!soundEnabled)}
-            className={`px-3 py-2 sm:p-2.5 rounded-xl border transition-all flex items-center gap-2 text-xs font-semibold cursor-pointer ${
-              soundEnabled
-                ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-400 text-emerald-700 dark:text-emerald-300'
-                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
-            }`}
-          >
-            {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-600" /> : <VolumeX className="w-4 h-4" />}
-            <span>Voice {soundEnabled ? 'ON' : 'OFF'}</span>
-          </button>
-
-          <button
-            onClick={toggleFullscreen}
-            className="px-3 py-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-2 cursor-pointer"
-          >
-            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-            <span className="hidden sm:inline">{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}</span>
-          </button>
-
-          <button
-            onClick={() => setIsPrintModalOpen(true)}
-            className="px-3.5 py-2 sm:p-2.5 rounded-xl border border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-bold flex items-center gap-2 shadow-xs cursor-pointer"
-          >
-            <Printer className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-            <span>Print Sheet</span>
-          </button>
-        </div>
-      </div>
-
-      {/* 1–30 Table Selector Bar (Fully Responsive Grid) */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 sm:p-5 shadow-sm space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
-            Select Table (1 to 30)
+        <div className="mult-hero__copy">
+          <span className="mult-eyebrow">
+            <Sparkles className="mult-icon mult-icon--accent" aria-hidden="true" />
+            Multiplication studio · tables 1–30
           </span>
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <button
-              onClick={() => setSelectedTable((prev) => Math.max(1, prev - 1))}
-              disabled={selectedTable === 1}
-              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setSelectedTable((prev) => Math.min(30, prev + 1))}
-              disabled={selectedTable === 30}
-              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setSelectedTable(Math.floor(Math.random() * 30) + 1)}
-              className="px-2.5 py-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 text-xs font-bold flex items-center gap-1 hover:bg-indigo-100 cursor-pointer"
-            >
-              <Shuffle className="w-3.5 h-3.5" /> Random
-            </button>
+
+          <h1 className="mult-hero__title">
+            Every table,
+            <br />
+            <em>made visible.</em>
+          </h1>
+
+          <p className="mult-hero__lead">
+            Arrays, recitation, missing factors and speed drills for all thirty tables.
+            One quiet desk for the patterns behind the answers.
+          </p>
+
+          <div className="mult-hero__meta" aria-label="Workspace summary">
+            <span className="mult-chip">
+              <Grid3X3 className="mult-icon" aria-hidden="true" /> 30 tables
+            </span>
+            <span className="mult-chip">
+              <Layers className="mult-icon" aria-hidden="true" /> 4 modes
+            </span>
+            <span className="mult-chip">
+              <Volume2 className="mult-icon" aria-hidden="true" /> Voice recitation
+            </span>
           </div>
         </div>
 
-        {/* 30 Number Buttons: 5 cols on mobile, 6 on small, 10 on tablet, 15 on desktop */}
-        <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-10 lg:grid-cols-15 gap-1.5">
-          {Array.from({ length: 30 }).map((_, i) => {
-            const num = i + 1;
-            const isCurrent = selectedTable === num;
-            return (
-              <button
-                key={num}
-                onClick={() => setSelectedTable(num)}
-                className={`py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  isCurrent
-                    ? 'bg-blue-600 text-white shadow-md scale-105'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                {num}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Mode Switcher & Multiplier Range */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
-        {/* 4 Learning Modes */}
-        <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
-          {[
-            { id: 'learn', label: '1. Learn Table', icon: '📖' },
-            { id: 'practice', label: '2. Flashcards', icon: '⚡' },
-            { id: 'missing', label: '3. Missing Number', icon: '❓' },
-            { id: 'challenge', label: '4. Speed Drill', icon: '🏆' }
-          ].map((m) => (
-            <button
-              key={m.id}
-              onClick={() => setMode(m.id as TableMode)}
-              className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                mode === m.id
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-              }`}
-            >
-              <span>{m.icon}</span>
-              <span>{m.label}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Range Selector: x10, x12, x20, x25 */}
-        <div className="flex items-center gap-1.5 self-end sm:self-auto">
-          <span className="text-xs font-bold text-slate-500 mr-1">Range:</span>
-          {[10, 12, 20, 25].map((rng) => (
-            <button
-              key={rng}
-              onClick={() => setMultiplierRange(rng as MultiplierRange)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                multiplierRange === rng
-                  ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-              }`}
-            >
-              ×{rng}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* MODE 1: LEARN MODE */}
-      {mode === 'learn' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column: Full Table Equation List */}
-          <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm space-y-2 max-h-[640px] overflow-y-auto thin-scrollbar">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex justify-between items-center">
-              <span>Recitation List</span>
-              <span>Tap row to visualize</span>
-            </h3>
-
-            {Array.from({ length: multiplierRange }).map((_, i) => {
-              const mult = i + 1;
-              const product = selectedTable * mult;
-              const isSelected = selectedMultiplier === mult;
-
-              return (
-                <div
-                  key={mult}
-                  onClick={() => {
-                    setSelectedMultiplier(mult);
-                    speakText(`${selectedTable} times ${mult} is ${product}`);
-                  }}
-                  className={`p-3 rounded-2xl cursor-pointer flex items-center justify-between transition-all ${
-                    isSelected
-                      ? 'bg-blue-600 text-white shadow-lg scale-[1.01]'
-                      : 'hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-800 dark:text-slate-200'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black ${
-                        isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
-                      }`}
-                    >
-                      {mult}
-                    </span>
-                    <span className="font-mono text-base font-bold">
-                      {selectedTable} × {mult}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-lg font-black">{product}</span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        speakText(`${selectedTable} times ${mult} is ${product}`);
-                      }}
-                      className="p-1.5 rounded-lg hover:bg-white/20 opacity-70 hover:opacity-100"
-                    >
-                      <Volume2 className="w-4 h-4" />
-                    </button>
-                  </div>
+        <div className="mult-hero__visual" aria-hidden="true">
+          <Tilt3D className="mult-object" strength={8}>
+            <span className="mult-object__halo" />
+            <div className="mult-object__stack">
+              <div className="mult-object__sheet mult-object__sheet--back">
+                <div className="mult-object__topline">
+                  <span>Tables</span>
+                  <span>01—30</span>
                 </div>
+                <span className="mult-object__rule" />
+                <span className="mult-object__rule mult-object__rule--short" />
+                <span className="mult-object__ghost-number">×</span>
+              </div>
+
+              <div className="mult-object__sheet mult-object__sheet--mid">
+                <div className="mult-object__topline">
+                  <span>Pattern</span>
+                  <span>{String(selectedTable).padStart(2, '0')}</span>
+                </div>
+                <div className="mult-object__mini">
+                  {miniTable.map((value) => (
+                    <span key={value}>{value}</span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mult-object__sheet mult-object__sheet--front">
+                <div className="mult-object__topline">
+                  <span>Table of</span>
+                  <span>{String(selectedTable).padStart(2, '0')}</span>
+                </div>
+                <div className="mult-object__equation">
+                  {selectedTable}
+                  <span>×</span>
+                  {selectedMultiplier}
+                </div>
+                <div className="mult-object__product">= {currentProduct}</div>
+                <div className="mult-object__footer">
+                  <span>CalcAura</span>
+                  <span>×{multiplierRange}</span>
+                </div>
+              </div>
+            </div>
+          </Tilt3D>
+        </div>
+      </Reveal>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Toolbar                                                            */}
+      {/* ------------------------------------------------------------------ */}
+      <Reveal delay={60}>
+        <GlassPanel className="mult-toolbar">
+          <div className="mult-toolbar__status">
+            <span className="mult-kicker">Now studying</span>
+            <div className="mult-toolbar__title">
+              Table of <strong>{selectedTable}</strong>
+              <span className="mult-toolbar__range">×1—{multiplierRange}</span>
+            </div>
+          </div>
+
+          <div className="mult-actions">
+            <button
+              type="button"
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              aria-pressed={soundEnabled}
+              className={`mult-action ${soundEnabled ? 'is-on' : ''}`}
+            >
+              {soundEnabled ? <Volume2 className="mult-icon" aria-hidden="true" /> : <VolumeX className="mult-icon" aria-hidden="true" />}
+              <span>Voice {soundEnabled ? 'on' : 'off'}</span>
+            </button>
+
+            <button type="button" onClick={toggleFullscreen} className="mult-action">
+              {isFullscreen ? <Minimize2 className="mult-icon" aria-hidden="true" /> : <Maximize2 className="mult-icon" aria-hidden="true" />}
+              <span>{isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsPrintModalOpen(true)}
+              className="mult-action mult-action--accent"
+            >
+              <Printer className="mult-icon" aria-hidden="true" />
+              <span>Print sheet</span>
+            </button>
+          </div>
+        </GlassPanel>
+      </Reveal>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Table switcher                                                     */}
+      {/* ------------------------------------------------------------------ */}
+      <Reveal delay={110}>
+        <GlassPanel className="mult-switcher">
+          <div className="mult-switcher__head">
+            <div>
+              <span className="mult-kicker">
+                <Grid3X3 className="mult-icon" aria-hidden="true" /> Choose a table
+              </span>
+              <p className="mult-switcher__hint">Pill a number to rebuild the whole desk.</p>
+            </div>
+
+            <div className="mult-switcher__nav">
+              <button
+                type="button"
+                onClick={() => setSelectedTable((prev) => Math.max(1, prev - 1))}
+                disabled={selectedTable === 1}
+                className="mult-icon-btn"
+                aria-label="Previous table"
+              >
+                <ChevronLeft className="mult-icon" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedTable((prev) => Math.min(30, prev + 1))}
+                disabled={selectedTable === 30}
+                className="mult-icon-btn"
+                aria-label="Next table"
+              >
+                <ChevronRight className="mult-icon" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedTable(Math.floor(Math.random() * 30) + 1)}
+                className="mult-btn mult-btn--quiet mult-btn--sm"
+              >
+                <Shuffle className="mult-icon" aria-hidden="true" /> Random
+              </button>
+            </div>
+          </div>
+
+          <div className="mult-switcher__grid" role="group" aria-label="Multiplication tables 1 to 30">
+            {Array.from({ length: 30 }).map((_, i) => {
+              const num = i + 1;
+              const isCurrent = selectedTable === num;
+              return (
+                <button
+                  key={num}
+                  type="button"
+                  onClick={() => setSelectedTable(num)}
+                  aria-pressed={isCurrent}
+                  className={`mult-table-btn ${isCurrent ? 'is-active' : ''}`}
+                >
+                  {num}
+                </button>
               );
             })}
           </div>
+        </GlassPanel>
+      </Reveal>
 
-          {/* Right Column: Synchronized Visual Models */}
-          <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm space-y-6">
-            {/* Active Equation Card */}
-            <div className="p-6 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-blue-950/40 dark:to-indigo-950/40 border border-blue-200 dark:border-blue-800 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+      {/* ------------------------------------------------------------------ */}
+      {/* Modes + range                                                      */}
+      {/* ------------------------------------------------------------------ */}
+      <Reveal delay={150}>
+        <GlassPanel className="mult-controls">
+          <div className="mult-modes" role="group" aria-label="Learning mode">
+            {MODES.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setMode(item.id)}
+                aria-pressed={mode === item.id}
+                className={`mult-mode ${mode === item.id ? 'is-active' : ''}`}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="mult-range" role="group" aria-label="Multiplier range">
+            <span className="mult-kicker">Range</span>
+            {[10, 12, 20, 25].map((rng) => (
+              <button
+                key={rng}
+                type="button"
+                onClick={() => setMultiplierRange(rng as MultiplierRange)}
+                aria-pressed={multiplierRange === rng}
+                className={`mult-range__btn ${multiplierRange === rng ? 'is-active' : ''}`}
+              >
+                ×{rng}
+              </button>
+            ))}
+          </div>
+        </GlassPanel>
+      </Reveal>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* MODE 1: LEARN                                                     */}
+      {/* ------------------------------------------------------------------ */}
+      {mode === 'learn' && (
+        <Reveal className="mult-learn" delay={40}>
+          <GlassPanel className="mult-panel mult-recitation">
+            <div className="mult-panel__head">
               <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-                  Visualizing Equation
+                <span className="mult-kicker">Recitation list</span>
+                <h2 className="mult-panel__title">Table of {selectedTable}</h2>
+              </div>
+              <span className="mult-panel__hint">Tap a row to visualise</span>
+            </div>
+
+            <div className="mult-recitation__list">
+              {Array.from({ length: multiplierRange }).map((_, i) => {
+                const mult = i + 1;
+                const product = selectedTable * mult;
+                const isSelected = selectedMultiplier === mult;
+
+                return (
+                  <div key={mult} className={`mult-row ${isSelected ? 'is-active' : ''}`}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedMultiplier(mult);
+                        speakText(`${selectedTable} times ${mult} is ${product}`);
+                      }}
+                      aria-pressed={isSelected}
+                      className="mult-row__select"
+                    >
+                      <span className="mult-row__index">{String(mult).padStart(2, '0')}</span>
+                      <span className="mult-row__expr">
+                        {selectedTable} × {mult}
+                      </span>
+                    </button>
+
+                    <div className="mult-row__right">
+                      <span className="mult-row__product">{product}</span>
+                      <button
+                        type="button"
+                        onClick={() => speakText(`${selectedTable} times ${mult} is ${product}`)}
+                        className="mult-row__audio"
+                        aria-label={`Speak ${selectedTable} times ${mult} equals ${product}`}
+                      >
+                        <Volume2 className="mult-icon" aria-hidden="true" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </GlassPanel>
+
+          <GlassPanel className="mult-panel mult-visual">
+            <div className="mult-equation">
+              <div>
+                <span className="mult-kicker">Visualising equation</span>
+                <div className="mult-equation__line">
+                  {selectedTable} × {selectedMultiplier} = <strong>{currentProduct}</strong>
                 </div>
-                <div className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-slate-900 dark:text-white mt-1">
-                  {selectedTable} × {selectedMultiplier} = {selectedTable * selectedMultiplier}
-                </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  &ldquo;{selectedTable} groups of {selectedMultiplier}&rdquo; or &ldquo;{selectedMultiplier} groups of {selectedTable}&rdquo;
+                <p className="mult-equation__note">
+                  “{selectedTable} groups of {selectedMultiplier}” or “{selectedMultiplier} groups of {selectedTable}”
                 </p>
               </div>
 
               <button
-                onClick={() => speakText(`${selectedTable} multiplied by ${selectedMultiplier} equals ${selectedTable * selectedMultiplier}`)}
-                className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-md cursor-pointer shrink-0"
+                type="button"
+                onClick={() => speakText(`${selectedTable} multiplied by ${selectedMultiplier} equals ${currentProduct}`)}
+                className="mult-btn mult-btn--accent mult-btn--sm"
               >
-                <Volume2 className="w-4 h-4" /> Speak Equation
+                <Volume2 className="mult-icon" aria-hidden="true" /> Speak equation
               </button>
             </div>
 
-            {/* Visual Dot Array (Matrix Visualization) */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Dot Matrix Array ({selectedTable} rows × {selectedMultiplier} columns)
+            <div className="mult-array">
+              <div className="mult-array__head">
+                <span>
+                  Dot matrix · {selectedTable} rows × {selectedMultiplier} columns
                 </span>
-                <span className="text-xs font-mono text-blue-600 font-bold">
-                  {selectedTable * selectedMultiplier} total dots
-                </span>
+                <span>{currentProduct} dots</span>
               </div>
 
-              <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-x-auto flex justify-center">
+              <div className="mult-array__canvas math-grid">
                 <div
-                  className="grid gap-1.5"
+                  className="mult-array__grid"
                   style={{
-                    gridTemplateColumns: `repeat(${selectedMultiplier}, minmax(14px, 20px))`
+                    gridTemplateColumns: `repeat(${selectedMultiplier}, minmax(12px, 18px))`
                   }}
                 >
                   {Array.from({ length: selectedTable * selectedMultiplier }).map((_, idx) => (
-                    <div
-                      key={idx}
-                      className="w-4 h-4 rounded-full bg-blue-500 border border-blue-600 dark:border-blue-400 shadow-2xs hover:scale-125 transition-transform"
-                    />
+                    <span key={idx} className="mult-dot" />
                   ))}
                 </div>
               </div>
             </div>
 
-            {/* Repeated Addition Card */}
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Repeated Addition:</span>
-              <div className="font-mono text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200 break-words">
+            <div className="mult-addition">
+              <span className="mult-kicker">Repeated addition</span>
+              <p>
                 {Array.from({ length: selectedMultiplier })
                   .map(() => selectedTable)
                   .join(' + ')}{' '}
-                = <span className="text-blue-600">{selectedTable * selectedMultiplier}</span>
+                = <strong>{currentProduct}</strong>
+              </p>
+            </div>
+          </GlassPanel>
+        </Reveal>
+      )}
+
+      {/* ------------------------------------------------------------------ */}
+      {/* MODE 2: FLASHCARDS                                                */}
+      {/* ------------------------------------------------------------------ */}
+      {mode === 'practice' && (
+        <Reveal className="mult-stage" delay={40}>
+          <GlassPanel className="mult-practice">
+            <div className="mult-practice__head">
+              <span className="mult-kicker">Flashcard practice</span>
+              <span className="mult-practice__hint">Table of {selectedTable}</span>
+            </div>
+
+            <div className="mult-question">
+              <span className="mult-question__ghost" aria-hidden="true">
+                ×
+              </span>
+              <div className="mult-question__line">
+                {selectedTable} <span>×</span> {quizMultiplier}
               </div>
             </div>
-          </div>
-        </div>
-      )}
 
-      {/* MODE 2: FLASHCARDS */}
-      {mode === 'practice' && (
-        <div className="max-w-xl mx-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 text-center space-y-6 shadow-sm">
-          <div className="text-xs font-bold uppercase tracking-wider text-slate-400">Flashcard Practice</div>
-          <div className="py-12 px-6 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-slate-800 dark:to-slate-800/60 rounded-3xl border border-indigo-100 dark:border-slate-700 shadow-inner">
-            <div className="text-5xl sm:text-6xl font-black font-mono text-slate-900 dark:text-white">
-              {selectedTable} × {quizMultiplier}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 justify-center">
-            <input
-              type="number"
-              placeholder="Your Answer"
-              value={userAnswer}
-              onChange={(e) => setUserAnswer(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleCheckAnswer()}
-              className="w-48 px-4 py-3 rounded-2xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-center text-xl font-bold"
-            />
-            <button
-              onClick={handleCheckAnswer}
-              className="px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider cursor-pointer"
-            >
-              Verify
-            </button>
-          </div>
-
-          {feedback && (
-            <div
-              className={`p-3 rounded-xl font-bold text-sm ${
-                feedback === 'correct'
-                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200'
-                  : 'bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200'
-              }`}
-            >
-              {feedback === 'correct' ? '🎉 Brilliant! Correct Answer!' : '❌ Not quite. Try again!'}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* MODE 3: MISSING NUMBER */}
-      {mode === 'missing' && (
-        <div className="max-w-xl mx-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 text-center space-y-6 shadow-sm">
-          <div className="text-xs font-bold uppercase tracking-wider text-slate-400">Fill in the Missing Factor</div>
-          <div className="py-12 px-6 bg-slate-50 dark:bg-slate-800/60 rounded-3xl border border-slate-200 dark:border-slate-700">
-            <div className="text-4xl sm:text-5xl font-black font-mono text-slate-900 dark:text-white flex items-center justify-center gap-2">
-              <span>{missingPosition === 'a' ? '____' : selectedTable}</span>
-              <span>×</span>
-              <span>{missingPosition === 'b' ? '____' : quizMultiplier}</span>
-              <span>=</span>
-              <span>{missingPosition === 'c' ? '____' : selectedTable * quizMultiplier}</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 justify-center">
-            <input
-              type="number"
-              placeholder="Missing Number"
-              value={userAnswer}
-              onChange={(e) => setUserAnswer(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleCheckAnswer()}
-              className="w-48 px-4 py-3 rounded-2xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-center text-xl font-bold"
-            />
-            <button
-              onClick={handleCheckAnswer}
-              className="px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider cursor-pointer"
-            >
-              Check
-            </button>
-          </div>
-
-          {feedback && (
-            <div
-              className={`p-3 rounded-xl font-bold text-sm ${
-                feedback === 'correct'
-                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200'
-                  : 'bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200'
-              }`}
-            >
-              {feedback === 'correct' ? '🌟 Superb! Correct value!' : '❌ Incorrect. Give it another thought.'}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* MODE 4: SPEED DRILL */}
-      {mode === 'challenge' && (
-        <div className="max-w-xl mx-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 text-center space-y-6 shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-              <Trophy className="w-4 h-4 text-amber-500" />
-              <span>Speed Challenge</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800">
-                ⏱️ {timerSeconds}s
-              </span>
-              <span className="text-xs font-bold text-amber-600">Score: {score}</span>
-            </div>
-          </div>
-
-          {!timerActive && !challengeComplete ? (
-            <div className="py-12 space-y-4">
-              <div className="text-5xl">⚡</div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white">Ready for 45-Second Speed Drill?</h3>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                Test your mastery of the Table of {selectedTable}. Answer as many questions as you can before the clock runs out!
-              </p>
-              <button
-                onClick={startChallenge}
-                className="px-8 py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm uppercase tracking-wider transition-all shadow-lg cursor-pointer"
-              >
-                Start Drill Now 🚀
+            <div className="mult-answer">
+              <input
+                type="number"
+                inputMode="numeric"
+                placeholder="Your answer"
+                value={userAnswer}
+                onChange={(e) => setUserAnswer(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleCheckAnswer()}
+                className="mult-input"
+                aria-label="Your answer"
+              />
+              <button type="button" onClick={handleCheckAnswer} className="mult-btn mult-btn--accent">
+                Verify
+                <ArrowRight className="mult-icon" aria-hidden="true" />
               </button>
             </div>
-          ) : timerActive ? (
-            <div className="space-y-6">
-              <div className="py-8 px-6 bg-slate-50 dark:bg-slate-800/60 rounded-3xl border border-slate-200 dark:border-slate-700">
-                <div className="text-4xl sm:text-5xl font-black font-mono text-slate-900 dark:text-white">
-                  {selectedTable} × {quizMultiplier} = ?
-                </div>
-              </div>
 
-              <div className="flex items-center gap-3 max-w-xs mx-auto">
-                <input
-                  type="number"
-                  autoFocus
-                  placeholder="Answer"
-                  value={userAnswer}
-                  onChange={(e) => setUserAnswer(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleCheckAnswer()}
-                  className="w-full px-4 py-3 rounded-2xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-center text-xl font-bold"
-                />
-                <button
-                  onClick={handleCheckAnswer}
-                  className="px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider cursor-pointer"
-                >
-                  Next
+            {feedback && (
+              <div className={`mult-feedback ${feedback === 'correct' ? 'is-correct' : 'is-wrong'}`} role="status">
+                {feedback === 'correct' ? (
+                  <>
+                    <CheckCircle2 className="mult-icon" aria-hidden="true" /> Brilliant — that is correct.
+                  </>
+                ) : (
+                  <>
+                    <HelpCircle className="mult-icon" aria-hidden="true" /> Not quite. Try the row above in the table.
+                  </>
+                )}
+              </div>
+            )}
+          </GlassPanel>
+        </Reveal>
+      )}
+
+      {/* ------------------------------------------------------------------ */}
+      {/* MODE 3: MISSING NUMBER                                            */}
+      {/* ------------------------------------------------------------------ */}
+      {mode === 'missing' && (
+        <Reveal className="mult-stage" delay={40}>
+          <GlassPanel className="mult-practice">
+            <div className="mult-practice__head">
+              <span className="mult-kicker">Fill in the missing factor</span>
+              <span className="mult-practice__hint">Table of {selectedTable}</span>
+            </div>
+
+            <div className="mult-question mult-question--missing">
+              <span className="mult-question__ghost" aria-hidden="true">
+                ?
+              </span>
+              <div className="mult-question__line">
+                <span>{missingPosition === 'a' ? '____' : selectedTable}</span>
+                <span>×</span>
+                <span>{missingPosition === 'b' ? '____' : quizMultiplier}</span>
+                <span>=</span>
+                <span>{missingPosition === 'c' ? '____' : selectedTable * quizMultiplier}</span>
+              </div>
+            </div>
+
+            <div className="mult-answer">
+              <input
+                type="number"
+                inputMode="numeric"
+                placeholder="Missing number"
+                value={userAnswer}
+                onChange={(e) => setUserAnswer(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleCheckAnswer()}
+                className="mult-input"
+                aria-label="Missing number"
+              />
+              <button type="button" onClick={handleCheckAnswer} className="mult-btn mult-btn--accent">
+                Check
+                <ArrowRight className="mult-icon" aria-hidden="true" />
+              </button>
+            </div>
+
+            {feedback && (
+              <div className={`mult-feedback ${feedback === 'correct' ? 'is-correct' : 'is-wrong'}`} role="status">
+                {feedback === 'correct' ? (
+                  <>
+                    <CheckCircle2 className="mult-icon" aria-hidden="true" /> Superb — that completes the equation.
+                  </>
+                ) : (
+                  <>
+                    <HelpCircle className="mult-icon" aria-hidden="true" /> Incorrect. Give it another thought.
+                  </>
+                )}
+              </div>
+            )}
+          </GlassPanel>
+        </Reveal>
+      )}
+
+      {/* ------------------------------------------------------------------ */}
+      {/* MODE 4: SPEED DRILL                                               */}
+      {/* ------------------------------------------------------------------ */}
+      {mode === 'challenge' && (
+        <Reveal className="mult-stage" delay={40}>
+          <GlassPanel className="mult-practice">
+            <div className="mult-drill__head">
+              <div className="mult-drill__label">
+                <Trophy className="mult-icon mult-icon--accent" aria-hidden="true" />
+                <span>Speed challenge</span>
+              </div>
+              <div className="mult-drill__stats">
+                <span className="mult-stat">
+                  <Timer className="mult-icon" aria-hidden="true" /> {timerSeconds}s
+                </span>
+                <span className="mult-stat">Score {score}</span>
+                <span className="mult-stat">Streak {streak}</span>
+              </div>
+            </div>
+
+            {!timerActive && !challengeComplete ? (
+              <div className="mult-drill__ready">
+                <span className="mult-drill__glyph" aria-hidden="true">
+                  ×
+                </span>
+                <h3>Ready for a 45-second drill?</h3>
+                <p>
+                  Test your mastery of the table of {selectedTable}. Answer as many questions as you can
+                  before the clock runs out.
+                </p>
+                <button type="button" onClick={startChallenge} className="mult-btn mult-btn--accent">
+                  <Play className="mult-icon" aria-hidden="true" /> Start drill
                 </button>
               </div>
-            </div>
-          ) : (
-            <div className="py-8 space-y-4">
-              <div className="text-5xl">🏆</div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white">Time is Up!</h3>
-              <div className="p-4 bg-amber-50 dark:bg-amber-950/40 rounded-2xl border border-amber-200 dark:border-amber-800 max-w-xs mx-auto">
-                <div className="text-xs text-amber-700 dark:text-amber-300 font-bold uppercase">Final Score</div>
-                <div className="text-4xl font-black text-amber-800 dark:text-amber-200">{score} Points</div>
+            ) : timerActive ? (
+              <div className="mult-drill__active">
+                <div className="mult-question mult-question--compact">
+                  <div className="mult-question__line">
+                    {selectedTable} × {quizMultiplier} <span>= ?</span>
+                  </div>
+                </div>
+
+                <div className="mult-answer mult-answer--compact">
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    autoFocus
+                    placeholder="Answer"
+                    value={userAnswer}
+                    onChange={(e) => setUserAnswer(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleCheckAnswer()}
+                    className="mult-input"
+                    aria-label="Answer"
+                  />
+                  <button type="button" onClick={handleCheckAnswer} className="mult-btn mult-btn--accent">
+                    Next
+                    <ArrowRight className="mult-icon" aria-hidden="true" />
+                  </button>
+                </div>
+
+                {feedback && (
+                  <div className={`mult-feedback ${feedback === 'correct' ? 'is-correct' : 'is-wrong'}`} role="status">
+                    {feedback === 'correct' ? (
+                      <>
+                        <CheckCircle2 className="mult-icon" aria-hidden="true" /> Correct. Keep the streak alive.
+                      </>
+                    ) : (
+                      <>
+                        <HelpCircle className="mult-icon" aria-hidden="true" /> Try again.
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
-              <button
-                onClick={startChallenge}
-                className="px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider shadow-md cursor-pointer"
-              >
-                Try Again
-              </button>
-            </div>
-          )}
-        </div>
+            ) : (
+              <div className="mult-drill__done">
+                <Trophy className="mult-icon mult-icon--accent mult-drill__trophy" aria-hidden="true" />
+                <h3>Time is up.</h3>
+                <div className="mult-drill__score">
+                  <span>Final score</span>
+                  <strong>{score} points</strong>
+                  <span>Final streak {streak}</span>
+                </div>
+                <button type="button" onClick={startChallenge} className="mult-btn mult-btn--accent">
+                  <RotateCcw className="mult-icon" aria-hidden="true" /> Try again
+                </button>
+              </div>
+            )}
+          </GlassPanel>
+        </Reveal>
       )}
 
-      {/* DEDICATED PRINTABLE SHEET MODAL & PREVIEW */}
+      {/* ------------------------------------------------------------------ */}
+      {/* Patterns                                                           */}
+      {/* ------------------------------------------------------------------ */}
+      <Reveal as="section" className="mult-patterns" delay={80}>
+        <div className="mult-patterns__head">
+          <div>
+            <span className="mult-kicker">
+              <Lightbulb className="mult-icon mult-icon--accent" aria-hidden="true" /> Patterns in multiplication
+            </span>
+            <h2 className="mult-patterns__title">The table is a map, not a list.</h2>
+          </div>
+          <p className="mult-patterns__lead">
+            Four quiet rules turn thirty answers into one shape you can reason with.
+          </p>
+        </div>
+
+        <div className="mult-patterns__grid">
+          <GlassPanel as="article" className="mult-pattern">
+            <span className="mult-pattern__index">01 / Squares</span>
+            <h3 className="mult-pattern__title">Squares sit on the diagonal.</h3>
+            <p className="mult-pattern__copy">
+              When both factors match, the answer is a square. It is the hinge the rest of the table
+              folds around.
+            </p>
+            <div className="mult-pattern__math">
+              {selectedTable} × {selectedTable} = <strong>{squareValue}</strong>
+            </div>
+          </GlassPanel>
+
+          <GlassPanel as="article" className="mult-pattern">
+            <span className="mult-pattern__index">02 / Turnaround</span>
+            <h3 className="mult-pattern__title">Order never changes the product.</h3>
+            <p className="mult-pattern__copy">
+              Commutativity means one fact covers two questions. Learn it once, read it both ways.
+            </p>
+            <div className="mult-pattern__math mult-pattern__math--stack">
+              <span>
+                {selectedTable} × {selectedMultiplier} = {currentProduct}
+              </span>
+              <span>
+                {selectedMultiplier} × {selectedTable} = {currentProduct}
+              </span>
+            </div>
+          </GlassPanel>
+
+          <GlassPanel as="article" className="mult-pattern">
+            <span className="mult-pattern__index">03 / The nine trick</span>
+            <h3 className="mult-pattern__title">Digits in a nine product add to nine.</h3>
+            <p className="mult-pattern__copy">
+              A quick check for every row of the nine table — no recitation required.
+            </p>
+            <div className="mult-pattern__math">
+              9 × {nineAnchor} = <strong>{nineProduct}</strong>
+              <span className="mult-pattern__proof">
+                {String(nineProduct)
+                  .split('')
+                  .join(' + ')}{' '}
+                = {nineDigitSum}
+              </span>
+            </div>
+          </GlassPanel>
+
+          <GlassPanel as="article" className="mult-pattern">
+            <span className="mult-pattern__index">04 / Anchors</span>
+            <h3 className="mult-pattern__title">Land on 1, 5 and 10 first.</h3>
+            <p className="mult-pattern__copy">
+              Three landmarks fix the scale of any table. Every other row is a step between them.
+            </p>
+            <div className="mult-pattern__math mult-pattern__math--anchors">
+              <span>
+                {selectedTable} × 1 = {selectedTable}
+              </span>
+              <span>
+                {selectedTable} × 5 = {selectedTable * 5}
+              </span>
+              <span>
+                {selectedTable} × 10 = {selectedTable * 10}
+              </span>
+            </div>
+          </GlassPanel>
+        </div>
+      </Reveal>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* PRINTABLE SHEET MODAL                                              */}
+      {/* ------------------------------------------------------------------ */}
       {isPrintModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-            {/* Modal Header */}
-            <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 bg-slate-50 dark:bg-slate-800/50">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 flex items-center justify-center font-bold">
-                  <Printer className="w-5 h-5" />
-                </div>
+        <div className="mult-modal" role="dialog" aria-modal="true" aria-label="Printable multiplication worksheet">
+          <button
+            type="button"
+            className="mult-modal__scrim"
+            aria-label="Close print sheet"
+            onClick={() => setIsPrintModalOpen(false)}
+          />
+
+          <div className="mult-modal__panel">
+            <div className="mult-modal__head">
+              <div className="mult-modal__title">
+                <span className="mult-modal__icon">
+                  <FileText className="mult-icon" aria-hidden="true" />
+                </span>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                    Printable Multiplication Worksheet
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Formatted for A4 / Letter paper, student practice, and offline test sheets.
-                  </p>
+                  <h3>Printable multiplication worksheet</h3>
+                  <p>Formatted for A4 / Letter paper, student practice and offline test sheets.</p>
                 </div>
               </div>
 
               <button
+                type="button"
                 onClick={() => setIsPrintModalOpen(false)}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
+                className="mult-icon-btn"
+                aria-label="Close print sheet"
               >
-                <X className="w-5 h-5" />
+                <X className="mult-icon" aria-hidden="true" />
               </button>
             </div>
 
-            {/* Modal Controls Bar */}
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
-              {/* Scope */}
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-slate-500">Scope:</span>
+            <div className="mult-modal__controls">
+              <div className="mult-modal__group">
+                <span className="mult-kicker">Scope</span>
                 {[
                   { id: 'single', label: `Table of ${selectedTable}` },
                   { id: '1to10', label: 'Tables 1–10' },
@@ -683,34 +915,29 @@ export const MultiplicationTablesWorkspace: React.FC = () => {
                 ].map((sc) => (
                   <button
                     key={sc.id}
+                    type="button"
                     onClick={() => setPrintScope(sc.id as PrintScope)}
-                    className={`px-2.5 py-1 rounded-lg font-semibold cursor-pointer transition-all ${
-                      printScope === sc.id
-                        ? 'bg-blue-600 text-white font-bold'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
-                    }`}
+                    aria-pressed={printScope === sc.id}
+                    className={`mult-segment ${printScope === sc.id ? 'is-active' : ''}`}
                   >
                     {sc.label}
                   </button>
                 ))}
               </div>
 
-              {/* Mode */}
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-slate-500">Format:</span>
+              <div className="mult-modal__group">
+                <span className="mult-kicker">Format</span>
                 {[
-                  { id: 'answers', label: 'Complete Table' },
-                  { id: 'blanks', label: 'Blank Quiz (Practice)' },
-                  { id: 'missing', label: 'Missing Factor' }
+                  { id: 'answers', label: 'Complete table' },
+                  { id: 'blanks', label: 'Blank quiz' },
+                  { id: 'missing', label: 'Missing factor' }
                 ].map((fmt) => (
                   <button
                     key={fmt.id}
+                    type="button"
                     onClick={() => setPrintSheetMode(fmt.id as PrintSheetMode)}
-                    className={`px-2.5 py-1 rounded-lg font-semibold cursor-pointer transition-all ${
-                      printSheetMode === fmt.id
-                        ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
-                    }`}
+                    aria-pressed={printSheetMode === fmt.id}
+                    className={`mult-segment ${printSheetMode === fmt.id ? 'is-active' : ''}`}
                   >
                     {fmt.label}
                   </button>
@@ -718,47 +945,33 @@ export const MultiplicationTablesWorkspace: React.FC = () => {
               </div>
             </div>
 
-            {/* Printable Paper Preview (rendered on white sheet) */}
-            <div className="p-6 overflow-y-auto flex-1 bg-slate-100 dark:bg-slate-950 flex justify-center">
-              <div
-                id="calcaura-print-sheet"
-                className="bg-white text-slate-900 p-8 rounded-2xl shadow-md border border-slate-300 max-w-2xl w-full font-serif space-y-6"
-              >
-                {/* Paper Header */}
-                <div className="border-b-2 border-slate-900 pb-4 flex items-center justify-between">
+            <div className="mult-modal__preview">
+              <div id="calcaura-print-sheet" className="mult-sheet">
+                <div className="mult-sheet__head">
                   <div>
-                    <h2 className="text-xl font-black uppercase tracking-tight">
-                      CALCAURA MATHEMATICS WORKBOOK
-                    </h2>
-                    <p className="text-xs text-slate-600 font-sans">
-                      Multiplication Mastery Sheet · HSBJK Learning Platform
-                    </p>
+                    <h2>CALCAURA MATHEMATICS WORKBOOK</h2>
+                    <p>Multiplication mastery sheet · CalcAura Learning Platform</p>
                   </div>
-                  <div className="text-xs text-right font-sans space-y-1">
+                  <div className="mult-sheet__meta">
                     <div>Student Name: _______________________</div>
-                    <div>Date: _________________  Score: ____/{tablesToPrint.length * multiplierRange}</div>
+                    <div>Date: _________________ Score: ____/{tablesToPrint.length * multiplierRange}</div>
                   </div>
                 </div>
 
-                {/* Tables Grid */}
-                <div className={`grid gap-6 ${tablesToPrint.length === 1 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'}`}>
+                <div className={`mult-sheet__grid ${tablesToPrint.length === 1 ? 'is-single' : ''}`}>
                   {tablesToPrint.map((tbl) => (
-                    <div key={tbl} className="border border-slate-300 rounded-xl p-4 bg-slate-50/50">
-                      <div className="text-sm font-bold font-sans text-center border-b border-slate-300 pb-2 mb-3 uppercase tracking-wider text-blue-700">
-                        Table of {tbl}
-                      </div>
-                      <div className="space-y-1.5 font-mono text-xs">
+                    <div key={tbl} className="mult-sheet__table">
+                      <div className="mult-sheet__caption">Table of {tbl}</div>
+                      <div className="mult-sheet__rows">
                         {Array.from({ length: multiplierRange }).map((_, idx) => {
                           const m = idx + 1;
                           const ans = tbl * m;
                           return (
-                            <div key={m} className="flex items-center justify-between py-0.5 border-b border-dotted border-slate-200">
+                            <div key={m} className="mult-sheet__row">
                               <span>
                                 {tbl} × {printSheetMode === 'missing' ? '____' : m}
                               </span>
-                              <span className="font-bold">
-                                = {printSheetMode === 'blanks' ? '______' : ans}
-                              </span>
+                              <span>= {printSheetMode === 'blanks' ? '______' : ans}</span>
                             </div>
                           );
                         })}
@@ -767,36 +980,24 @@ export const MultiplicationTablesWorkspace: React.FC = () => {
                   ))}
                 </div>
 
-                <div className="pt-4 border-t border-slate-200 text-center font-sans text-[11px] text-slate-500">
-                  Practiced on CalcAura Platform · Keep Learning & Keep Solving!
+                <div className="mult-sheet__foot">
+                  Practiced on CalcAura · Keep learning, keep solving.
                 </div>
               </div>
             </div>
 
-            {/* Modal Footer Actions */}
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/50">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleCopyWorksheetText}
-                  className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-100 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center gap-2 cursor-pointer transition-all"
-                >
-                  {copiedSheet ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                  <span>{copiedSheet ? 'Copied to Clipboard!' : 'Copy Worksheet Text'}</span>
-                </button>
-              </div>
+            <div className="mult-modal__foot">
+              <button type="button" onClick={handleCopyWorksheetText} className="mult-btn mult-btn--quiet">
+                {copiedSheet ? <Check className="mult-icon" aria-hidden="true" /> : <Copy className="mult-icon" aria-hidden="true" />}
+                <span>{copiedSheet ? 'Copied to clipboard' : 'Copy worksheet text'}</span>
+              </button>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIsPrintModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold cursor-pointer"
-                >
+              <div className="mult-modal__foot-right">
+                <button type="button" onClick={() => setIsPrintModalOpen(false)} className="mult-btn mult-btn--quiet">
                   Close
                 </button>
-                <button
-                  onClick={handleTriggerPrint}
-                  className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-md cursor-pointer"
-                >
-                  <Printer className="w-4 h-4" /> Print Sheet Now 🖨️
+                <button type="button" onClick={handleTriggerPrint} className="mult-btn mult-btn--accent">
+                  <Printer className="mult-icon" aria-hidden="true" /> Print sheet now
                 </button>
               </div>
             </div>

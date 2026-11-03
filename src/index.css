@@ -168,29 +168,56 @@ table {
    ========================================================================= */
 
 :root {
-  --accent-legacy: #4f6900;
+  --accent-legacy: var(--ink);
 }
 
 .dark {
   --accent-legacy: var(--accent);
 }
 
-/* Brand violet and magenta become the one signal colour. */
+/* Brand violet and magenta become ink on paper, chartreuse on ink. */
 main [class*='text-[#7957F5]'],
 main [class*='text-[#D94BCB]'],
-main [class*='text-[#5558E8]'] {
+main [class*='text-[#5558E8]'],
+main [class*='text-[#6846E3]'],
+main [class*='text-[#9b7eff]'],
+main [class*='text-[#A78BFA]'],
+main [class*='text-[#C084FC]'],
+main [class*='text-[#ECA0CE]'],
+main [class*='text-[#A65B91]'],
+main [class*='text-purple-300'],
+main [class*='text-purple-400'],
+main [class*='text-purple-500'],
+main [class*='text-purple-600'],
+main [class*='text-violet-400'],
+main [class*='text-violet-500'],
+main [class*='text-fuchsia-400'],
+main [class*='text-pink-300'],
+main [class*='text-pink-400'] {
   color: var(--accent-legacy) !important;
 }
 
 main [class*='bg-[#7957F5]']:not([class*='bg-gradient']),
-main [class*='bg-[#D94BCB]']:not([class*='bg-gradient']) {
+main [class*='bg-[#D94BCB]']:not([class*='bg-gradient']),
+main [class*='bg-purple-500'],
+main [class*='bg-violet-500'],
+main [class*='bg-fuchsia-500'] {
   background-color: var(--accent) !important;
   color: var(--ink) !important;
 }
 
 main [class*='border-[#7957F5]'],
-main [class*='border-[#D94BCB]'] {
-  border-color: color-mix(in srgb, var(--accent) 60%, transparent) !important;
+main [class*='border-[#D94BCB]'],
+main [class*='border-purple-500'],
+main [class*='border-violet-500'] {
+  border-color: color-mix(in srgb, var(--ink) 26%, transparent) !important;
+}
+
+.dark main [class*='border-[#7957F5]'],
+.dark main [class*='border-[#D94BCB]'],
+.dark main [class*='border-purple-500'],
+.dark main [class*='border-violet-500'] {
+  border-color: color-mix(in srgb, var(--accent) 46%, transparent) !important;
 }
 
 /* No gradient fills anywhere in the legacy workspaces. */

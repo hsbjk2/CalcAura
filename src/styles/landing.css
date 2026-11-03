@@ -666,8 +666,13 @@ button {
   position: relative;
 }
 
-.hero__title-line--cut::after {
-  content: attr(data-text);
+.hero__title-line--cut {
+  position: relative;
+}
+
+/* The lower part of the second line sits on the dark field, so it is
+   repainted in paper instead of being exposed twice to screen readers. */
+.hero__title-line__ghost {
   position: absolute;
   inset: 0;
   color: var(--paper);
@@ -727,16 +732,49 @@ button {
 
 /* Entrance is settled well inside 1.2 seconds. */
 .hero__title {
-  animation: hero-title-in 900ms var(--ease-expo) both;
+  animation: none;
+}
+
+.hero__title-line {
+  animation: hero-line-in 760ms var(--ease-expo) backwards;
+}
+
+.hero__title-line:nth-child(1) {
+  animation-delay: 40ms;
+}
+
+.hero__title-line:nth-child(2) {
+  animation-delay: 130ms;
 }
 
 .hero__bottom {
-  animation: hero-bottom-in 900ms var(--ease-expo) 120ms both;
+  animation: hero-bottom-in 900ms var(--ease-expo) 220ms backwards;
 }
 
-@keyframes hero-title-in {
-  from { transform: translateY(24px); }
-  to { transform: translateY(0); }
+.hero__canvas {
+  animation: hero-canvas-in 1100ms var(--ease-expo) 180ms backwards;
+}
+
+@keyframes hero-line-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 1.02em, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes hero-canvas-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0) scale(0.97);
+  }
+  to {
+    opacity: 0.9;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
 }
 
 @keyframes hero-bottom-in {
@@ -2270,5 +2308,187 @@ button {
   .quiz-fragment {
     transform: none;
     transition: none;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Motion layer — restrained hover, drift and section polish
+   ------------------------------------------------------------------------- */
+
+/* Hero surface drifts very slightly with the page and on hover. */
+.hero__canvas,
+.cta__canvas {
+  transition: transform 900ms var(--ease-out);
+}
+
+.hero:hover .hero__canvas {
+  transform: translate3d(0, -8px, 0) rotate(-1.2deg);
+}
+
+.cta:hover .cta__canvas {
+  transform: translate3d(0, -10px, 0) rotate(1deg);
+}
+
+/* Feature fragments lift as a group, not as separate bouncy toys. */
+.field__ui .tilt {
+  transition: transform 520ms var(--ease-out);
+}
+
+.field__ui:hover .tilt {
+  transform: translate3d(0, -5px, 0);
+}
+
+/* Primary buttons get a slow sheen rather than a scale jump. */
+.btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: -50% -60%;
+  z-index: -1;
+  background: linear-gradient(
+    115deg,
+    transparent 40%,
+    color-mix(in srgb, #ffffff 42%, transparent) 50%,
+    transparent 60%
+  );
+  transform: translateX(-72%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 760ms var(--ease-out), opacity 300ms ease;
+}
+
+.btn:hover::after {
+  transform: translateX(72%);
+  opacity: 1;
+}
+
+.btn svg {
+  transition: transform var(--t-hover) var(--ease-out);
+}
+
+.btn:hover svg {
+  transform: translateX(2px);
+}
+
+/* FAQ answers slide in once open. */
+.faq__item[open] .faq__answer {
+  animation: faq-answer-in 420ms var(--ease-expo) backwards;
+}
+
+@keyframes faq-answer-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -6px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.faq__item summary {
+  transition: color var(--t-hover) ease, padding var(--t-hover) var(--ease-out);
+}
+
+.faq__item summary:hover {
+  color: var(--accent-strong);
+}
+
+/* Curriculum rows read as a ledger: hairline + accent tick on hover. */
+.curriculum__table tbody tr {
+  transition: background-color var(--t-hover) ease, box-shadow var(--t-hover) ease;
+}
+
+.curriculum__table tbody tr:hover {
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+/* Footer links rise a hair and the wordmark gains a faint 3D edge. */
+.site-footer__col button,
+.site-footer__col a {
+  transition: opacity var(--t-hover) ease, transform var(--t-hover) var(--ease-out);
+}
+
+.site-footer__col button:hover,
+.site-footer__col a:hover {
+  transform: translateX(3px);
+}
+
+.site-footer__word {
+  text-shadow: none;
+}
+
+/* Floating formula field in the final CTA. */
+.cta__glyphs {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.cta__glyph {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  font-family: var(--font-display);
+  font-size: var(--size);
+  color: color-mix(in srgb, var(--accent) 62%, var(--paper));
+  opacity: 0.16;
+  transform: rotate(var(--rot));
+  animation: glyph-drift var(--dur) var(--ease-in-out) var(--delay) infinite alternate;
+}
+
+.dark .cta__glyph {
+  opacity: 0.2;
+}
+
+@keyframes glyph-drift {
+  from {
+    transform: translate3d(0, 0, 0) rotate(var(--rot));
+  }
+  to {
+    transform: translate3d(8px, -18px, 0) rotate(calc(var(--rot) + 4deg));
+  }
+}
+
+/* Navigation underline grows in rather than snapping. */
+.site-nav__link::after {
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 260ms var(--ease-out);
+}
+
+.site-nav__link:hover::after,
+.site-nav__link[aria-current='page']::after {
+  transform: scaleX(1);
+}
+
+/* Showcase stage labels settle. */
+.showcase__stage {
+  transition: color 320ms ease, opacity 320ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__title-line,
+  .hero__bottom,
+  .hero__canvas,
+  .cta__canvas,
+  .field__ui .tilt,
+  .cta__glyph,
+  .faq__item[open] .faq__answer {
+    animation: none !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .btn::after,
+  .cta__glyphs {
+    display: none;
   }
 }

@@ -18,8 +18,11 @@ export const Hero: React.FC<HeroProps> = ({ onOpenWorkspace }) => {
       <div className="hero__inner">
         <h1 className="hero__title">
           <span className="hero__title-line">Every sum</span>
-          <span className="hero__title-line hero__title-line--cut" data-text="one desk">
-            one desk
+          <span className="hero__title-line hero__title-line--cut">
+            <span className="hero__title-line__ink">one desk</span>
+            <span className="hero__title-line__ghost" aria-hidden="true">
+              one desk
+            </span>
           </span>
         </h1>
 

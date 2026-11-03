@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { VisualObject, VisualAssetType, VISUAL_ASSETS } from './VisualAssetLibrary.tsx';
-import { Sparkles, RotateCw, CheckCircle2, Lightbulb, Trophy, ArrowRight, Volume2, VolumeX } from 'lucide-react';
+import { Reveal } from '../ui/Depth.tsx';
+import { CheckCircle2, Lightbulb, RotateCw, Volume2, VolumeX, ArrowRight } from 'lucide-react';
+import '../../styles/visual-activities.css';
 
 interface CountingActivityProps {
   onCompleteChapter?: () => void;
@@ -88,138 +90,162 @@ export const CountingActivity: React.FC<CountingActivityProps> = () => {
     }
   };
 
+  const progress =
+    mode === 'count'
+      ? Math.round((countedTotal / Math.max(targetCount, 1)) * 100)
+      : selectedAnswer !== null
+        ? 100
+        : 0;
+
+  const progressLabel =
+    mode === 'count'
+      ? `${countedTotal} of ${targetCount} marked`
+      : selectedAnswer !== null
+        ? 'Group chosen'
+        : 'Choose a group';
+
+  const groupAState =
+    selectedAnswer === 1 ? (targetCount > compareCount2 ? ' is-correct' : ' is-wrong') : '';
+  const groupBState =
+    selectedAnswer === 2 ? (compareCount2 > targetCount ? ' is-correct' : ' is-wrong') : '';
+
   return (
-    <div className="w-full max-w-4xl mx-auto p-4 sm:p-6 bg-white dark:bg-[#111321] rounded-3xl border border-slate-200 dark:border-white/10 shadow-lg space-y-6">
-      {/* Activity Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-white/[0.06]">
-        <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-amber-500/25">
-            123
-          </div>
+    <Reveal as="section" className="va-shell" delay={40}>
+      {/* Activity header */}
+      <div className="va-head">
+        <div className="va-head__id">
+          <div className="va-mark" aria-hidden="true">123</div>
           <div>
-            <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+            <h3 className="va-title">
               <span>Counting World</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono font-semibold">
-                Class 1–2
-              </span>
+              <span className="va-chip">Class 1–2</span>
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Tap each object one-by-one to count the total collection!
-            </p>
+            <p className="va-sub">Count one object at a time. Every tap marks a number.</p>
           </div>
         </div>
 
-        {/* Controls */}
-        <div className="flex items-center gap-2">
-          {/* Mode switch */}
-          <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 text-xs">
+        <div className="va-tools">
+          <div className="va-seg" role="group" aria-label="Counting mode">
             <button
+              type="button"
               onClick={() => {
                 setMode('count');
                 handleNewQuestion();
               }}
-              className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
-                mode === 'count'
-                  ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400'
-              }`}
+              className="va-seg__btn"
+              data-active={mode === 'count'}
+              aria-pressed={mode === 'count'}
             >
               Count
             </button>
             <button
+              type="button"
               onClick={() => {
                 setMode('compare');
                 handleNewQuestion();
               }}
-              className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
-                mode === 'compare'
-                  ? 'bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400'
-              }`}
+              className="va-seg__btn"
+              data-active={mode === 'compare'}
+              aria-pressed={mode === 'compare'}
             >
               Compare
             </button>
           </div>
 
           <button
+            type="button"
             onClick={() => setSoundEnabled(!soundEnabled)}
-            className={`p-2 rounded-xl border transition-colors cursor-pointer ${
-              soundEnabled
-                ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
-                : 'text-slate-400 border-slate-200 dark:border-white/10'
-            }`}
-            title="Toggle Counting Sound Effects"
+            className={`va-iconbtn${soundEnabled ? ' is-on' : ''}`}
+            aria-pressed={soundEnabled}
+            aria-label="Toggle counting sound effects"
+            title="Toggle counting sound effects"
           >
             {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
           </button>
 
-          <button
-            onClick={handleNewQuestion}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95"
-          >
+          <button type="button" onClick={handleNewQuestion} className="va-btn va-btn--ink va-btn--sm">
             <RotateCw className="w-3.5 h-3.5" />
-            <span>New Set</span>
+            <span>New set</span>
           </button>
+        </div>
+      </div>
+
+      {/* Progress rail */}
+      <div className="va-progress">
+        <div className="va-progress__meta">
+          <span>Progress</span>
+          <span>{progressLabel}</span>
+        </div>
+        <div
+          className="va-rail"
+          role="progressbar"
+          aria-label="Counting progress"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={progress}
+        >
+          <span className="va-rail__fill" style={{ width: `${progress}%` }} />
         </div>
       </div>
 
       {/* MODE 1: COUNT THE OBJECTS */}
       {mode === 'count' && (
-        <div className="space-y-6">
-          {/* Question Prompt */}
-          <div className="text-center space-y-1">
-            <span className="text-xs font-mono uppercase tracking-wider text-amber-600 dark:text-amber-400 font-bold">
-              Activity Instruction
-            </span>
-            <h4 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-              How many {meta.plural.toLowerCase()} can you see?
-            </h4>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Tap each {meta.name.toLowerCase()} below to mark it as counted!
+        <div className="va-body">
+          {/* Question prompt */}
+          <div className="va-prompt">
+            <span className="va-kicker">Activity instruction</span>
+            <h4 className="va-question">How many {meta.plural.toLowerCase()} can you see?</h4>
+            <p className="va-hintline">
+              Tap each {meta.name.toLowerCase()} below and the count will appear beside it.
             </p>
           </div>
 
-          {/* Interactive Collection Field */}
-<div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-amber-500/[0.04] to-orange-500/[0.04] dark:from-white/[0.02] dark:to-white/[0.01] border-2 border-dashed border-amber-500/30 dark:border-white/10 min-h-[220px] flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-  {Array.from({ length: targetCount }).map((_, idx) => (
-    <VisualObject
-      key={idx}
-      type={assetType}
-      size="lg"
-      isCounted={countedIndices[idx] !== undefined}
-      onClick={() => handleTapItem(idx)}
-      className="animate-in zoom-in-75 duration-300"
-    />
-  ))}
-</div>
+          {/* Interactive collection field */}
+          <div className="va-tray">
+            <span className="va-tray__surface" aria-hidden="true" />
+            {Array.from({ length: targetCount }).map((_, idx) => (
+              <VisualObject
+                key={idx}
+                type={assetType}
+                size="lg"
+                isCounted={countedIndices[idx] !== undefined}
+                countedNumber={countedIndices[idx]}
+                onClick={() => handleTapItem(idx)}
+                className="va-object"
+              />
+            ))}
+          </div>
 
-          {/* Hint Button */}
-          <div className="flex items-center justify-end px-3">
+          {/* Hint */}
+          <div className="va-hint-row">
             <button
+              type="button"
               onClick={() => setShowHint(true)}
-              className="text-xs text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
+              className="va-linkbtn"
+              aria-expanded={showHint}
             >
               <Lightbulb className="w-3.5 h-3.5" />
-              <span>Need a hint?</span>
+              <span>{showHint ? 'Hint shown' : 'Need a hint?'}</span>
             </button>
           </div>
 
           {showHint && (
-            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-900 dark:text-amber-300 flex items-start gap-2">
-              <Lightbulb className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
+            <div className="va-hint" role="note">
+              <Lightbulb className="w-4 h-4 shrink-0" />
               <div>
-                <strong>Hint:</strong> Point your finger and count out loud: 1, 2, 3... Every time you tap an object, it will be marked as counted!
+                <strong>Hint:</strong> Point your finger and count out loud: 1, 2, 3… Every time you tap
+                an object, it will be marked as counted.
               </div>
             </div>
           )}
 
-          {/* Answer Selection Buttons */}
-          <div className="space-y-3 pt-2">
-            <span className="text-xs font-mono uppercase tracking-wider text-slate-400 block text-center">
-              Select Your Answer:
+          {/* Answer selection */}
+          <div className="va-answer-block">
+            <span className="va-answer-caption">
+              {isAllCounted ? 'All objects marked — choose the total' : 'Select your answer'}
             </span>
 
-            <div className="grid grid-cols-4 gap-3 max-w-md mx-auto">
+            <div className="va-answers">
               {answerOptions.map((opt) => {
                 const isSelected = selectedAnswer === opt;
                 const isCorrect = isSelected && opt === targetCount;
@@ -228,17 +254,13 @@ export const CountingActivity: React.FC<CountingActivityProps> = () => {
                 return (
                   <button
                     key={opt}
+                    type="button"
                     onClick={() => handleSelectAnswer(opt)}
-                    className={`py-3 rounded-2xl font-mono text-lg font-black transition-all cursor-pointer flex flex-col items-center justify-center ${
-                      isCorrect
-                        ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 scale-105'
-                        : isWrong
-                        ? 'bg-rose-500 text-white shadow-md'
-                        : 'bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.05] dark:hover:bg-white/10 text-slate-800 dark:text-white border border-slate-200 dark:border-white/10'
-                    }`}
+                    className={`va-answer${isCorrect ? ' is-correct' : ''}${isWrong ? ' is-wrong' : ''}`}
+                    aria-pressed={isSelected}
                   >
-                    <span>{opt}</span>
-                    <span className="text-[10px] font-normal opacity-80">
+                    <span className="va-answer__value">{opt}</span>
+                    <span className="va-answer__label">
                       {opt === 1 ? meta.name : meta.plural}
                     </span>
                   </button>
@@ -247,36 +269,35 @@ export const CountingActivity: React.FC<CountingActivityProps> = () => {
             </div>
           </div>
 
-          {/* Feedback Celebration */}
+          {/* Feedback */}
           {selectedAnswer !== null && (
             <div
-              className={`p-4 rounded-2xl text-center space-y-1 animate-in zoom-in-95 ${
-                selectedAnswer === targetCount
-                  ? 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-800 dark:text-emerald-300'
-                  : 'bg-rose-500/15 border border-rose-500/40 text-rose-800 dark:text-rose-300'
-              }`}
+              className={`va-feedback ${selectedAnswer === targetCount ? 'is-correct' : 'is-wrong'}`}
+              role="status"
+              aria-live="polite"
             >
               {selectedAnswer === targetCount ? (
                 <>
-                  <div className="flex items-center justify-center gap-1.5 font-bold text-base">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                    <span>Hooray! That's correct! Exactly {targetCount} {meta.plural.toLowerCase()}!</span>
+                  <div className="va-feedback__title">
+                    <CheckCircle2 className="w-5 h-5" />
+                    <span>
+                      Hooray — exactly {targetCount} {meta.plural.toLowerCase()}!
+                    </span>
                   </div>
-                  <p className="text-xs">
-                    Great counting skills! You counted every single one correctly.
+                  <p className="va-feedback__body">
+                    Great counting. You marked every single one correctly.
                   </p>
-                  <button
-                    onClick={handleNewQuestion}
-                    className="mt-2 px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-xs inline-flex items-center gap-1 cursor-pointer"
-                  >
-                    <span>Try Next Collection</span>
+                  <button type="button" onClick={handleNewQuestion} className="va-btn va-btn--sm">
+                    <span>Try next collection</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </>
               ) : (
                 <>
-                  <div className="font-bold text-sm">Almost there! Keep trying.</div>
-                  <p className="text-xs">
+                  <div className="va-feedback__title">
+                    <span>Almost there — keep trying.</span>
+                  </div>
+                  <p className="va-feedback__body">
                     Count again carefully: there are {targetCount} {meta.plural.toLowerCase()} in total.
                   </p>
                 </>
@@ -286,79 +307,80 @@ export const CountingActivity: React.FC<CountingActivityProps> = () => {
         </div>
       )}
 
-      {/* MODE 2: COMPARE TWO COLLECTIONS (MORE OR FEWER) */}
+      {/* MODE 2: COMPARE TWO COLLECTIONS */}
       {mode === 'compare' && (
-        <div className="space-y-6">
-          <div className="text-center space-y-1">
-            <span className="text-xs font-mono uppercase tracking-wider text-amber-600 dark:text-amber-400 font-bold">
-              Comparison Challenge
-            </span>
-            <h4 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-              Which group has MORE objects?
-            </h4>
+        <div className="va-body">
+          <div className="va-prompt">
+            <span className="va-kicker">Comparison challenge</span>
+            <h4 className="va-question">Which group has more objects?</h4>
+            <p className="va-hintline">Read both trays, then choose the fuller collection.</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Group 1 */}
-            <button
+          <div className="va-compare">
+            {/* Group A */}
+            <div
+              className={`va-group${groupAState}`}
+              role="button"
+              tabIndex={0}
+              aria-pressed={selectedAnswer === 1}
               onClick={() => handleSelectAnswer(1)}
-              className={`p-6 rounded-3xl border-2 transition-all cursor-pointer text-center space-y-3 ${
-                selectedAnswer === 1
-                  ? targetCount > compareCount2
-                    ? 'border-emerald-500 bg-emerald-500/10'
-                    : 'border-rose-500 bg-rose-500/10'
-                  : 'border-slate-200 dark:border-white/10 hover:border-amber-500 bg-slate-50 dark:bg-white/[0.02]'
-              }`}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  handleSelectAnswer(1);
+                }
+              }}
             >
-              <span className="text-xs font-mono font-bold text-slate-500 uppercase">
-                Group A: {meta.plural}
-              </span>
-              <div className="flex flex-wrap items-center justify-center gap-2 min-h-[100px]">
+              <span className="va-group__label">Group A · {meta.plural}</span>
+              <div className="va-group__objects">
                 {Array.from({ length: targetCount }).map((_, i) => (
-                  <VisualObject key={i} type={assetType} size="md" />
+                  <VisualObject key={i} type={assetType} size="md" className="va-object" />
                 ))}
               </div>
-              <span className="text-sm font-bold block text-slate-700 dark:text-slate-300">
-                Count: {targetCount} {meta.plural}
+              <span className="va-group__count">
+                {targetCount} <small>objects</small>
               </span>
-            </button>
+            </div>
 
-            {/* Group 2 */}
-            <button
+            {/* Group B */}
+            <div
+              className={`va-group${groupBState}`}
+              role="button"
+              tabIndex={0}
+              aria-pressed={selectedAnswer === 2}
               onClick={() => handleSelectAnswer(2)}
-              className={`p-6 rounded-3xl border-2 transition-all cursor-pointer text-center space-y-3 ${
-                selectedAnswer === 2
-                  ? compareCount2 > targetCount
-                    ? 'border-emerald-500 bg-emerald-500/10'
-                    : 'border-rose-500 bg-rose-500/10'
-                  : 'border-slate-200 dark:border-white/10 hover:border-amber-500 bg-slate-50 dark:bg-white/[0.02]'
-              }`}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  handleSelectAnswer(2);
+                }
+              }}
             >
-              <span className="text-xs font-mono font-bold text-slate-500 uppercase">
-                Group B: {meta2.plural}
-              </span>
-              <div className="flex flex-wrap items-center justify-center gap-2 min-h-[100px]">
+              <span className="va-group__label">Group B · {meta2.plural}</span>
+              <div className="va-group__objects">
                 {Array.from({ length: compareCount2 }).map((_, i) => (
-                  <VisualObject key={i} type={compareAsset2} size="md" />
+                  <VisualObject key={i} type={compareAsset2} size="md" className="va-object" />
                 ))}
               </div>
-              <span className="text-sm font-bold block text-slate-700 dark:text-slate-300">
-                Count: {compareCount2} {meta2.plural}
+              <span className="va-group__count">
+                {compareCount2} <small>objects</small>
               </span>
-            </button>
+            </div>
           </div>
 
-          {/* Comparison Result */}
+          {/* Comparison result */}
           {selectedAnswer !== null && (
-            <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-center text-xs text-amber-900 dark:text-amber-200">
-              <strong>Comparison Fact:</strong>{' '}
-              {targetCount > compareCount2
-                ? `Group A has ${targetCount} which is MORE than Group B's ${compareCount2} (${targetCount} > ${compareCount2})!`
-                : `Group B has ${compareCount2} which is MORE than Group A's ${targetCount} (${compareCount2} > ${targetCount})!`}
+            <div className="va-fact" role="status" aria-live="polite">
+              <span className="va-fact__label">Comparison fact</span>
+              <p>
+                {targetCount > compareCount2
+                  ? `Group A has ${targetCount}, which is more than Group B's ${compareCount2} (${targetCount} > ${compareCount2}).`
+                  : `Group B has ${compareCount2}, which is more than Group A's ${targetCount} (${compareCount2} > ${targetCount}).`}
+              </p>
             </div>
           )}
         </div>
       )}
-    </div>
+    </Reveal>
   );
 };

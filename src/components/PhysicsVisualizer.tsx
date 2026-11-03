@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useId } from 'react';
 import { calcProjectile, calcPendulum, calcOhmsLaw } from '../math/physics.ts';
 import { MathView } from './MathView.tsx';
 import { Play, Pause, RotateCcw, Zap, Compass, Activity } from 'lucide-react';
+import '../styles/tools.css';
 
 type PhysicsTab = 'projectile' | 'pendulum' | 'circuits';
 
@@ -90,9 +91,9 @@ export const PhysicsVisualizer: React.FC = () => {
   const bobY = 30 + Math.cos(pendAngleRad) * 110;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div className="tool-page max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Title */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+      <div className="tool-head flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div>
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
             Physics & STEM Simulations
@@ -103,7 +104,7 @@ export const PhysicsVisualizer: React.FC = () => {
         </div>
 
         {/* Tab switch */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+        <div className="tool-tabs flex items-center gap-1.5 p-1">
           {[
             { id: 'projectile', label: 'Projectile Motion', icon: Compass },
             { id: 'pendulum', label: 'Harmonic Pendulum', icon: Activity },

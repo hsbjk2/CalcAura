@@ -1,0 +1,206 @@
+/* =========================================================================
+   CALCAURA — shared page outro
+   A dark closing panel with four 3D product doors.
+   ========================================================================= */
+
+.page-outro {
+  position: relative;
+  overflow: clip;
+  padding-block: clamp(3.5rem, 7vw, 7rem);
+  background:
+    radial-gradient(60% 420px at 50% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 72%),
+    linear-gradient(160deg, var(--ink-3) 0%, var(--ink) 80%);
+  color: var(--paper);
+}
+
+.page-outro__ring {
+  position: absolute;
+  right: -12%;
+  top: -40%;
+  width: clamp(300px, 42vw, 620px);
+  aspect-ratio: 1;
+  border: 1px solid var(--line-ink);
+  border-radius: 50%;
+  transform: rotateX(64deg) rotateZ(-16deg);
+  pointer-events: none;
+}
+
+.page-outro__inner {
+  position: relative;
+  z-index: 1;
+}
+
+.page-outro__head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  max-width: 58ch;
+  margin-bottom: clamp(1.8rem, 4vw, 3rem);
+}
+
+.page-outro__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: color-mix(in srgb, var(--paper) 62%, transparent);
+}
+
+.page-outro__tag svg {
+  color: var(--accent);
+}
+
+.page-outro__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2rem, 4.4vw, 4.2rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+  color: var(--paper);
+}
+
+.page-outro__lead {
+  margin: 0;
+  max-width: 54ch;
+  font-size: clamp(0.94rem, 1rem + 0.12vw, 1.06rem);
+  line-height: 1.6;
+  color: color-mix(in srgb, var(--paper) 60%, transparent);
+}
+
+.page-outro__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  border: 1px solid var(--line-ink);
+  background: var(--line-ink);
+}
+
+.page-outro__grid > * {
+  height: 100%;
+}
+
+.outro-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.55rem;
+  height: 100%;
+  min-height: 230px;
+  padding: clamp(1.1rem, 2vw, 1.6rem);
+  border: 0;
+  background: var(--ink);
+  color: var(--paper);
+  overflow: hidden;
+}
+
+.outro-card::after {
+  display: none;
+}
+
+.outro-card:hover {
+  background: var(--ink-2);
+}
+
+.outro-card__mark {
+  position: absolute;
+  right: 0.4rem;
+  bottom: -0.9rem;
+  font-family: var(--font-display);
+  font-size: clamp(4.5rem, 8vw, 8rem);
+  line-height: 1;
+  color: color-mix(in srgb, var(--paper) 6%, transparent);
+  pointer-events: none;
+  transition: color 400ms ease, transform 480ms var(--ease-out);
+}
+
+.outro-card:hover .outro-card__mark {
+  color: color-mix(in srgb, var(--accent) 22%, transparent);
+  transform: translateY(-6px);
+}
+
+.outro-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--line-ink);
+  color: var(--accent);
+}
+
+.outro-card__label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: color-mix(in srgb, var(--paper) 56%, transparent);
+}
+
+.outro-card h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.15rem, 1.6vw, 1.5rem);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--paper);
+}
+
+.outro-card p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: color-mix(in srgb, var(--paper) 56%, transparent);
+}
+
+.outro-card__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  margin-top: auto;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--paper) 30%, transparent);
+  background: none;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: var(--paper);
+  cursor: pointer;
+  transition: gap 200ms var(--ease-out), border-color 200ms ease;
+}
+
+.outro-card__action:hover {
+  gap: 0.7em;
+  border-color: var(--accent);
+}
+
+@media (max-width: 1024px) {
+  .page-outro__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .page-outro__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .outro-card {
+    min-height: 190px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .outro-card__mark,
+  .outro-card__action {
+    transition: none;
+  }
+}

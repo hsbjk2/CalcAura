@@ -20,6 +20,8 @@ import {
   Operator,
 } from '../../math/basicCalculatorEngine.ts';
 import { whiteboardSounds } from '../Whiteboard/soundEffects.ts';
+import { GlassPanel, Reveal, Tilt3D } from '../ui/Depth.tsx';
+import '../../styles/calculator.css';
 
 interface BasicCalculatorProps {
   onBack: () => void;
@@ -332,315 +334,395 @@ export const BasicCalculator: React.FC<BasicCalculatorProps> = ({ onBack, darkMo
   // Dynamic font sizing for large numbers so it never overflows
   const displayFontSize = React.useMemo(() => {
     const len = formattedDisplay.length;
-    if (len <= 7) return 'text-4xl sm:text-5xl';
-    if (len <= 10) return 'text-3xl sm:text-4xl';
-    if (len <= 14) return 'text-2xl sm:text-3xl';
-    return 'text-xl sm:text-2xl';
+    if (len <= 7) return 'clamp(2.5rem, 7vw, 3.4rem)';
+    if (len <= 10) return 'clamp(2rem, 6vw, 2.8rem)';
+    if (len <= 14) return 'clamp(1.6rem, 5vw, 2.2rem)';
+    return 'clamp(1.25rem, 4vw, 1.75rem)';
   }, [formattedDisplay]);
 
+  // Real, derived state copy for the display footer and the desk panel
+  const operatorStatus =
+    currentOperator === '*' ? '×' : currentOperator === '/' ? '÷' : currentOperator === '-' ? '−' : currentOperator === '+' ? '+' : '—';
+  const displayState = errorMessage
+    ? 'Check expression'
+    : lastEvaluated
+      ? 'Result'
+      : waitingForOperand
+        ? 'Awaiting operand'
+        : 'Editing';
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 animate-in fade-in duration-300">
-      {/* Top Breadcrumb & Navigation */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8 pb-5 border-b border-slate-200 dark:border-white/10">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onBack}
-            className="p-2 sm:p-2.5 rounded-xl bg-white dark:bg-[#111321] border border-slate-200 dark:border-white/10 hover:border-[#7957F5]/50 text-slate-700 dark:text-slate-200 hover:text-[#7957F5] dark:hover:text-white transition-all shadow-xs flex items-center gap-2 cursor-pointer"
-            title="Return to Calculators and Platform Workspace"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-xs font-semibold">Back to Calculators</span>
+    <div className="bc-page max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* PAGE HEADER: clears the fixed nav, reads as the top of this page */}
+      <header className="bc-pagehead page-head">
+        <div className="bc-breadcrumb">
+          <button type="button" onClick={onBack} className="bc-back" title="Return to Calculators and Platform Workspace">
+            <ArrowLeft aria-hidden="true" />
+            <span>Back to calculators</span>
           </button>
+          <span className="bc-crumb-sep" aria-hidden="true">
+            /
+          </span>
+          <span className="bc-crumb">Workspace · Basic arithmetic</span>
+        </div>
 
-          <div className="h-5 w-px bg-slate-200 dark:bg-white/10" />
+        <div className="bc-title-row">
+          <div className="bc-intro">
+            <p className="bc-kicker">
+              <span className="bc-kicker__dot" aria-hidden="true" />
+              Everyday arithmetic
+            </p>
+            <h1 className="bc-title">
+              Basic <em>calculator</em>
+              <span className="bc-title__dot" aria-hidden="true">
+                .
+              </span>
+            </h1>
+            <p className="bc-sub">
+              A quiet desk for sums, percentages and quick checks — keyboard-first, with the precision,
+              grouping and sound you choose.
+            </p>
+          </div>
 
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#7957F5] to-[#D94BCB] text-white flex items-center justify-center shadow-xs">
-              <Calculator className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-                  Basic Calculator
-                </h1>
-                <span className="px-2 py-0.5 rounded-md bg-[#7957F5]/10 text-[#7957F5] dark:text-[#A78BFA] text-[10px] font-mono font-bold uppercase tracking-wider">
-                  Basic Arithmetic
+          {/* Glass-chip settings rail */}
+          <div className="bc-settings glass-chip" role="group" aria-label="Calculator preferences">
+            <label className="bc-setting" title="Set decimal precision">
+              <Sliders aria-hidden="true" />
+              <span className="bc-setting__label">Decimals</span>
+              <span className="bc-select-wrap">
+                <select
+                  value={precision}
+                  onChange={(e) => setPrecision(Number(e.target.value))}
+                  className="bc-select"
+                  aria-label="Decimal precision"
+                  title="Set decimal precision"
+                >
+                  <option value={0}>0</option>
+                  <option value={2}>2</option>
+                  <option value={4}>4</option>
+                  <option value={6}>6</option>
+                  <option value={8}>8</option>
+                </select>
+                <span className="bc-select-caret" aria-hidden="true" />
+              </span>
+            </label>
+
+            <button
+              type="button"
+              onClick={() => setUseGrouping(!useGrouping)}
+              className={`bc-setting ${useGrouping ? 'is-on' : ''}`}
+              title="Toggle thousands separators (commas)"
+              aria-pressed={useGrouping}
+            >
+              <Hash aria-hidden="true" />
+              <span className="bc-setting__label">Grouping</span>
+              <span className="bc-setting__value">{useGrouping ? '1,000' : '1000'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              className={`bc-setting ${soundEnabled ? 'is-on' : ''}`}
+              title={soundEnabled ? 'Keypad sound enabled' : 'Keypad sound muted'}
+              aria-pressed={soundEnabled}
+            >
+              {soundEnabled ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}
+              <span className="bc-setting__label">Sound</span>
+              <span className="bc-setting__value">{soundEnabled ? 'On' : 'Off'}</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className="bc-workbench">
+        <Reveal className="bc-stage" delay={60}>
+          <Tilt3D className="bc-tilt" strength={3.4}>
+            <GlassPanel className="bc-shell">
+              <div className="bc-shell__topline">
+                <span className="bc-shell__brand">
+                  <Calculator aria-hidden="true" />
+                  Basic desk
+                </span>
+                <span className="bc-shell__meta">Keyboard ready</span>
+              </div>
+
+              {/* INK DISPLAY */}
+              <div className="bc-screen" role="group" aria-label="Calculator display">
+                <div className="bc-screen__top">
+                  <span className="bc-screen__tag">Expression</span>
+                  <div
+                    key={expression || 'empty'}
+                    className={`bc-screen__expr ${expression ? '' : 'is-idle'}`}
+                    title={expression || undefined}
+                  >
+                    {expression || 'Ready for the next sum'}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyResult}
+                    className={`bc-copy ${copied ? 'is-copied' : ''}`}
+                    title="Copy result to clipboard"
+                    aria-label="Copy result"
+                  >
+                    {copied ? (
+                      <>
+                        <Check aria-hidden="true" />
+                        <span>Copied</span>
+                      </>
+                    ) : (
+                      <Copy aria-hidden="true" />
+                    )}
+                  </button>
+                </div>
+
+                <div className="bc-screen__main" aria-live="polite">
+                  <span
+                    key={formattedDisplay}
+                    className={`bc-readout ${errorMessage ? 'is-error' : ''}`}
+                    style={errorMessage ? undefined : { fontSize: displayFontSize }}
+                  >
+                    {formattedDisplay}
+                  </span>
+                </div>
+
+                <div className="bc-screen__foot">
+                  <span className="bc-screen__state">{displayState}</span>
+                  <span className="bc-screen__meta">
+                    DEC {precision} · {useGrouping ? 'grouped' : 'plain'}
+                  </span>
+                </div>
+              </div>
+
+              {/* 4-COLUMN KEYPAD */}
+              <div className="bc-keypad" role="group" aria-label="Calculator keypad">
+                {/* Row 1: AC, +/-, %, ÷ */}
+                <button
+                  type="button"
+                  onClick={displayValue !== '0' && !lastEvaluated ? handleClearEntry : handleAllClear}
+                  className="bc-key bc-key--util"
+                  title={displayValue !== '0' && !lastEvaluated ? 'Clear Entry (C)' : 'All Clear (AC)'}
+                >
+                  {displayValue !== '0' && !lastEvaluated ? 'C' : 'AC'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleToggleSign}
+                  className="bc-key bc-key--util"
+                  title="Change Sign (+/-)"
+                >
+                  ±
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePercentage}
+                  className="bc-key bc-key--util"
+                  title="Percentage (%)"
+                >
+                  %
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleOperator('/')}
+                  className={`bc-key bc-key--op ${currentOperator === '/' && waitingForOperand ? 'is-armed' : ''}`}
+                  title="Divide (÷)"
+                  aria-pressed={currentOperator === '/' && waitingForOperand}
+                >
+                  ÷
+                </button>
+
+                {/* Row 2: 7, 8, 9, × */}
+                <button type="button" onClick={() => handleDigit('7')} className="bc-key bc-key--digit">
+                  7
+                </button>
+                <button type="button" onClick={() => handleDigit('8')} className="bc-key bc-key--digit">
+                  8
+                </button>
+                <button type="button" onClick={() => handleDigit('9')} className="bc-key bc-key--digit">
+                  9
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleOperator('*')}
+                  className={`bc-key bc-key--op ${currentOperator === '*' && waitingForOperand ? 'is-armed' : ''}`}
+                  title="Multiply (×)"
+                  aria-pressed={currentOperator === '*' && waitingForOperand}
+                >
+                  ×
+                </button>
+
+                {/* Row 3: 4, 5, 6, − */}
+                <button type="button" onClick={() => handleDigit('4')} className="bc-key bc-key--digit">
+                  4
+                </button>
+                <button type="button" onClick={() => handleDigit('5')} className="bc-key bc-key--digit">
+                  5
+                </button>
+                <button type="button" onClick={() => handleDigit('6')} className="bc-key bc-key--digit">
+                  6
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleOperator('-')}
+                  className={`bc-key bc-key--op ${currentOperator === '-' && waitingForOperand ? 'is-armed' : ''}`}
+                  title="Subtract (−)"
+                  aria-pressed={currentOperator === '-' && waitingForOperand}
+                >
+                  −
+                </button>
+
+                {/* Row 4: 1, 2, 3, + */}
+                <button type="button" onClick={() => handleDigit('1')} className="bc-key bc-key--digit">
+                  1
+                </button>
+                <button type="button" onClick={() => handleDigit('2')} className="bc-key bc-key--digit">
+                  2
+                </button>
+                <button type="button" onClick={() => handleDigit('3')} className="bc-key bc-key--digit">
+                  3
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleOperator('+')}
+                  className={`bc-key bc-key--op ${currentOperator === '+' && waitingForOperand ? 'is-armed' : ''}`}
+                  title="Add (+)"
+                  aria-pressed={currentOperator === '+' && waitingForOperand}
+                >
+                  +
+                </button>
+
+                {/* Row 5: 0, ., Backspace, = */}
+                <button type="button" onClick={() => handleDigit('0')} className="bc-key bc-key--digit">
+                  0
+                </button>
+                <button type="button" onClick={handleDecimal} className="bc-key bc-key--digit" title="Decimal point">
+                  .
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBackspace}
+                  className="bc-key bc-key--util bc-key--icon"
+                  title="Backspace / Delete (⌫)"
+                  aria-label="Backspace"
+                >
+                  <Delete aria-hidden="true" />
+                </button>
+                <button type="button" onClick={handleEquals} className="bc-key bc-key--equals" title="Equals (=)">
+                  =
+                </button>
+              </div>
+
+              {/* Auxiliary row: 00 & keyboard hints */}
+              <div className="bc-shell__foot">
+                <span className="bc-shell__hint">
+                  <span className="bc-live-dot" aria-hidden="true" />
+                  <span>Keyboard: 0–9, + − × ÷, Enter, Esc</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleDigit('00')}
+                  className="bc-key bc-key--mini"
+                  title="Insert double zero"
+                >
+                  00
+                </button>
+              </div>
+            </GlassPanel>
+          </Tilt3D>
+        </Reveal>
+
+        {/* WHAT THIS DESK CAN DO */}
+        <Reveal className="bc-side" delay={120}>
+          <GlassPanel className="bc-panel accent-edge">
+            <p className="bc-panel__eyebrow">
+              <Sparkles aria-hidden="true" />
+              What this desk can do
+            </p>
+            <h2 className="bc-panel__title">
+              Small surface.
+              <br />
+              <em>Exact habits.</em>
+            </h2>
+            <p className="bc-panel__lede">
+              Arithmetic, percentages and repeated equals, with keyboard entry and a result you can
+              copy in one click.
+            </p>
+
+            <ul className="bc-capabilities">
+              <li>
+                <span className="bc-capabilities__index" aria-hidden="true">
+                  01
+                </span>
+                <div>
+                  <strong>Expression-first arithmetic</strong>
+                  <p>× and ÷ resolve before + and −, while the full expression stays in view.</p>
+                </div>
+              </li>
+              <li>
+                <span className="bc-capabilities__index" aria-hidden="true">
+                  02
+                </span>
+                <div>
+                  <strong>Context-aware percent</strong>
+                  <p>200 + 10% adds 20; 200 × 10% takes ten percent of the operand.</p>
+                </div>
+              </li>
+              <li>
+                <span className="bc-capabilities__index" aria-hidden="true">
+                  03
+                </span>
+                <div>
+                  <strong>Repeated equals</strong>
+                  <p>Press = again to reapply the last operator and operand.</p>
+                </div>
+              </li>
+              <li>
+                <span className="bc-capabilities__index" aria-hidden="true">
+                  04
+                </span>
+                <div>
+                  <strong>Precision, grouping, copy</strong>
+                  <p>0, 2, 4, 6 or 8 decimal places, optional thousands separators, and one-click copy.</p>
+                </div>
+              </li>
+            </ul>
+
+            <div className="bc-keyboard">
+              <div className="bc-keyboard__head">
+                <span>Keyboard map</span>
+                <span>Global</span>
+              </div>
+              <div className="bc-keyboard__keys">
+                <span className="bc-kbd">
+                  <kbd>0–9</kbd> digits
+                </span>
+                <span className="bc-kbd">
+                  <kbd>+ − × ÷</kbd> operators
+                </span>
+                <span className="bc-kbd">
+                  <kbd>Enter</kbd> equals
+                </span>
+                <span className="bc-kbd">
+                  <kbd>Esc</kbd> clear
+                </span>
+                <span className="bc-kbd">
+                  <kbd>⌫</kbd> delete
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-[#A6A9B8]">
-                Everyday calculations, arithmetic, percentages and quick numerical operations.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Settings Pill: Sound, Precision, Thousands Separator */}
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          {/* Decimal Precision Control */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white dark:bg-[#111321] border border-slate-200 dark:border-white/10 text-xs text-slate-600 dark:text-[#A6A9B8]">
-            <Sliders className="w-3.5 h-3.5 text-[#7957F5]" />
-            <span className="text-[11px] font-medium hidden sm:inline">Decimals:</span>
-            <select
-              value={precision}
-              onChange={(e) => setPrecision(Number(e.target.value))}
-              className="bg-transparent text-slate-900 dark:text-white font-mono text-xs focus:outline-none cursor-pointer"
-              title="Set decimal precision"
-            >
-              <option value={0}>0</option>
-              <option value={2}>2</option>
-              <option value={4}>4</option>
-              <option value={6}>6</option>
-              <option value={8}>8</option>
-            </select>
-          </div>
-
-          {/* Grouping Comma Toggle */}
-          <button
-            onClick={() => setUseGrouping(!useGrouping)}
-            className={`px-2.5 py-1.5 rounded-xl border text-xs font-mono font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
-              useGrouping
-                ? 'bg-[#7957F5]/10 border-[#7957F5]/30 text-[#7957F5] dark:text-[#A78BFA]'
-                : 'bg-white dark:bg-[#111321] border-slate-200 dark:border-white/10 text-slate-500'
-            }`}
-            title="Toggle thousands separators (commas)"
-          >
-            <Hash className="w-3.5 h-3.5" />
-            <span className="text-[11px]">{useGrouping ? '1,000' : '1000'}</span>
-          </button>
-
-          {/* Audio Sound Toggle */}
-          <button
-            onClick={() => setSoundEnabled(!soundEnabled)}
-            className={`p-2 rounded-xl border transition-colors cursor-pointer ${
-              soundEnabled
-                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
-                : 'bg-white dark:bg-[#111321] border-slate-200 dark:border-white/10 text-slate-400'
-            }`}
-            title={soundEnabled ? 'Keypad sound enabled' : 'Keypad sound muted'}
-          >
-            {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Center Smartphone-Style Calculator Body */}
-      <div className="flex justify-center items-center py-2 sm:py-6">
-        <div className="w-full max-w-[360px] sm:max-w-[400px] bg-white/95 dark:bg-[#10121E]/95 backdrop-blur-xl border border-slate-200 dark:border-white/12 rounded-3xl sm:rounded-4xl p-5 sm:p-6 shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_16px_50px_rgba(0,0,0,0.5)] transition-all">
-          {/* CALCULATOR SCREEN DISPLAY */}
-          <div className="bg-slate-50 dark:bg-black/40 border border-slate-200/80 dark:border-white/8 rounded-2xl sm:rounded-3xl p-4 sm:p-5 mb-5 flex flex-col justify-between min-h-[120px] sm:min-h-[140px] relative transition-all">
-            {/* Top row: Expression trail & Copy action */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="text-xs sm:text-sm font-mono text-slate-500 dark:text-[#A6A9B8] overflow-x-auto whitespace-nowrap thin-scrollbar pr-2 min-h-[20px]">
-                {expression || ' '}
-              </div>
-
-              {/* Copy Result Button */}
-              <button
-                onClick={handleCopyResult}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
-                title="Copy result to clipboard"
-                aria-label="Copy result"
-              >
-                {copied ? (
-                  <span className="flex items-center gap-1 text-emerald-500 text-[10px] font-bold">
-                    <Check className="w-3.5 h-3.5" />
-                    <span>Copied</span>
-                  </span>
-                ) : (
-                  <Copy className="w-3.5 h-3.5" />
-                )}
-              </button>
             </div>
 
-            {/* Main Numerical Display */}
-            <div className="text-right overflow-x-auto whitespace-nowrap thin-scrollbar mt-2 select-all">
-              <span
-                className={`font-mono font-bold tracking-tight transition-all ${
-                  errorMessage
-                    ? 'text-rose-500 text-xl sm:text-2xl'
-                    : `text-slate-900 dark:text-[#F6F7FB] ${displayFontSize}`
-                }`}
-              >
-                {formattedDisplay}
+            <div className="bc-panel__status" role="group" aria-label="Current calculator settings">
+              <span>
+                Precision <b>{precision}</b>
+              </span>
+              <span>
+                Grouping <b>{useGrouping ? 'On' : 'Off'}</b>
+              </span>
+              <span>
+                Operator <b>{operatorStatus}</b>
               </span>
             </div>
-          </div>
-
-          {/* 4-COLUMN PHONE KEYPAD */}
-          <div className="grid grid-cols-4 gap-2.5 sm:gap-3 select-none">
-            {/* Row 1: AC, +/-, %, ÷ */}
-            <button
-              onClick={displayValue !== '0' && !lastEvaluated ? handleClearEntry : handleAllClear}
-              className="h-13 sm:h-15 rounded-2xl bg-slate-200/80 dark:bg-white/[0.12] hover:bg-slate-300/80 dark:hover:bg-white/[0.18] text-slate-900 dark:text-white font-semibold text-sm sm:text-base active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
-              title={displayValue !== '0' && !lastEvaluated ? 'Clear Entry (C)' : 'All Clear (AC)'}
-            >
-              {displayValue !== '0' && !lastEvaluated ? 'C' : 'AC'}
-            </button>
-            <button
-              onClick={handleToggleSign}
-              className="h-13 sm:h-15 rounded-2xl bg-slate-200/80 dark:bg-white/[0.12] hover:bg-slate-300/80 dark:hover:bg-white/[0.18] text-slate-900 dark:text-white font-semibold text-sm sm:text-base active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
-              title="Change Sign (+/-)"
-            >
-              ±
-            </button>
-            <button
-              onClick={handlePercentage}
-              className="h-13 sm:h-15 rounded-2xl bg-slate-200/80 dark:bg-white/[0.12] hover:bg-slate-300/80 dark:hover:bg-white/[0.18] text-slate-900 dark:text-white font-semibold text-sm sm:text-base active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
-              title="Percentage (%)"
-            >
-              %
-            </button>
-            <button
-              onClick={() => handleOperator('/')}
-              className={`h-13 sm:h-15 rounded-2xl font-bold text-lg sm:text-xl active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs ${
-                currentOperator === '/' && waitingForOperand
-                  ? 'bg-[#7957F5] text-white shadow-md'
-                  : 'bg-[#7957F5]/15 text-[#7957F5] dark:text-[#A78BFA] hover:bg-[#7957F5]/25'
-              }`}
-              title="Divide (÷)"
-            >
-              ÷
-            </button>
-
-            {/* Row 2: 7, 8, 9, × */}
-            <button
-              onClick={() => handleDigit('7')}
-              className="h-13 sm:h-15 rounded-2xl bg-white dark:bg-white/[0.06] hover:bg-slate-100 dark:hover:bg-white/[0.10] text-slate-900 dark:text-[#F6F7FB] font-semibold text-lg sm:text-xl border border-slate-200/60 dark:border-white/8 active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
-            >
-              7
-            </button>
-            <button
-              onClick={() => handleDigit('8')}
-              className="h-13 sm:h-15 rounded-2xl bg-white dark:bg-white/[0.06] hover:bg-slate-100 dark:hover:bg-white/[0.10] text-slate-900 dark:text-[#F6F7FB] font-semibold text-lg sm:text-xl border border-slate-200/60 dark:border-white/8 active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
-            >
-              8
-            </button>
-            <button
-              onClick={() => handleDigit('9')}
-              className="h-13 sm:h-15 rounded-2xl bg-white dark:bg-white/[0.06] hover:bg-slate-100 dark:hover:bg-white/[0.10] text-slate-900 dark:text-[#F6F7FB] font-semibold text-lg sm:text-xl border border-slate-200/60 dark:border-white/8 active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
-            >
-              9
-            </button>
-            <button
-              onClick={() => handleOperator('*')}
-              className={`h-13 sm:h-15 rounded-2xl font-bold text-lg sm:text-xl active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs ${
-                currentOperator === '*' && waitingForOperand
-                  ? 'bg-[#7957F5] text-white shadow-md'
-                  : 'bg-[#7957F5]/15 text-[#7957F5] dark:text-[#A78BFA] hover:bg-[#7957F5]/25'
-              }`}
-              title="Multiply (×)"
-            >
-              ×
-            </button>
-
-            {/* Row 3: 4, 5, 6, − */}
-            <button
-              onClick={() => handleDigit('4')}
-              className="h-13 sm:h-15 rounded-2xl bg-white dark:bg-white/[0.06] hover:bg-slate-100 dark:hover:bg-white/[0.10] text-slate-900 dark:text-[#F6F7FB] font-semibold text-lg sm:text-xl border border-slate-200/60 dark:border-white/8 active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
-            >
-              4
-            </button>
-            <button
-              onClick={() => handleDigit('5')}
-              className="h-13 sm:h-15 rounded-2xl bg-white dark:bg-white/[0.06] hover:bg-slate-100 dark:hover:bg-white/[0.10] text-slate-900 dark:text-[#F6F7FB] font-semibold text-lg sm:text-xl border border-slate-200/60 dark:border-white/8 active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
-            >
-              5
-            </button>
-            <button
-              onClick={() => handleDigit('6')}
-              className="h-13 sm:h-15 rounded-2xl bg-white dark:bg-white/[0.06] hover:bg-slate-100 dark:hover:bg-white/[0.10] text-slate-900 dark:text-[#F6F7FB] font-semibold text-lg sm:text-xl border border-slate-200/60 dark:border-white/8 active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
-            >
-              6
-            </button>
-            <button
-              onClick={() => handleOperator('-')}
-              className={`h-13 sm:h-15 rounded-2xl font-bold text-lg sm:text-xl active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs ${
-                currentOperator === '-' && waitingForOperand
-                  ? 'bg-[#7957F5] text-white shadow-md'
-                  : 'bg-[#7957F5]/15 text-[#7957F5] dark:text-[#A78BFA] hover:bg-[#7957F5]/25'
-              }`}
-              title="Subtract (−)"
-            >
-              −
-            </button>
-
-            {/* Row 4: 1, 2, 3, + */}
-            <button
-              onClick={() => handleDigit('1')}
-              className="h-13 sm:h-15 rounded-2xl bg-white dark:bg-white/[0.06] hover:bg-slate-100 dark:hover:bg-white/[0.10] text-slate-900 dark:text-[#F6F7FB] font-semibold text-lg sm:text-xl border border-slate-200/60 dark:border-white/8 active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
-            >
-              1
-            </button>
-            <button
-              onClick={() => handleDigit('2')}
-              className="h-13 sm:h-15 rounded-2xl bg-white dark:bg-white/[0.06] hover:bg-slate-100 dark:hover:bg-white/[0.10] text-slate-900 dark:text-[#F6F7FB] font-semibold text-lg sm:text-xl border border-slate-200/60 dark:border-white/8 active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
-            >
-              2
-            </button>
-            <button
-              onClick={() => handleDigit('3')}
-              className="h-13 sm:h-15 rounded-2xl bg-white dark:bg-white/[0.06] hover:bg-slate-100 dark:hover:bg-white/[0.10] text-slate-900 dark:text-[#F6F7FB] font-semibold text-lg sm:text-xl border border-slate-200/60 dark:border-white/8 active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
-            >
-              3
-            </button>
-            <button
-              onClick={() => handleOperator('+')}
-              className={`h-13 sm:h-15 rounded-2xl font-bold text-lg sm:text-xl active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs ${
-                currentOperator === '+' && waitingForOperand
-                  ? 'bg-[#7957F5] text-white shadow-md'
-                  : 'bg-[#7957F5]/15 text-[#7957F5] dark:text-[#A78BFA] hover:bg-[#7957F5]/25'
-              }`}
-              title="Add (+)"
-            >
-              +
-            </button>
-
-            {/* Row 5: 0, ., Backspace, = */}
-            <button
-              onClick={() => handleDigit('0')}
-              className="h-13 sm:h-15 rounded-2xl bg-white dark:bg-white/[0.06] hover:bg-slate-100 dark:hover:bg-white/[0.10] text-slate-900 dark:text-[#F6F7FB] font-semibold text-lg sm:text-xl border border-slate-200/60 dark:border-white/8 active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
-            >
-              0
-            </button>
-            <button
-              onClick={handleDecimal}
-              className="h-13 sm:h-15 rounded-2xl bg-white dark:bg-white/[0.06] hover:bg-slate-100 dark:hover:bg-white/[0.10] text-slate-900 dark:text-[#F6F7FB] font-semibold text-lg sm:text-xl border border-slate-200/60 dark:border-white/8 active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
-              title="Decimal point"
-            >
-              .
-            </button>
-            <button
-              onClick={handleBackspace}
-              className="h-13 sm:h-15 rounded-2xl bg-slate-100 dark:bg-white/[0.08] hover:bg-slate-200 dark:hover:bg-white/[0.14] text-slate-700 dark:text-slate-300 active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xs"
-              title="Backspace / Delete (⌫)"
-              aria-label="Backspace"
-            >
-              <Delete className="w-5 h-5" />
-            </button>
-            <button
-              onClick={handleEquals}
-              className="h-13 sm:h-15 rounded-2xl bg-gradient-to-tr from-[#7957F5] to-[#D94BCB] text-white font-bold text-xl active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-[0_4px_16px_rgba(121,87,245,0.35)] hover:brightness-105"
-              title="Equals (=)"
-            >
-              =
-            </button>
-          </div>
-
-          {/* Auxiliary row: 00, Quick clear & Keyboard hints */}
-          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between text-[11px] font-mono text-slate-400 dark:text-[#A6A9B8]">
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span>Keyboard: 0–9, + - * /, Enter, Esc</span>
-            </div>
-            <button
-              onClick={() => handleDigit('00')}
-              className="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.12] text-slate-700 dark:text-slate-300 font-semibold cursor-pointer"
-              title="Insert double zero"
-            >
-              00
-            </button>
-          </div>
-        </div>
+          </GlassPanel>
+        </Reveal>
       </div>
     </div>
   );

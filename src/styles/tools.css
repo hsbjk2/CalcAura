@@ -1,0 +1,266 @@
+/* =========================================================================
+   CALCAURA — graphing, physics, STEM, formula library
+   Shared instrument-page chrome: paper panels, ink rules, one signal colour.
+   ========================================================================= */
+
+.tool-page {
+  position: relative;
+}
+
+/* -------------------------------------------------------------------------
+   Header
+   ------------------------------------------------------------------------- */
+
+.tool-head {
+  position: relative;
+  padding-bottom: 1.1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.dark .tool-head {
+  border-color: var(--line-ink);
+}
+
+.tool-head::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: clamp(56px, 8vw, 92px);
+  height: 2px;
+  background: var(--accent-strong);
+}
+
+.tool-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.9rem, 3.6vw, 3.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+  color: var(--ink);
+}
+
+.dark .tool-head h2 {
+  color: var(--paper);
+}
+
+.tool-head p {
+  margin-top: 0.55rem !important;
+  max-width: 68ch;
+  font-size: 0.92rem !important;
+  line-height: 1.6;
+  color: var(--muted) !important;
+}
+
+.dark .tool-head p {
+  color: var(--muted-ink) !important;
+}
+
+.tool-head .inline-flex {
+  border-radius: 999px !important;
+  border-color: color-mix(in srgb, var(--ink) 14%, transparent) !important;
+  background: color-mix(in srgb, var(--paper) 60%, transparent) !important;
+  color: var(--muted) !important;
+}
+
+.dark .tool-head .inline-flex {
+  border-color: var(--line-ink) !important;
+  background: color-mix(in srgb, var(--ink-3) 60%, transparent) !important;
+  color: var(--muted-ink) !important;
+}
+
+.tool-head .inline-flex svg {
+  color: var(--accent-strong) !important;
+}
+
+/* -------------------------------------------------------------------------
+   Tabs + chips
+   ------------------------------------------------------------------------- */
+
+.tool-tabs {
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 50%, transparent);
+  padding: 0.25rem !important;
+}
+
+.dark .tool-tabs {
+  border-color: var(--line-ink);
+  background: color-mix(in srgb, var(--ink-3) 52%, transparent);
+}
+
+.page-shell .tool-tabs button {
+  border-radius: 999px !important;
+  font-family: var(--font-text);
+  font-weight: 500 !important;
+  color: var(--muted);
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
+}
+
+.dark .page-shell .tool-tabs button {
+  color: var(--muted-ink);
+}
+
+.page-shell .tool-tabs button:hover {
+  color: var(--ink);
+}
+
+.dark .page-shell .tool-tabs button:hover {
+  color: var(--paper);
+}
+
+.page-shell .tool-tabs button.bg-white,
+.page-shell .tool-tabs button[class*='bg-white'] {
+  background-color: var(--ink) !important;
+  color: var(--paper) !important;
+  box-shadow: none !important;
+}
+
+.dark .page-shell .tool-tabs button[class*='bg-white'] {
+  background-color: var(--accent) !important;
+  color: var(--ink) !important;
+}
+
+.tool-chips button {
+  border-radius: 999px !important;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease,
+    border-color 200ms ease,
+    transform 200ms var(--ease-out);
+}
+
+.tool-chips button:not([class*='bg-gradient']) {
+  border-color: color-mix(in srgb, var(--ink) 14%, transparent) !important;
+  background: color-mix(in srgb, var(--paper) 50%, transparent) !important;
+  color: var(--muted) !important;
+}
+
+.dark .tool-chips button:not([class*='bg-gradient']) {
+  border-color: var(--line-ink) !important;
+  background: color-mix(in srgb, var(--ink-3) 52%, transparent) !important;
+  color: var(--muted-ink) !important;
+}
+
+.tool-chips button:not([class*='bg-gradient']):hover {
+  transform: translateY(-1px);
+  color: var(--ink) !important;
+}
+
+.dark .tool-chips button:not([class*='bg-gradient']):hover {
+  color: var(--paper) !important;
+}
+
+/* -------------------------------------------------------------------------
+   Panels + inputs
+   ------------------------------------------------------------------------- */
+
+.tool-page :where([class~='rounded-2xl'], [class~='rounded-xl'])[class*='border'] {
+  border-color: color-mix(in srgb, var(--ink) 12%, transparent);
+}
+
+.dark .tool-page :where([class~='rounded-2xl'], [class~='rounded-xl'])[class*='border'] {
+  border-color: var(--line-ink);
+}
+
+.tool-page textarea,
+.tool-page input[type='text'],
+.tool-page input[type='number'],
+.tool-page select {
+  border: 1px solid color-mix(in srgb, var(--ink) 16%, transparent) !important;
+  background: color-mix(in srgb, var(--paper) 56%, transparent) !important;
+  color: var(--ink) !important;
+  border-radius: 3px !important;
+  transition: border-color 200ms ease, background-color 200ms ease;
+}
+
+.dark .tool-page textarea,
+.dark .tool-page input[type='text'],
+.dark .tool-page input[type='number'],
+.dark .tool-page select {
+  border-color: var(--line-ink) !important;
+  background: color-mix(in srgb, var(--ink-3) 66%, transparent) !important;
+  color: var(--paper) !important;
+}
+
+.tool-page textarea:focus,
+.tool-page input[type='text']:focus,
+.tool-page input[type='number']:focus,
+.tool-page select:focus {
+  outline: none !important;
+  border-color: var(--accent-strong) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.tool-page input[type='range'] {
+  accent-color: var(--ink);
+  height: 3px;
+}
+
+.dark .tool-page input[type='range'] {
+  accent-color: var(--accent);
+}
+
+.tool-page :where(h3) {
+  font-family: var(--font-text);
+  letter-spacing: -0.01em;
+}
+
+/* Section eyebrows inside tools */
+.tool-page :where(h3)[class*='uppercase'] {
+  color: var(--muted);
+}
+
+.dark .tool-page :where(h3)[class*='uppercase'] {
+  color: var(--muted-ink);
+}
+
+/* -------------------------------------------------------------------------
+   ThreeCanvas3DScroll dock
+   ------------------------------------------------------------------------- */
+
+.three-scroll {
+  border-color: var(--line-ink) !important;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+}
+
+.three-scroll [class*='bg-white/9'] {
+  background: rgba(16, 20, 14, 0.86) !important;
+  border-color: rgba(232, 233, 226, 0.14) !important;
+  color: rgba(232, 233, 226, 0.8) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  backdrop-filter: blur(14px) saturate(1.1);
+}
+
+.three-scroll [class*='bg-white/9'] button {
+  border-radius: 999px !important;
+}
+
+.three-scroll [class*='bg-sky-500'] {
+  background: var(--accent) !important;
+  color: var(--ink) !important;
+}
+
+.three-scroll [class*='text-sky-'] {
+  color: var(--accent) !important;
+}
+
+.three-scroll [class*='bg-sky-500'] svg {
+  color: var(--ink) !important;
+}
+
+/* -------------------------------------------------------------------------
+   Responsive
+   ------------------------------------------------------------------------- */
+
+@media (max-width: 640px) {
+  .tool-tabs {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}

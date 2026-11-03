@@ -10,6 +10,8 @@ import {
   Ruler,
   ArrowUpRight,
 } from 'lucide-react';
+import { GlassPanel, Reveal, Tilt3D } from './ui/Depth.tsx';
+import '../styles/tool-directory.css';
 
 interface PopularCalculatorsProps {
   onSelectTab: (tabId: string) => void;
@@ -22,6 +24,7 @@ interface PopularTool {
   icon: React.ElementType;
   tabId: string;
   badge: string;
+  featured?: boolean;
 }
 
 const TOOLS: PopularTool[] = [
@@ -32,6 +35,7 @@ const TOOLS: PopularTool[] = [
     icon: Calculator,
     tabId: 'basic-calculator',
     badge: 'Basic Arithmetic',
+    featured: true,
   },
   {
     id: 'scientific',
@@ -48,6 +52,7 @@ const TOOLS: PopularTool[] = [
     icon: Compass,
     tabId: 'solver',
     badge: 'Algebra Proofs',
+    featured: true,
   },
   {
     id: 'geometry',
@@ -64,6 +69,7 @@ const TOOLS: PopularTool[] = [
     icon: AreaChart,
     tabId: 'graphing',
     badge: 'Cartesian Engine',
+    featured: true,
   },
   {
     id: 'calculus',
@@ -101,63 +107,87 @@ const TOOLS: PopularTool[] = [
 
 export const PopularCalculators: React.FC<PopularCalculatorsProps> = ({ onSelectTab }) => {
   return (
-    <section id="popular-calculators" className="scroll-mt-32 pb-12 sm:pb-16 border-b border-slate-200 dark:border-white/[0.08] relative">
-      <div className="max-w-7xl mx-auto">
-        {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
-          <div>
-            <div className="flex items-center gap-2 text-xs font-mono text-[#7957F5] uppercase tracking-wider mb-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#7957F5]" />
-              <span>Core Instruments</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-[#F6F7FB]">
-              Popular Calculators
+    <section id="popular-calculators" className="pop-section scroll-mt-32">
+      <div className="pop-section__inner">
+        <Reveal className="pop-head">
+          <div className="pop-head__main">
+            <span className="pop-kicker">
+              <span className="pop-kicker__dot" aria-hidden="true" />
+              Core instruments
+            </span>
+            <h2 className="pop-title">
+              Popular <em>calculators</em>
             </h2>
-            <p className="mt-2 text-sm text-slate-600 dark:text-[#A6A9B8] max-w-xl">
-              Direct access to CalcAura's most utilized mathematical instruments and computing environments.
+            <p className="pop-lead">
+              Direct access to CalcAura&rsquo;s most-used mathematical instruments — arithmetic,
+              graphing, geometry and proof.
             </p>
           </div>
 
-          <div className="text-xs font-mono text-slate-500 dark:text-[#A6A9B8]">
-            {TOOLS.length} Core Modules Available
+          <div className="pop-meta" aria-label={`${TOOLS.length} core modules available`}>
+            <span className="pop-meta__label">Index</span>
+            <span className="pop-meta__count">{String(TOOLS.length).padStart(2, '0')}</span>
+            <span className="pop-meta__sub">
+              core modules
+              <br />
+              available now
+            </span>
           </div>
-        </div>
+        </Reveal>
 
-        {/* 8 Concise Polished Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-          {TOOLS.map((tool) => {
+        <div className="pop-grid">
+          {TOOLS.map((tool, index) => {
             const Icon = tool.icon;
-            return (
-              <button
-                key={tool.id}
-                onClick={() => onSelectTab(tool.tabId)}
-                className="group text-left p-5 rounded-2xl bg-white dark:bg-[#111321] hover:bg-slate-50 dark:hover:bg-[#16182c] border border-slate-200 dark:border-white/12 hover:border-[#7957F5]/40 transition-all shadow-xs hover:shadow-[0_4px_20px_rgba(121,87,245,0.12)] hover:-translate-y-0.5 flex flex-col justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7957F5]"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] flex items-center justify-center text-slate-700 dark:text-[#F6F7FB] group-hover:text-white group-hover:bg-[#7957F5] group-hover:border-[#7957F5]/30 transition-all">
-                      <Icon className="w-5 h-5 text-[#7957F5] group-hover:text-white transition-colors" />
-                    </div>
-                    <span className="text-[10px] font-mono font-medium text-slate-500 dark:text-[#A6A9B8]/80 group-hover:text-slate-900 dark:group-hover:text-[#F6F7FB] transition-colors">
-                      {tool.badge}
+            const card = (
+              <>
+                <div className="pop-card__inner">
+                  <div className="pop-card__top">
+                    <span className="pop-card__index">{String(index + 1).padStart(2, '0')}</span>
+                    <span className="pop-card__icon" aria-hidden="true">
+                      <Icon className="h-[18px] w-[18px]" />
                     </span>
+                    <span className="pop-card__badge">{tool.badge}</span>
                   </div>
 
-                  <h3 className="text-base font-semibold text-slate-900 dark:text-[#F6F7FB] group-hover:text-[#7957F5] dark:group-hover:text-white transition-colors mb-1.5 flex items-center justify-between">
-                    <span>{tool.name}</span>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400 dark:text-[#A6A9B8] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-                  </h3>
+                  <h3 className="pop-card__name">{tool.name}</h3>
+                  <p className="pop-card__desc">{tool.subtitle}</p>
 
-                  <p className="text-xs text-slate-600 dark:text-[#A6A9B8] leading-relaxed">
-                    {tool.subtitle}
-                  </p>
+                  <div className="pop-card__foot">
+                    <span>Launch tool</span>
+                    <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </div>
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between text-[11px] font-mono text-slate-500 dark:text-[#A6A9B8] group-hover:text-[#7957F5] transition-colors">
-                  <span>Launch Tool</span>
-                  <span>→</span>
-                </div>
-              </button>
+                <button
+                  type="button"
+                  className="pop-card__hit"
+                  aria-label={`Launch ${tool.name}`}
+                  onClick={() => onSelectTab(tool.tabId)}
+                />
+              </>
+            );
+
+            return (
+              <Reveal
+                key={tool.id}
+                className="pop-cell"
+                delay={(index % 4) * 60}
+                as="div"
+              >
+                {tool.featured ? (
+                  <Tilt3D
+                    as="article"
+                    className="pop-card glass-surface pop-card--featured"
+                    strength={6}
+                  >
+                    {card}
+                  </Tilt3D>
+                ) : (
+                  <GlassPanel as="article" className="pop-card pop-card--lift">
+                    {card}
+                  </GlassPanel>
+                )}
+              </Reveal>
             );
           })}
         </div>

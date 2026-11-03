@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MathView } from './MathView.tsx';
 import { Search, ExternalLink, Calculator, ChevronDown, ChevronUp, CheckCircle2, RotateCcw } from 'lucide-react';
+import '../styles/tools.css';
 
 export interface FormulaItem {
   id: string;
@@ -529,9 +530,9 @@ export const FormulaLibrary: React.FC<FormulaLibraryProps> = ({ onNavigateTab })
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-8 sm:py-10">
+    <div className="tool-page max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-8 sm:py-10">
       {/* Title */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+      <div className="tool-head flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#7957F5]/10 border border-[#7957F5]/25 text-[#7957F5] dark:text-purple-300 text-xs font-mono font-semibold mb-3">
             <Calculator className="w-3.5 h-3.5" />
@@ -559,7 +560,7 @@ export const FormulaLibrary: React.FC<FormulaLibraryProps> = ({ onNavigateTab })
       </div>
 
       {/* Categories Filter */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-6 thin-scrollbar">
+      <div className="tool-chips flex items-center gap-1.5 overflow-x-auto pb-2 mb-6 thin-scrollbar">
         {['All', 'Geometry', 'Mensuration', 'Algebra', 'Physics', 'Calculus', 'Statistics'].map((cat) => (
           <button
             key={cat}

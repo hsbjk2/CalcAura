@@ -32,6 +32,7 @@ import { PracticeHistoryEntry } from './data/historyStorage.ts';
 import { LearningAndToolsSection } from './components/LearningAndToolsSection.tsx';
 import { ToolDirectory } from './components/ToolDirectory.tsx';
 import { Footer } from './components/Footer.tsx';
+import { PageOutro } from './components/ui/PageOutro.tsx';
 import { SearchModal } from './components/SearchModal.tsx';
 import { AboutModal } from './components/AboutModal.tsx';
 import { ClerkAuthPage } from './components/Auth/ClerkAuthPage.tsx';
@@ -740,11 +741,7 @@ if (path === '/sign-up' || path.startsWith('/sign-up/')) {
   }
 
   return (
-    <div className={`min-h-screen flex flex-col ${
-      isAbout
-        ? (darkMode ? 'bg-[#0E0713]/85 text-[#FFF9FD]' : 'bg-[#FFF9FD]/85 text-[#200D25]')
-        : 'bg-transparent text-slate-900 dark:text-[#F6F7FB]'
-    } selection:bg-[#7957F5]/30 selection:text-white transition-colors overflow-x-hidden w-full max-w-full relative`}>
+    <div className="min-h-screen flex flex-col bg-transparent text-slate-900 dark:text-[#F6F7FB] transition-colors overflow-x-hidden w-full max-w-full relative">
       <Seo activeTab={activeTab} />
 
       {/* Floating Navigation Header */}
@@ -763,10 +760,13 @@ if (path === '/sign-up' || path.startsWith('/sign-up/')) {
       />
 
       {/* Fixed Scroll Progress Indicator Line beneath the navigation bar */}
-      {isLanding && <ScrollProgressBar />}
+      <ScrollProgressBar />
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-full overflow-x-hidden">
+      <main
+        key={isLanding ? 'landing' : activeTab}
+        className={`flex-1 w-full max-w-full overflow-x-hidden ${isLanding ? '' : 'page-shell'}`}
+      >
         {/* VIEW 1: THE DESK — one continuous surface from Class 1 to engineering */}
         {isLanding && (
           <LandingPage
@@ -1143,6 +1143,11 @@ if (path === '/sign-up' || path.startsWith('/sign-up/')) {
           </div>
         )}
       </main>
+
+      {/* Shared closing panel: one desk, every kind of mathematics */}
+      {!isLanding && !isAbout && !isSignIn && !isSignUp && (
+        <PageOutro onSelectTab={handleSelectTab} />
+      )}
 
       {/* Minimal Footer (About page has its own dedicated minimal footer) */}
       {!isAbout && (

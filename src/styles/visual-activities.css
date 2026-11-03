@@ -1,0 +1,1451 @@
+/* =========================================================================
+   CALCAURA — Visual Math World activity skin
+   Paper and ink chrome, one chartreuse signal, Bodoni display type and
+   hairline frames. The learning objects keep their own colour; everything
+   around them stays quiet.
+   ========================================================================= */
+
+.va-shell {
+  --va-card: color-mix(in srgb, #ffffff 44%, var(--paper));
+  --va-card-2: var(--paper-2);
+  --va-inset: color-mix(in srgb, var(--ink) 4%, transparent);
+  --va-line: color-mix(in srgb, var(--ink) 14%, transparent);
+  --va-line-strong: color-mix(in srgb, var(--ink) 30%, transparent);
+  --va-muted: var(--muted);
+  --va-strong: var(--ink);
+  --va-on-strong: var(--paper);
+  --va-wrong: #a35346;
+  --va-wrong-soft: color-mix(in srgb, #a35346 8%, var(--paper));
+
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 60rem;
+  margin-inline: auto;
+  padding: clamp(18px, 2.6vw, 30px);
+  border: 1px solid var(--va-line);
+  border-radius: 3px;
+  background:
+    radial-gradient(110% 80% at 100% 0%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 56%),
+    linear-gradient(155deg, color-mix(in srgb, #ffffff 28%, var(--paper)) 0%, var(--paper-2) 100%);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #ffffff 65%, transparent),
+    0 30px 80px rgba(10, 12, 9, 0.12);
+  color: var(--ink);
+  font-family: var(--font-text);
+  isolation: isolate;
+}
+
+.va-shell::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: clamp(18px, 2.6vw, 30px);
+  width: 64px;
+  height: 2px;
+  background: var(--accent);
+  pointer-events: none;
+}
+
+.dark .va-shell {
+  --va-card: color-mix(in srgb, var(--paper) 6%, var(--ink-3));
+  --va-card-2: var(--ink-3);
+  --va-inset: color-mix(in srgb, var(--paper) 5%, transparent);
+  --va-line: var(--line-ink);
+  --va-line-strong: color-mix(in srgb, var(--paper) 28%, transparent);
+  --va-muted: var(--muted-ink);
+  --va-strong: var(--paper);
+  --va-on-strong: var(--ink);
+  --va-wrong: #e6aca4;
+  --va-wrong-soft: color-mix(in srgb, #e6aca4 10%, var(--ink-2));
+
+  background:
+    radial-gradient(110% 80% at 100% 0%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 58%),
+    linear-gradient(155deg, var(--ink-2) 0%, var(--ink) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 32px 84px rgba(0, 0, 0, 0.45);
+  color: var(--paper);
+}
+
+/* -------------------------------------------------------------------------
+   Header
+   ------------------------------------------------------------------------- */
+
+.va-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--va-line);
+}
+
+.va-head__id {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.va-mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  border-radius: 2px;
+  background: var(--accent);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 10px 22px color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+.va-shell .va-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  margin: 2px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 2.5vw, 2rem);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  color: inherit;
+}
+
+.va-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 0.55rem;
+  border: 1px solid var(--va-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 58%, transparent);
+  color: var(--va-muted);
+  font-family: var(--font-text);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.dark .va-chip {
+  background: color-mix(in srgb, var(--ink) 48%, transparent);
+}
+
+.va-shell .va-sub {
+  margin: 6px 0 0;
+  max-width: 44ch;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--va-muted);
+}
+
+.va-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.va-seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--va-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+}
+
+.dark .va-seg {
+  background: color-mix(in srgb, var(--paper) 4%, transparent);
+}
+
+.va-seg__btn {
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--va-muted);
+  font-family: var(--font-text);
+  font-size: 0.76rem;
+  font-weight: 500;
+  line-height: 1;
+  padding: 0.48rem 0.82rem;
+  cursor: pointer;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease,
+    transform 200ms var(--ease-out);
+}
+
+.va-seg__btn:hover {
+  color: var(--va-strong);
+}
+
+.va-seg__btn[data-active='true'] {
+  background: var(--va-strong);
+  color: var(--va-on-strong);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.va-seg__btn:active {
+  transform: scale(0.97);
+}
+
+.va-iconbtn {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--va-line);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--va-muted);
+  cursor: pointer;
+  transition:
+    transform 240ms var(--ease-out),
+    border-color 200ms ease,
+    background-color 200ms ease,
+    color 200ms ease;
+}
+
+.va-iconbtn:hover {
+  transform: translateY(-2px);
+  border-color: var(--va-line-strong);
+  color: var(--va-strong);
+}
+
+.va-iconbtn.is-on {
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  border-color: color-mix(in srgb, var(--accent-strong) 55%, var(--va-line));
+  color: var(--ink);
+}
+
+.dark .va-iconbtn.is-on {
+  color: var(--accent);
+}
+
+/* -------------------------------------------------------------------------
+   Buttons
+   ------------------------------------------------------------------------- */
+
+.va-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55em;
+  min-height: 40px;
+  padding: 0 1.1rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    transform 240ms var(--ease-out),
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 240ms var(--ease-out);
+}
+
+.va-btn:hover {
+  background: var(--accent-strong);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(10, 12, 9, 0.14);
+}
+
+.va-btn:active {
+  transform: translateY(0) scale(0.985);
+}
+
+.va-btn svg {
+  transition: transform 240ms var(--ease-out);
+}
+
+.va-btn:hover svg {
+  transform: translateX(2px);
+}
+
+.va-btn--sm {
+  min-height: 36px;
+  padding-inline: 0.95rem;
+  font-size: 0.74rem;
+}
+
+.va-btn--ink {
+  background: var(--va-strong);
+  color: var(--va-on-strong);
+}
+
+.va-btn--ink:hover {
+  background: color-mix(in srgb, var(--va-strong) 86%, var(--accent));
+}
+
+.va-btn--ghost {
+  background: transparent;
+  color: var(--va-strong);
+  border-color: var(--va-line);
+}
+
+.va-btn--ghost:hover {
+  background: var(--va-inset);
+  border-color: var(--va-line-strong);
+  box-shadow: none;
+}
+
+/* -------------------------------------------------------------------------
+   Progress rail
+   ------------------------------------------------------------------------- */
+
+.va-progress {
+  display: grid;
+  gap: 7px;
+  margin-top: 16px;
+}
+
+.va-progress__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--va-muted);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.va-progress__meta span:last-child {
+  color: var(--va-strong);
+  letter-spacing: 0.1em;
+  text-align: right;
+}
+
+.va-rail {
+  position: relative;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 10%, transparent);
+}
+
+.dark .va-rail {
+  background: color-mix(in srgb, var(--paper) 12%, transparent);
+}
+
+.va-rail__fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent-strong), var(--accent));
+  box-shadow: 0 0 10px var(--glow);
+  transition: width 520ms var(--ease-out);
+}
+
+/* -------------------------------------------------------------------------
+   Instruction blocks
+   ------------------------------------------------------------------------- */
+
+.va-body {
+  display: grid;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.va-prompt {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding-top: 4px;
+  text-align: center;
+}
+
+.va-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--va-muted);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.va-kicker::before,
+.va-kicker::after {
+  content: '';
+  width: 16px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.55;
+}
+
+.va-shell .va-question {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3.4vw, 2.3rem);
+  font-weight: 500;
+  line-height: 1.06;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+  color: inherit;
+}
+
+.va-shell .va-hintline {
+  margin: 0;
+  max-width: 52ch;
+  color: var(--va-muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+/* -------------------------------------------------------------------------
+   Object tray — a shallow CSS depth shelf, no canvas, no dependencies
+   ------------------------------------------------------------------------- */
+
+.va-tray {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 1.8vw, 20px);
+  min-height: 200px;
+  padding: clamp(20px, 3.2vw, 34px);
+  border: 1px solid var(--va-line);
+  border-radius: 3px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, #ffffff 34%, var(--paper)) 0%,
+    var(--paper-2) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -20px 32px color-mix(in srgb, var(--ink) 4%, transparent);
+  perspective: 1000px;
+  perspective-origin: 50% 42%;
+  transform-style: preserve-3d;
+  isolation: isolate;
+}
+
+.dark .va-tray {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--paper) 5%, var(--ink-3)) 0%,
+    var(--ink-2) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -20px 34px rgba(0, 0, 0, 0.25);
+}
+
+.va-tray::before {
+  content: '';
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: -12px;
+  height: 22px;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(50% 100% at 50% 0%, rgba(10, 12, 9, 0.2), transparent 72%);
+  filter: blur(7px);
+  pointer-events: none;
+  transform: translateZ(-50px);
+}
+
+.dark .va-tray::before {
+  background: radial-gradient(50% 100% at 50% 0%, rgba(0, 0, 0, 0.55), transparent 72%);
+}
+
+.va-tray__surface {
+  position: absolute;
+  inset: 10px;
+  border: 1px dashed color-mix(in srgb, var(--ink) 12%, transparent);
+  border-radius: 2px;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--ink) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--ink) 5%, transparent) 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-position: center;
+  opacity: 0.6;
+  pointer-events: none;
+  transform: translateZ(-34px);
+}
+
+.dark .va-tray__surface {
+  border-color: color-mix(in srgb, var(--paper) 12%, transparent);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--paper) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--paper) 5%, transparent) 1px, transparent 1px);
+}
+
+.va-shell .va-object {
+  transform: translateZ(14px);
+  transition:
+    transform 280ms var(--ease-out),
+    filter 280ms ease,
+    opacity 280ms ease,
+    box-shadow 320ms var(--ease-out),
+    background-color 320ms ease;
+  animation: va-object-in 480ms var(--ease-out) backwards;
+}
+
+.va-tray .va-object:nth-of-type(1) {
+  animation-delay: 0ms;
+}
+
+.va-tray .va-object:nth-of-type(2) {
+  animation-delay: 40ms;
+}
+
+.va-tray .va-object:nth-of-type(3) {
+  animation-delay: 80ms;
+}
+
+.va-tray .va-object:nth-of-type(4) {
+  animation-delay: 120ms;
+}
+
+.va-tray .va-object:nth-of-type(5) {
+  animation-delay: 160ms;
+}
+
+.va-tray .va-object:nth-of-type(6) {
+  animation-delay: 200ms;
+}
+
+.va-tray .va-object:nth-of-type(7) {
+  animation-delay: 240ms;
+}
+
+.va-tray .va-object:nth-of-type(8) {
+  animation-delay: 280ms;
+}
+
+.va-tray .va-object:nth-of-type(9) {
+  animation-delay: 320ms;
+}
+
+.va-tray .va-object:nth-of-type(n + 10) {
+  animation-delay: 360ms;
+}
+
+.va-shell .va-object:not(:disabled):hover {
+  transform: translate3d(0, -4px, 24px) scale(1.04);
+}
+
+.va-shell .va-object:not(:disabled):active {
+  transform: translate3d(0, 0, 10px) scale(0.96);
+  transition-duration: 120ms;
+}
+
+/* The shared object component marks counted items in emerald; inside this
+   paper/ink skin the mark becomes the chartreuse signal. */
+.va-shell .va-object[class*='ring-emerald-500'] {
+  background: color-mix(in srgb, var(--accent) 16%, transparent) !important;
+  box-shadow:
+    0 0 0 1px var(--accent-strong),
+    0 10px 18px color-mix(in srgb, var(--ink) 10%, transparent) !important;
+}
+
+.va-shell .va-object[class*='ring-emerald-500'] span[class*='bg-emerald-600'] {
+  background: var(--accent) !important;
+  color: var(--ink) !important;
+  border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+}
+
+/* -------------------------------------------------------------------------
+   Hint
+   ------------------------------------------------------------------------- */
+
+.va-hint-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -6px;
+}
+
+.va-linkbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 2px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: none;
+  color: var(--va-muted);
+  font-family: var(--font-text);
+  font-size: 0.74rem;
+  line-height: 1.3;
+  cursor: pointer;
+  transition:
+    color 200ms ease,
+    border-color 200ms ease;
+}
+
+.va-linkbtn:hover {
+  color: var(--va-strong);
+  border-bottom-color: var(--va-line-strong);
+}
+
+.va-hint {
+  display: flex;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--va-line);
+  border-left: 2px solid var(--accent-strong);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--accent) 7%, var(--va-card));
+  color: var(--va-strong);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  animation: va-rise 400ms var(--ease-out) both;
+}
+
+.va-hint svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--accent-strong);
+}
+
+.dark .va-hint svg {
+  color: var(--accent);
+}
+
+/* -------------------------------------------------------------------------
+   Answer grid
+   ------------------------------------------------------------------------- */
+
+.va-answer-block {
+  display: grid;
+  gap: 10px;
+}
+
+.va-answer-caption {
+  color: var(--va-muted);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  line-height: 1.3;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.va-answers {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  max-width: 30rem;
+  margin-inline: auto;
+}
+
+.va-answer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 74px;
+  padding: 10px 6px 9px;
+  border: 1px solid var(--va-line);
+  border-radius: 3px;
+  background: var(--va-card);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 45%, transparent);
+  color: inherit;
+  font-family: var(--font-text);
+  cursor: pointer;
+  transition:
+    transform 260ms var(--ease-out),
+    border-color 220ms ease,
+    background-color 220ms ease,
+    box-shadow 260ms var(--ease-out);
+}
+
+.dark .va-answer {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.va-answer::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1px solid transparent;
+  border-radius: 1px;
+  pointer-events: none;
+  transition: border-color 220ms ease;
+}
+
+.va-answer:hover:not(.is-correct) {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent-strong) 70%, var(--va-line));
+  box-shadow: 0 14px 28px rgba(10, 12, 9, 0.1);
+}
+
+.va-answer:hover:not(.is-correct)::before {
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.va-answer:active {
+  transform: translateY(0) scale(0.985);
+}
+
+.va-answer__value {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.6vw, 1.9rem);
+  font-weight: 500;
+  font-variant-numeric: lining-nums tabular-nums;
+  line-height: 1;
+}
+
+.va-answer__label {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--va-muted);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.va-answer.is-correct {
+  background: var(--accent);
+  border-color: color-mix(in srgb, var(--ink) 22%, transparent);
+  color: var(--ink);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent),
+    0 16px 34px rgba(10, 12, 9, 0.14);
+  transform: translateY(-3px);
+  animation: va-answer-pop 420ms var(--ease-out);
+}
+
+.va-answer.is-correct .va-answer__label {
+  color: color-mix(in srgb, var(--ink) 68%, transparent);
+}
+
+.va-answer.is-wrong {
+  background: var(--va-wrong-soft);
+  border-color: color-mix(in srgb, var(--va-wrong) 52%, var(--va-line));
+}
+
+.va-answer.is-wrong .va-answer__value {
+  color: var(--va-wrong);
+}
+
+/* -------------------------------------------------------------------------
+   Feedback
+   ------------------------------------------------------------------------- */
+
+.va-feedback {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  padding: 16px 18px;
+  border: 1px solid var(--va-line);
+  border-radius: 3px;
+  background: var(--va-card);
+  text-align: center;
+  animation: va-rise 420ms var(--ease-out) both;
+}
+
+.va-feedback.is-correct {
+  border-color: color-mix(in srgb, var(--accent-strong) 55%, var(--va-line));
+  border-left: 3px solid var(--accent-strong);
+  background: linear-gradient(
+    120deg,
+    color-mix(in srgb, var(--accent) 26%, var(--va-card)) 0%,
+    color-mix(in srgb, var(--accent) 8%, var(--va-card)) 100%
+  );
+}
+
+.dark .va-feedback.is-correct {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--va-line));
+}
+
+.va-feedback.is-wrong {
+  border-left: 3px solid var(--va-wrong);
+  background: var(--va-wrong-soft);
+}
+
+.va-shell .va-feedback__title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 1.8vw, 1.35rem);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.va-feedback__title svg {
+  flex-shrink: 0;
+  color: var(--ink);
+}
+
+.dark .va-feedback__title svg {
+  color: var(--accent);
+}
+
+.va-feedback.is-wrong .va-feedback__title {
+  color: var(--va-wrong);
+}
+
+.va-shell .va-feedback__body {
+  max-width: 52ch;
+  margin: 0;
+  color: var(--va-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.va-feedback .va-btn {
+  margin-top: 6px;
+}
+
+.va-fact {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--va-line);
+  border-left: 2px solid var(--accent-strong);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--accent) 7%, var(--va-card));
+  text-align: center;
+  animation: va-rise 420ms var(--ease-out) both;
+}
+
+.va-fact__label {
+  color: var(--va-muted);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.va-shell .va-fact p {
+  margin: 0;
+  color: var(--va-strong);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.dark .va-shell .va-fact p {
+  color: var(--va-strong);
+}
+
+/* -------------------------------------------------------------------------
+   Compare two collections
+   ------------------------------------------------------------------------- */
+
+.va-compare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.va-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 16px;
+  border: 1px solid var(--va-line);
+  border-radius: 3px;
+  background: var(--va-card);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 45%, transparent);
+  color: inherit;
+  font-family: var(--font-text);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    transform 260ms var(--ease-out),
+    border-color 220ms ease,
+    background-color 220ms ease,
+    box-shadow 260ms var(--ease-out);
+}
+
+.dark .va-group {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.va-group:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent-strong) 60%, var(--va-line));
+  box-shadow: 0 14px 30px rgba(10, 12, 9, 0.1);
+}
+
+.va-group:active {
+  transform: translateY(0) scale(0.995);
+}
+
+.va-group__label {
+  color: var(--va-muted);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.va-group__objects {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 92px;
+}
+
+/* Objects inside a compare group are labels, not separate controls. Let
+   every tap land on the group button underneath. */
+.va-group .va-object {
+  pointer-events: none;
+}
+
+.va-group__count {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.va-group__count small {
+  color: var(--va-muted);
+  font-family: var(--font-text);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.va-group.is-correct {
+  border-color: var(--accent-strong);
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--accent) 24%, var(--va-card)),
+    var(--va-card)
+  );
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.va-group.is-wrong {
+  border-color: color-mix(in srgb, var(--va-wrong) 52%, var(--va-line));
+  background: var(--va-wrong-soft);
+}
+
+/* -------------------------------------------------------------------------
+   Addition stage
+   ------------------------------------------------------------------------- */
+
+.va-stage {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 10px;
+  padding: clamp(14px, 2.4vw, 22px);
+  border: 1px solid var(--va-line);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--ink) 2%, transparent);
+}
+
+.dark .va-stage {
+  background: color-mix(in srgb, var(--paper) 3%, transparent);
+}
+
+.va-groupcard {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+  padding: 14px 12px;
+  border: 1px solid var(--va-line);
+  border-radius: 2px;
+  background: var(--va-card);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 45%, transparent);
+}
+
+.dark .va-groupcard {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.va-groupcard__label {
+  color: var(--va-muted);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.va-groupcard__objects {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 74px;
+}
+
+.va-groupcard__num {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 500;
+  font-variant-numeric: lining-nums;
+  line-height: 1;
+  color: var(--va-strong);
+}
+
+.va-op {
+  display: grid;
+  place-items: center;
+  align-self: center;
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--va-line);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--va-strong);
+}
+
+.va-op--muted {
+  background: transparent;
+  color: var(--va-muted);
+}
+
+.va-combine {
+  display: flex;
+  flex: 1.1 1 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 150px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  border-radius: 2px;
+  background: var(--accent);
+  color: var(--ink);
+  font-family: var(--font-text);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    transform 260ms var(--ease-out),
+    background-color 200ms ease,
+    box-shadow 260ms var(--ease-out);
+}
+
+.va-combine:hover {
+  transform: translateY(-3px);
+  background: var(--accent-strong);
+  box-shadow: 0 16px 30px rgba(10, 12, 9, 0.14);
+}
+
+.va-combine:active {
+  transform: translateY(0) scale(0.985);
+}
+
+.va-combine__icon {
+  transition: transform 280ms var(--ease-out);
+}
+
+.va-combine:hover .va-combine__icon {
+  transform: rotate(90deg) scale(1.05);
+}
+
+.va-combine__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.va-combine__hint {
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+
+.va-combined {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: clamp(14px, 2.4vw, 22px);
+  border: 1px solid color-mix(in srgb, var(--accent-strong) 38%, var(--va-line));
+  border-radius: 3px;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--accent) 9%, var(--va-card)),
+    var(--va-card)
+  );
+  animation: va-rise 460ms var(--ease-out) both;
+}
+
+.va-combined__kicker {
+  color: var(--va-muted);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  line-height: 1.3;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.va-tray--combined {
+  width: 100%;
+  min-height: 130px;
+  padding: clamp(16px, 2.6vw, 26px);
+  background: transparent;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 35%, transparent);
+}
+
+/* -------------------------------------------------------------------------
+   Equation banner
+   ------------------------------------------------------------------------- */
+
+.va-equation {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: clamp(8px, 1.6vw, 16px);
+  padding: 10px 20px;
+  border: 1px solid var(--va-line);
+  border-radius: 2px;
+  background: var(--va-card);
+  color: var(--va-strong);
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 3vw, 2.1rem);
+  font-weight: 500;
+  font-variant-numeric: lining-nums tabular-nums;
+  line-height: 1;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 45%, transparent);
+}
+
+.dark .va-equation {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.va-equation__op {
+  display: inline-grid;
+  place-items: center;
+  align-self: center;
+  color: var(--va-muted);
+  font-size: 0.72em;
+}
+
+.va-equation__op svg {
+  display: block;
+}
+
+.va-equation__result {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.35em;
+  padding: 0.02em 0.1em;
+  border-radius: 1px;
+  line-height: 1;
+  transition:
+    background-color 260ms ease,
+    color 260ms ease;
+}
+
+.va-equation__result.is-pending {
+  color: var(--va-muted);
+}
+
+.va-equation__result.is-revealed {
+  background: var(--accent);
+  color: var(--ink);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 18%, transparent);
+}
+
+/* -------------------------------------------------------------------------
+   Subtraction stage
+   ------------------------------------------------------------------------- */
+
+.va-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: stretch;
+}
+
+.va-collection {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--va-line);
+  border-radius: 3px;
+  background: var(--va-card);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 45%, transparent);
+}
+
+.dark .va-collection {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.va-collection__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+}
+
+.va-collection__label {
+  color: var(--va-muted);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.va-collection__status {
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--accent-strong);
+  color: var(--va-strong);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.va-collection__objects {
+  min-height: 150px;
+  padding: 16px;
+}
+
+.va-collection__note {
+  margin: 0;
+  color: var(--va-muted);
+  font-size: 0.68rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.va-basket {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px dashed color-mix(in srgb, var(--va-wrong) 45%, var(--va-line));
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--va-wrong) 4%, transparent);
+}
+
+.va-basket__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--va-wrong);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.va-basket__hint {
+  margin: 0;
+  color: var(--va-muted);
+  font-size: 0.7rem;
+  line-height: 1.4;
+}
+
+.va-basket__slot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 96px;
+  padding: 12px;
+  border: 1px solid var(--va-line);
+  border-radius: 2px;
+  background: color-mix(in srgb, #ffffff 24%, transparent);
+}
+
+.dark .va-basket__slot {
+  background: color-mix(in srgb, var(--ink) 30%, transparent);
+}
+
+.va-basket__empty {
+  color: var(--va-muted);
+  font-size: 0.72rem;
+  font-style: italic;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.va-basket .va-btn {
+  width: 100%;
+}
+
+/* The compare groups are div-based buttons so the object buttons inside stay
+   non-nested. Keep their keyboard focus as visible as the real buttons. */
+.va-shell .va-group:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 3px;
+}
+
+.va-shell :is(.va-answer, .va-btn, .va-iconbtn, .va-seg__btn, .va-linkbtn, .va-combine):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 3px;
+}
+
+/* -------------------------------------------------------------------------
+   Motion
+   ------------------------------------------------------------------------- */
+
+@keyframes va-object-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 14px) scale(1);
+  }
+}
+
+@keyframes va-answer-pop {
+  0% {
+    transform: translateY(-3px) scale(0.96);
+  }
+  55% {
+    transform: translateY(-5px) scale(1.04);
+  }
+  100% {
+    transform: translateY(-3px) scale(1);
+  }
+}
+
+@keyframes va-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Responsive
+   ------------------------------------------------------------------------- */
+
+@media (max-width: 760px) {
+  .va-shell {
+    padding: clamp(16px, 4vw, 22px);
+  }
+
+  .va-head {
+    align-items: stretch;
+  }
+
+  .va-tools {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .va-stage {
+    flex-wrap: wrap;
+  }
+
+  .va-groupcard,
+  .va-combine {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .va-op {
+    width: 34px;
+    height: 34px;
+  }
+
+  .va-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .va-answers {
+    gap: 6px;
+  }
+
+  .va-answer {
+    min-height: 66px;
+    padding-inline: 3px;
+  }
+
+  .va-answer__value {
+    font-size: 1.45rem;
+  }
+
+  .va-compare {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Reduced motion
+   ------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .va-shell *,
+  .va-shell *::before,
+  .va-shell *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .va-shell .va-object,
+  .va-shell .va-object:not(:disabled):hover,
+  .va-shell .va-object:not(:disabled):active,
+  .va-shell .va-answer,
+  .va-shell .va-answer.is-correct,
+  .va-shell .va-group:hover,
+  .va-shell .va-combine:hover,
+  .va-shell .va-btn:hover,
+  .va-shell .va-iconbtn:hover {
+    transform: none !important;
+  }
+
+  .va-rail__fill {
+    transition: none !important;
+  }
+}

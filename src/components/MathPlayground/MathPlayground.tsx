@@ -22,6 +22,7 @@ import {
 import { VisualMathWorld } from '../VisualMathWorld/VisualMathWorld.tsx';
 import { MultiplicationTablesWorkspace } from '../MultiplicationTables/MultiplicationTablesWorkspace.tsx';
 import { useI18n } from '../../i18n/I18nContext.tsx';
+import '../../styles/playground.css';
 import {
   NumberQuestGame,
   FruitMarketGame,
@@ -394,7 +395,7 @@ export const MathPlayground: React.FC = () => {
         <div className="space-y-4">
           <button
             onClick={() => setActiveLab(null)}
-            className="px-4 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm cursor-pointer"
+            className="pg-back"
           >
             ← Back to Math Playground
           </button>
@@ -406,7 +407,7 @@ export const MathPlayground: React.FC = () => {
         <div className="space-y-4">
           <button
             onClick={() => setActiveLab(null)}
-            className="px-4 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm cursor-pointer"
+            className="pg-back"
           >
             ← Back to Math Playground
           </button>
@@ -417,66 +418,73 @@ export const MathPlayground: React.FC = () => {
       {/* Main Playground Overview when no sub-lab is full-screened */}
       {!activeLab && (
         <>
-          {/* 3D Cinematic Hero Banner */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-indigo-950 to-blue-950 text-white p-6 sm:p-10 lg:p-12 border border-indigo-900/60 shadow-2xl">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-              <div className="lg:col-span-7 space-y-4">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-200 text-xs font-bold uppercase tracking-wider backdrop-blur-sm">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-300" /> {t.playgroundHeroTag}
-                </div>
-                <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight">
+          {/* Playground hero: an ink band with a live parametric surface. */}
+          <section className="pg-hero">
+            <span className="pg-hero__grid" aria-hidden="true" />
+            <span className="pg-hero__ring" aria-hidden="true" />
+            <span className="pg-hero__glyph pg-hero__glyph--a" aria-hidden="true">π</span>
+            <span className="pg-hero__glyph pg-hero__glyph--b" aria-hidden="true">∑</span>
+
+            <div className="pg-hero__inner">
+              <div className="pg-hero__copy">
+                <span className="pg-hero__eyebrow">
+                  <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+                  {t.playgroundHeroTag}
+                </span>
+
+                <h1 className="pg-hero__title">
                   {t.playgroundTitle}
                 </h1>
-                <p className="text-slate-300 text-xs sm:text-sm md:text-base leading-relaxed max-w-xl">
-                  {t.playgroundSubtitle}
-                </p>
 
-                <div className="flex flex-wrap items-center gap-3 pt-2">
-                  <button
-                    onClick={() => setActiveLab('tables')}
-                    className="px-4 sm:px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-blue-600/30 cursor-pointer"
-                  >
-                    {t.kidsOpenTables}
+                <p className="pg-hero__lead">{t.playgroundSubtitle}</p>
+
+                <div className="pg-hero__actions">
+                  <button type="button" className="btn" onClick={() => setActiveLab('tables')}>
+                    <span>{t.kidsOpenTables}</span>
+                    <ArrowRight className="w-4 h-4" aria-hidden="true" />
                   </button>
-                  <button
-                    onClick={() => setActiveLab('visual_math')}
-                    className="px-4 sm:px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs uppercase tracking-wider transition-all backdrop-blur-sm cursor-pointer"
-                  >
-                    {t.kidsOpenVisual}
+                  <button type="button" className="btn btn--ghost" onClick={() => setActiveLab('visual_math')}>
+                    <span>{t.kidsOpenVisual}</span>
                   </button>
                 </div>
+
+                <ul className="pg-hero__facts">
+                  <li><Shapes className="w-3.5 h-3.5" aria-hidden="true" /> 20+ experiments</li>
+                  <li><Layers className="w-3.5 h-3.5" aria-hidden="true" /> Classes 1–12</li>
+                  <li><Atom className="w-3.5 h-3.5" aria-hidden="true" /> Real WebGL surfaces</li>
+                </ul>
               </div>
 
-              {/* Three.js Interactive 3D Canvas */}
-              <div className="lg:col-span-5 flex flex-col items-center justify-center relative min-w-0">
-                <div className="w-full h-56 sm:h-72 lg:h-80 relative flex items-center justify-center">
-                  <canvas ref={heroCanvasRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
+              <div className="pg-hero__stage">
+                <div className="pg-hero__frame">
+                  <span className="pg-hero__frame-label">Parametric torus knot</span>
+                  <canvas ref={heroCanvasRef} className="pg-hero__canvas" />
+                  <span className="pg-hero__frame-foot">
+                    <Move3d className="w-3.5 h-3.5" aria-hidden="true" />
+                    Drag or touch to rotate
+                  </span>
                 </div>
-                <span className="text-[10px] sm:text-[11px] font-mono text-indigo-300/80 uppercase tracking-widest mt-1 text-center">
-                  Three.js Parametric Torus Knot • Move mouse or touch to rotate
-                </span>
               </div>
             </div>
-          </div>
+          </section>
 
           {/* Level Filter Tabs */}
-          <div className="flex items-center justify-start sm:justify-center gap-2 border-b border-gray-200 dark:border-gray-800 pb-3 overflow-x-auto thin-scrollbar">
+          <div className="pg-tabs" role="tablist" aria-label="Playground levels">
             {[
-              { id: 'all', label: 'All Experiments' },
-              { id: 'little', label: 'Little Explorers (Classes 1–5)' },
-              { id: 'middle', label: 'Math Explorers (Classes 6–9)' },
-              { id: 'advanced', label: 'Advanced Lab (Class 10, 12, STEM)' }
+              { id: 'all', label: 'All experiments', count: '20' },
+              { id: 'little', label: 'Little explorers', count: '1–5' },
+              { id: 'middle', label: 'Math explorers', count: '6–9' },
+              { id: 'advanced', label: 'Advanced lab', count: '10–12' },
             ].map((tab) => (
               <button
                 key={tab.id}
+                role="tab"
+                aria-selected={activeTab === tab.id}
                 onClick={() => setActiveTab(tab.id as PlaygroundTab)}
-                className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                  activeTab === tab.id
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
-                }`}
+                className={`pg-tab ${activeTab === tab.id ? 'is-active' : ''}`}
               >
-                {tab.label}
+                <span>{tab.label}</span>
+                <em>{tab.count}</em>
               </button>
             ))}
           </div>
@@ -486,14 +494,12 @@ export const MathPlayground: React.FC = () => {
               ========================================================= */}
           {(activeTab === 'all' || activeTab === 'little') && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-white/10">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
-                  <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
-                    Little Explorers: Classes 1–5 Interactive Games
-                  </h3>
+              <div className="pg-section-head">
+                <div className="pg-section-head__left">
+                  <span className="pg-section-head__dot" aria-hidden="true" />
+                  <h3>Little explorers · Classes 1–5</h3>
                 </div>
-                <span className="text-xs font-mono text-slate-500">8 Playable Games</span>
+                <span className="pg-section-head__meta">8 playable games</span>
               </div>
 
               {/* Game 1: Number Quest */}
@@ -527,14 +533,12 @@ export const MathPlayground: React.FC = () => {
               ========================================================= */}
           {(activeTab === 'all' || activeTab === 'middle') && (
             <div className="space-y-6 pt-4">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-white/10">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse" />
-                  <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
-                    Math Explorers: Classes 6–9 Interactive Labs
-                  </h3>
+              <div className="pg-section-head">
+                <div className="pg-section-head__left">
+                  <span className="pg-section-head__dot" aria-hidden="true" />
+                  <h3>Math explorers · Classes 6–9</h3>
                 </div>
-                <span className="text-xs font-mono text-slate-500">Algebra, Logic & Coordinate Games</span>
+                <span className="pg-section-head__meta">Algebra, logic &amp; coordinate games</span>
               </div>
 
               {/* Logic Lab */}
@@ -553,7 +557,7 @@ export const MathPlayground: React.FC = () => {
 
           {/* EXPERIMENT 1: ALGEBRA BALANCE SCALE (Classes 6–9) WITH REAL-WORLD TOYS */}
           {(activeTab === 'all' || activeTab === 'middle') && (
-            <div className="bg-white dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700/60 rounded-3xl p-5 sm:p-8 shadow-sm space-y-6">
+            <div className="pg-lab">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-md shrink-0 text-xl">
@@ -703,7 +707,7 @@ export const MathPlayground: React.FC = () => {
                 {/* Real-World Toys Breakdown Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg mt-4">
                   <div className="p-3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs">
-                    <div className="text-[11px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-wider flex items-center justify-between">
+                    <div className="text-xs text-indigo-700 dark:text-indigo-300 font-semibold flex items-center justify-between">
                       <span>Left Pan (2x + 4)</span>
                       <span>{TOY_THEMES[toyTheme].unknownIcon} + {TOY_THEMES[toyTheme].constantIcon}</span>
                     </div>
@@ -716,7 +720,7 @@ export const MathPlayground: React.FC = () => {
                   </div>
 
                   <div className="p-3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs">
-                    <div className="text-[11px] text-purple-600 dark:text-purple-400 font-bold uppercase tracking-wider flex items-center justify-between">
+                    <div className="text-xs text-purple-700 dark:text-purple-300 font-semibold flex items-center justify-between">
                       <span>Right Pan (Target = 10)</span>
                       <span>{TOY_THEMES[toyTheme].targetIcon}</span>
                     </div>
@@ -759,7 +763,7 @@ export const MathPlayground: React.FC = () => {
 
           {/* EXPERIMENT 2: DYNAMIC CALCULUS TANGENT & DERIVATIVE LAB (Class 10, 12, STEM) */}
           {(activeTab === 'all' || activeTab === 'advanced') && (
-            <div className="bg-white dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700/60 rounded-3xl p-5 sm:p-8 shadow-sm space-y-6">
+            <div className="pg-lab">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-2xl bg-rose-500 text-white flex items-center justify-center shadow-md shrink-0">
@@ -863,7 +867,7 @@ export const MathPlayground: React.FC = () => {
 
           {/* EXPERIMENT 3: 3D PARAMETRIC SURFACE WIRE (Three.js WebGL Interactive) */}
           {(activeTab === 'all' || activeTab === 'advanced') && (
-            <div className="bg-white dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700/60 rounded-3xl p-5 sm:p-8 shadow-sm space-y-6">
+            <div className="pg-lab">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-2xl bg-teal-500 text-white flex items-center justify-center shadow-md shrink-0">
@@ -956,14 +960,12 @@ export const MathPlayground: React.FC = () => {
           {/* ADVANCED LAB: COORDINATE & LOGIC MATRIX */}
           {activeTab === 'advanced' && (
             <div className="space-y-6 pt-4">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-white/10">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-teal-500 animate-pulse" />
-                  <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
-                    Advanced Coordinate & Matrix Challenges
-                  </h3>
+              <div className="pg-section-head">
+                <div className="pg-section-head__left">
+                  <span className="pg-section-head__dot" aria-hidden="true" />
+                  <h3>Advanced coordinate &amp; matrix challenges</h3>
                 </div>
-                <span className="text-xs font-mono text-slate-500">STEM Mathematical Labs</span>
+                <span className="pg-section-head__meta">STEM mathematical labs</span>
               </div>
               <CoordinateExplorerGame />
               <LogicLabGame />

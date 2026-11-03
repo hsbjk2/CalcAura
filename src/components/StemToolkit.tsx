@@ -28,6 +28,7 @@ import {
   RotateCcw,
   Equal,
 } from 'lucide-react';
+import '../styles/tools.css';
 
 type StemTab = 'statistics' | 'matrices' | 'conversions' | 'land' | 'student';
 
@@ -113,9 +114,9 @@ export const StemToolkit: React.FC = () => {
   const targetAttendanceId = useId();
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div className="tool-page max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Title */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+      <div className="tool-head flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div>
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
             STEM & Student Computing Toolkit
@@ -126,7 +127,7 @@ export const StemToolkit: React.FC = () => {
         </div>
 
         {/* Tab switcher */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-x-auto">
+        <div className="tool-tabs flex items-center gap-1.5 p-1 overflow-x-auto">
           {[
             { id: 'statistics', label: 'Statistics & Distribution', icon: BarChart3 },
             { id: 'matrices', label: 'Matrix Algebra', icon: Grid3X3 },

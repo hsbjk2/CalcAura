@@ -84,7 +84,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       setScrolled(window.scrollY > 28);
 
       if (!isLandingView) {
-        setNavTheme(darkMode || isAboutView ? 'ink' : 'paper');
+        setNavTheme(darkMode ? 'ink' : 'paper');
         return;
       }
 

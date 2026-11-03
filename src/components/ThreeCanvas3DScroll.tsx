@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { RotateCw, Layers, Compass, Eye, Sliders, Maximize2 } from 'lucide-react';
 import { Translations } from '../i18n/translations.ts';
 import { MathView } from './MathView.tsx';
+import '../styles/tools.css';
 
 export type SurfaceType = 'saddle' | 'ripple' | 'paraboloid' | 'torus';
 
@@ -381,7 +382,7 @@ export const ThreeCanvas3DScroll: React.FC<ThreeCanvas3DScrollProps> = ({ t }) =
   };
 
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-xl select-none transition-all">
+    <div className="three-scroll relative w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-xl select-none transition-all">
       {/* 3D WebGL Canvas Viewport */}
       <div className="relative w-full h-[460px] md:h-[540px]">
         <div ref={mountRef} className="w-full h-full cursor-grab active:cursor-grabbing" />

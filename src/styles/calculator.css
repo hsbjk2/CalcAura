@@ -1,0 +1,1067 @@
+/* =========================================================================
+   BASIC CALCULATOR DESK
+   Paper + ink + one chartreuse signal. Bodoni for the page title, Jost for
+   every control and numeral. Sharp glass shell, ink readout, chartreuse
+   operator keys. Scoped to .bc-page so it never leaks into another route.
+   ========================================================================= */
+
+.bc-page {
+  --bc-line: var(--line);
+  --bc-muted: var(--muted);
+  --bc-ink: var(--ink);
+  --bc-key-face: color-mix(in srgb, #ffffff 58%, var(--paper));
+  --bc-key-edge: color-mix(in srgb, var(--ink) 14%, transparent);
+  --bc-key-ink: var(--ink);
+  --bc-util-face: color-mix(in srgb, var(--paper-3) 62%, #ffffff);
+  --bc-op-face: color-mix(in srgb, var(--accent) 24%, var(--paper));
+  --bc-op-edge: color-mix(in srgb, var(--accent-strong) 52%, transparent);
+  --bc-danger: #f1b0a9;
+
+  position: relative;
+  padding-top: clamp(10px, 1.6vw, 20px);
+  padding-bottom: clamp(46px, 6vw, 84px);
+  color: var(--ink);
+}
+
+.dark .bc-page {
+  --bc-line: var(--line-ink);
+  --bc-muted: var(--muted-ink);
+  --bc-ink: var(--paper);
+  --bc-key-face: color-mix(in srgb, var(--paper) 8%, var(--ink-2));
+  --bc-key-edge: var(--line-ink);
+  --bc-key-ink: var(--paper);
+  --bc-util-face: color-mix(in srgb, var(--paper) 13%, var(--ink-3));
+  --bc-op-face: color-mix(in srgb, var(--accent) 16%, var(--ink-2));
+  --bc-op-edge: color-mix(in srgb, var(--accent) 36%, transparent);
+  --bc-danger: #efaaa5;
+  color: var(--paper);
+}
+
+/* -------------------------------------------------------------------------
+   Page header — sits below the fixed nav, reads as the top of the page
+   ------------------------------------------------------------------------- */
+
+.bc-pagehead {
+  display: grid;
+  gap: clamp(18px, 2.4vw, 28px);
+  padding-bottom: clamp(22px, 3vw, 34px);
+  margin-bottom: clamp(26px, 3.4vw, 44px);
+  border-bottom: 1px solid var(--bc-line);
+}
+
+.bc-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+}
+
+.bc-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 13px 0 11px;
+  border: 1px solid var(--bc-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 38%, transparent);
+  color: var(--bc-muted);
+  font-family: var(--font-text);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.015em;
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    transform 240ms var(--ease-out);
+}
+
+.bc-back svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 240ms var(--ease-out);
+}
+
+.bc-back:hover {
+  color: var(--bc-ink);
+  border-color: color-mix(in srgb, var(--ink) 30%, transparent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  transform: translateY(-1px);
+}
+
+.bc-back:hover svg {
+  transform: translateX(-2px);
+}
+
+.dark .bc-back {
+  background: color-mix(in srgb, var(--paper) 5%, transparent);
+}
+
+.dark .bc-back:hover {
+  border-color: var(--line-ink);
+}
+
+.bc-crumb-sep {
+  color: color-mix(in srgb, var(--bc-muted) 55%, transparent);
+  font-size: 0.8rem;
+}
+
+.bc-crumb {
+  color: var(--bc-muted);
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.bc-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(20px, 4vw, 64px);
+}
+
+.bc-intro {
+  flex: 1 1 520px;
+  min-width: 0;
+}
+
+.bc-kicker {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 14px;
+  color: var(--bc-muted);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.19em;
+  text-transform: uppercase;
+}
+
+.bc-kicker__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-strong);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+.page-shell .bc-title {
+  margin: 0;
+  color: var(--bc-ink);
+  font-family: var(--font-display);
+  font-size: clamp(2.9rem, 6vw, 5.4rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+}
+
+.bc-title em {
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.bc-title__dot {
+  color: var(--accent-strong);
+  font-style: normal;
+}
+
+.dark .bc-title__dot {
+  color: var(--accent);
+}
+
+.bc-sub {
+  max-width: 58ch;
+  margin: 16px 0 0;
+  color: var(--bc-muted);
+  font-size: clamp(0.94rem, 0.9rem + 0.2vw, 1.06rem);
+  line-height: 1.52;
+}
+
+/* -------------------------------------------------------------------------
+   Glass-chip settings rail
+   ------------------------------------------------------------------------- */
+
+.bc-settings {
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 4px;
+  padding: 5px;
+  border-radius: 3px;
+}
+
+.bc-setting {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 11px;
+  border: 0;
+  border-left: 1px solid var(--bc-line);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--bc-muted);
+  font-family: var(--font-text);
+  font-size: 0.73rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease;
+}
+
+.bc-setting:first-child {
+  border-left-color: transparent;
+}
+
+.bc-setting svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  color: var(--bc-muted);
+  transition: color 180ms ease;
+}
+
+.bc-setting:hover {
+  color: var(--bc-ink);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.bc-setting.is-on {
+  color: var(--bc-ink);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.bc-setting.is-on svg {
+  color: var(--accent-strong);
+}
+
+.dark .bc-setting.is-on svg {
+  color: var(--accent);
+}
+
+.bc-setting__label {
+  white-space: nowrap;
+}
+
+.bc-setting__value {
+  color: var(--bc-ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.bc-select {
+  appearance: none;
+  min-width: 2.1em;
+  min-height: 24px;
+  padding: 2px 14px 2px 5px;
+  border: 1px solid var(--bc-line);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--paper) 32%, transparent);
+  color: var(--bc-ink);
+  font: inherit;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.bc-select:hover {
+  border-color: color-mix(in srgb, var(--ink) 30%, transparent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.dark .bc-select {
+  background: color-mix(in srgb, var(--paper) 6%, transparent);
+}
+
+.dark .bc-select:hover {
+  border-color: var(--line-ink);
+}
+
+.bc-select-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.bc-select-caret {
+  position: absolute;
+  right: 6px;
+  width: 4px;
+  height: 4px;
+  border-right: 1px solid var(--bc-muted);
+  border-bottom: 1px solid var(--bc-muted);
+  transform: rotate(45deg) translateY(-1px);
+  pointer-events: none;
+}
+
+.bc-select option {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.dark .bc-select option {
+  background: var(--ink-2);
+  color: var(--paper);
+}
+
+/* -------------------------------------------------------------------------
+   Workbench layout
+   ------------------------------------------------------------------------- */
+
+.bc-workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 430px) minmax(0, 336px);
+  align-items: start;
+  justify-content: center;
+  gap: clamp(28px, 4.5vw, 68px);
+}
+
+.bc-stage {
+  width: 100%;
+  max-width: 430px;
+  min-width: 0;
+  justify-self: center;
+}
+
+.bc-tilt {
+  width: 100%;
+}
+
+/* Keep the pointer glow quiet so key labels stay crisp. */
+.bc-tilt::after {
+  background: radial-gradient(
+    420px circle at var(--mx) var(--my),
+    color-mix(in srgb, var(--accent) 11%, transparent),
+    transparent 62%
+  );
+  opacity: 0;
+}
+
+.bc-tilt:hover::after {
+  opacity: 0.7;
+}
+
+.bc-shell {
+  border-radius: 3px;
+  padding: clamp(14px, 2.2vw, 20px);
+}
+
+.bc-shell__topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 0 2px;
+}
+
+.bc-shell__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--bc-muted);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+}
+
+.bc-shell__brand svg {
+  width: 13px;
+  height: 13px;
+  color: var(--bc-ink);
+}
+
+.bc-shell__meta {
+  color: var(--bc-muted);
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* -------------------------------------------------------------------------
+   Ink display
+   ------------------------------------------------------------------------- */
+
+.bc-screen {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 150px;
+  overflow: hidden;
+  padding: clamp(12px, 1.8vw, 17px);
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line-ink));
+  border-radius: 3px;
+  background:
+    radial-gradient(120% 120% at 88% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 55%),
+    linear-gradient(155deg, var(--ink-3) 0%, var(--ink) 66%, var(--ink-2) 100%);
+  color: var(--paper);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 -20px 44px rgba(0, 0, 0, 0.26),
+    0 14px 30px -22px rgba(10, 12, 9, 0.9);
+}
+
+.bc-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(232, 233, 226, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232, 233, 226, 0.045) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.bc-screen > * {
+  position: relative;
+  z-index: 1;
+}
+
+.bc-screen__top {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.bc-screen__tag {
+  color: var(--muted-ink);
+  font-size: 0.57rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.bc-screen__expr {
+  min-height: 1.2em;
+  overflow-x: auto;
+  color: var(--muted-ink);
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  text-align: right;
+  white-space: nowrap;
+  scrollbar-width: none;
+  animation: bc-expr-in 280ms var(--ease-out) both;
+}
+
+.bc-screen__expr.is-idle {
+  color: color-mix(in srgb, var(--muted-ink) 58%, transparent);
+  font-style: italic;
+}
+
+.bc-screen__expr::-webkit-scrollbar {
+  display: none;
+}
+
+.bc-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 26px;
+  padding: 0 8px;
+  border: 1px solid rgba(232, 233, 226, 0.16);
+  border-radius: 999px;
+  background: rgba(232, 233, 226, 0.06);
+  color: var(--muted-ink);
+  font-family: var(--font-text);
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease;
+}
+
+.bc-copy svg {
+  width: 12px;
+  height: 12px;
+}
+
+.bc-copy span {
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.bc-copy:hover,
+.bc-copy.is-copied {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.bc-screen__main {
+  min-width: 0;
+  overflow-x: auto;
+  text-align: right;
+  scrollbar-width: none;
+}
+
+.bc-screen__main::-webkit-scrollbar {
+  display: none;
+}
+
+.bc-readout {
+  display: inline-block;
+  color: var(--paper);
+  font-family: var(--font-text);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  text-shadow: 0 0 26px color-mix(in srgb, var(--accent) 14%, transparent);
+  user-select: all;
+  animation: bc-readout-in 240ms var(--ease-out) both;
+}
+
+.bc-readout.is-error {
+  color: var(--bc-danger);
+  font-size: clamp(1.25rem, 4vw, 1.65rem);
+  letter-spacing: 0;
+}
+
+.bc-screen__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted-ink);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.bc-screen__state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bc-screen__state::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+.bc-screen__meta {
+  white-space: nowrap;
+}
+
+/* -------------------------------------------------------------------------
+   Keypad: sharp keys with a real pressed depth
+   ------------------------------------------------------------------------- */
+
+.bc-keypad {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(6px, 1.4vw, 9px);
+  margin-top: clamp(12px, 2vw, 16px);
+}
+
+.bc-key {
+  --bc-key-lift: 0px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: clamp(50px, 6.4vw, 58px);
+  padding: 0;
+  border: 1px solid var(--bc-key-edge);
+  border-radius: 3px;
+  background: var(--bc-key-face);
+  color: var(--bc-key-ink);
+  font-family: var(--font-text);
+  font-size: clamp(1rem, 1.8vw, 1.16rem);
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  transform: translateY(var(--bc-key-lift));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #ffffff 58%, transparent),
+    0 2px 0 color-mix(in srgb, var(--ink) 13%, transparent),
+    0 7px 14px -10px rgba(10, 12, 9, 0.42);
+  transition:
+    transform 150ms var(--ease-out),
+    box-shadow 150ms var(--ease-out),
+    background-color 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease;
+}
+
+.bc-key:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .bc-key:hover {
+    --bc-key-lift: -1px;
+    border-color: color-mix(in srgb, var(--ink) 24%, transparent);
+    background: color-mix(in srgb, #ffffff 24%, var(--bc-key-face));
+  }
+
+  .dark .bc-key:hover {
+    border-color: color-mix(in srgb, var(--paper) 26%, transparent);
+  }
+
+  /* Operators stay chartreuse on hover; the dark generic rule must not wash
+     the armed key or the equals key back to a neutral surface. */
+  .bc-key--op:hover {
+    border-color: color-mix(in srgb, var(--accent-strong) 66%, transparent);
+    background: color-mix(in srgb, var(--accent) 34%, var(--paper));
+  }
+
+  .dark .bc-key--op:hover {
+    border-color: color-mix(in srgb, var(--accent) 48%, transparent);
+    background: color-mix(in srgb, var(--accent) 24%, var(--ink-2));
+    color: var(--accent);
+  }
+
+  .bc-key--op.is-armed:hover,
+  .dark .bc-key--op.is-armed:hover {
+    border-color: var(--accent-strong);
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  .bc-key--equals:hover {
+    border-color: var(--accent-strong);
+    background: var(--accent-strong);
+    color: var(--accent-ink);
+  }
+
+  .dark .bc-key--equals:hover {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+}
+
+.bc-key:active {
+  --bc-key-lift: 2px;
+  box-shadow:
+    inset 0 2px 4px rgba(10, 12, 9, 0.16),
+    0 1px 0 color-mix(in srgb, var(--ink) 10%, transparent);
+}
+
+.bc-key--util {
+  background: var(--bc-util-face);
+  font-size: 0.96rem;
+  font-weight: 500;
+}
+
+.bc-key--digit {
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.bc-key--op {
+  border-color: var(--bc-op-edge);
+  background: var(--bc-op-face);
+  color: var(--bc-key-ink);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.dark .bc-key--op {
+  color: var(--accent);
+}
+
+.bc-key--op.is-armed {
+  border-color: var(--accent-strong);
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 2px 0 var(--accent-strong),
+    0 8px 18px -10px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+.dark .bc-key--op.is-armed {
+  color: var(--accent-ink);
+}
+
+.bc-key--equals {
+  border-color: var(--accent-strong);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 1.35rem;
+  font-weight: 600;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.48),
+    0 2px 0 var(--accent-strong),
+    0 10px 22px -12px color-mix(in srgb, var(--accent) 80%, transparent);
+}
+
+.bc-key--equals:hover {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+  color: var(--accent-ink);
+}
+
+.bc-key--icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.bc-key--mini {
+  height: 30px;
+  min-width: 42px;
+  padding: 0 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 46%, transparent);
+}
+
+.bc-shell__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--bc-line);
+  color: var(--bc-muted);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  line-height: 1.35;
+}
+
+.bc-shell__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.bc-live-dot {
+  width: 5px;
+  height: 5px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--accent-strong);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+/* -------------------------------------------------------------------------
+   Capability panel
+   ------------------------------------------------------------------------- */
+
+.bc-side {
+  width: 100%;
+  max-width: 360px;
+  min-width: 0;
+  justify-self: center;
+}
+
+.bc-panel {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(20px, 2.6vw, 28px);
+  border-radius: 3px;
+}
+
+.bc-panel::after {
+  content: '';
+  position: absolute;
+  top: -110px;
+  right: -90px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 20%, transparent), transparent 70%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.bc-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.bc-panel__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  color: var(--bc-muted);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.bc-panel__eyebrow svg {
+  width: 13px;
+  height: 13px;
+  color: var(--accent-strong);
+}
+
+.dark .bc-panel__eyebrow svg {
+  color: var(--accent);
+}
+
+.page-shell .bc-panel__title {
+  margin: 16px 0 0;
+  color: var(--bc-ink);
+  font-family: var(--font-display);
+  font-size: clamp(1.85rem, 2.5vw, 2.35rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 0.98;
+}
+
+.bc-panel__title em {
+  font-style: italic;
+  font-weight: 400;
+}
+
+.bc-panel__lede {
+  margin: 12px 0 0;
+  color: var(--bc-muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.bc-capabilities {
+  margin: 22px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--bc-line);
+  list-style: none;
+}
+
+.bc-capabilities li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 10px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--bc-line);
+}
+
+.bc-capabilities li:last-child {
+  padding-bottom: 4px;
+  border-bottom: 0;
+}
+
+.bc-capabilities__index {
+  padding-top: 3px;
+  color: var(--bc-muted);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+}
+
+.bc-capabilities strong {
+  display: block;
+  color: var(--bc-ink);
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.bc-capabilities p {
+  margin: 3px 0 0;
+  color: var(--bc-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.bc-keyboard {
+  margin-top: 18px;
+}
+
+.bc-keyboard__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  color: var(--bc-muted);
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.bc-keyboard__keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.bc-kbd {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 4px 7px;
+  border: 1px solid var(--bc-line);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--paper) 44%, transparent);
+  color: var(--bc-muted);
+  font-size: 0.64rem;
+}
+
+.dark .bc-kbd {
+  background: color-mix(in srgb, var(--paper) 5%, transparent);
+}
+
+.bc-kbd kbd {
+  color: var(--bc-ink);
+  font-family: var(--font-text);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.bc-panel__status {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 18px;
+  border-top: 1px solid var(--bc-line);
+}
+
+.bc-panel__status > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 8px 0 0;
+  color: var(--bc-muted);
+  font-size: 0.54rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.bc-panel__status > span + span {
+  padding-left: 10px;
+  border-left: 1px solid var(--bc-line);
+}
+
+.bc-panel__status b {
+  color: var(--bc-ink);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* -------------------------------------------------------------------------
+   Motion
+   ------------------------------------------------------------------------- */
+
+@keyframes bc-readout-in {
+  from {
+    opacity: 0.45;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bc-expr-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Responsive
+   ------------------------------------------------------------------------- */
+
+@media (max-width: 980px) {
+  .bc-workbench {
+    grid-template-columns: minmax(0, 430px);
+  }
+}
+
+@media (max-width: 640px) {
+  .bc-title-row {
+    align-items: flex-start;
+    gap: 18px;
+  }
+
+  .bc-settings {
+    width: 100%;
+  }
+
+  .bc-setting {
+    flex: 1 1 0;
+    justify-content: center;
+    padding-inline: 6px;
+  }
+
+  .bc-setting__label {
+    font-size: 0.68rem;
+  }
+
+  .bc-shell {
+    padding: 12px;
+  }
+
+  .bc-key {
+    height: clamp(48px, 13vw, 56px);
+  }
+
+  .bc-shell__meta {
+    display: none;
+  }
+}
+
+@media (max-width: 380px) {
+  .bc-setting__label {
+    display: none;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Reduced motion
+   ------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .bc-readout,
+  .bc-screen__expr {
+    animation: none !important;
+  }
+
+  .bc-key,
+  .bc-back,
+  .bc-setting,
+  .bc-copy {
+    transition: none !important;
+  }
+
+  .bc-key:hover,
+  .bc-key:active,
+  .bc-back:hover {
+    --bc-key-lift: 0px;
+    transform: none !important;
+  }
+
+  .bc-back:hover svg {
+    transform: none !important;
+  }
+}

@@ -1,0 +1,697 @@
+/* =========================================================================
+   CALCAURA — curriculum surfaces
+   Shared chrome for Classes 1–5, middle school, Class 10 and Class 12.
+   Playful where the audience is young, editorial everywhere else.
+   ========================================================================= */
+
+/* -------------------------------------------------------------------------
+   Classes 1–5 hero
+   ------------------------------------------------------------------------- */
+
+.kids-hero {
+  position: relative;
+  overflow: clip;
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+  align-items: center;
+  gap: clamp(1.4rem, 3vw, 3rem);
+  padding: clamp(1.4rem, 3.2vw, 3rem);
+  border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+  border-radius: 4px;
+  background:
+    radial-gradient(80% 120% at 88% 10%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 62%),
+    linear-gradient(150deg, color-mix(in srgb, #ffffff 46%, var(--paper)), var(--paper-2));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #ffffff 62%, transparent),
+    0 24px 60px rgba(10, 12, 9, 0.09);
+  animation: curr-rise 760ms var(--ease-expo) both;
+}
+
+.dark .kids-hero {
+  border-color: var(--line-ink);
+  background:
+    radial-gradient(80% 120% at 88% 10%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 62%),
+    linear-gradient(150deg, var(--ink-3), var(--ink-2));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 26px 64px rgba(0, 0, 0, 0.42);
+}
+
+.kids-hero__wash {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--ink) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--ink) 5%, transparent) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: radial-gradient(70% 90% at 80% 20%, #000, transparent 76%);
+  -webkit-mask-image: radial-gradient(70% 90% at 80% 20%, #000, transparent 76%);
+  pointer-events: none;
+}
+
+.dark .kids-hero__wash {
+  background-image:
+    linear-gradient(rgba(232, 233, 226, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232, 233, 226, 0.06) 1px, transparent 1px);
+}
+
+.kids-hero__grid {
+  position: absolute;
+  width: clamp(220px, 30vw, 420px);
+  aspect-ratio: 1;
+  right: -6%;
+  bottom: -40%;
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  border-radius: 50%;
+  transform: rotateX(64deg) rotateZ(-12deg);
+  animation: curr-ring 28s linear infinite;
+  pointer-events: none;
+}
+
+.dark .kids-hero__grid {
+  border-color: var(--line-ink);
+}
+
+.kids-hero__copy {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.kids-hero__badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.kids-hero__badge,
+.kids-hero__stars,
+.kids-hero__sound {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  padding: 0.42em 0.8em;
+  border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 62%, transparent);
+  font-family: var(--font-text);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.dark .kids-hero__badge,
+.dark .kids-hero__stars,
+.dark .kids-hero__sound {
+  border-color: var(--line-ink);
+  background: color-mix(in srgb, var(--ink) 40%, transparent);
+  color: var(--muted-ink);
+}
+
+.kids-hero__badge svg {
+  color: var(--accent-strong);
+}
+
+.kids-hero__stars svg {
+  color: var(--accent-strong);
+}
+
+.kids-hero__sound {
+  cursor: pointer;
+  transition: color 200ms ease, border-color 200ms ease, transform 200ms var(--ease-out);
+}
+
+.kids-hero__sound:hover {
+  transform: translateY(-1px);
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--ink) 28%, transparent);
+}
+
+.dark .kids-hero__sound:hover {
+  color: var(--paper);
+}
+
+.kids-hero__title {
+  margin: 0;
+  max-width: 17ch;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2.1rem, 4.8vw, 4.4rem);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+  color: var(--ink);
+}
+
+.dark .kids-hero__title {
+  color: var(--paper);
+}
+
+.kids-hero__lead {
+  margin: 0;
+  max-width: 52ch;
+  font-size: clamp(0.95rem, 1rem + 0.18vw, 1.1rem);
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+.dark .kids-hero__lead {
+  color: var(--muted-ink);
+}
+
+.kids-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  padding-top: 0.3rem;
+}
+
+/* --- Toy shelf --------------------------------------------------------- */
+
+.kids-hero__shelf {
+  position: relative;
+  min-height: clamp(220px, 30vw, 340px);
+  perspective: 900px;
+  transform-style: preserve-3d;
+}
+
+.kids-hero__shelf-item {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(62px, 8vw, 96px);
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in srgb, var(--ink) 13%, transparent);
+  border-radius: 3px;
+  background:
+    linear-gradient(150deg, color-mix(in srgb, #ffffff 62%, var(--paper)), var(--paper-2));
+  box-shadow:
+    0 18px 34px rgba(10, 12, 9, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  transform-style: preserve-3d;
+  transition: transform 600ms var(--ease-out);
+}
+
+.dark .kids-hero__shelf-item {
+  border-color: var(--line-ink);
+  background: linear-gradient(150deg, var(--ink-3), var(--ink-2));
+  box-shadow:
+    0 18px 34px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.kids-hero__shelf-item--a {
+  left: 4%;
+  top: 12%;
+  transform: rotateX(6deg) rotateY(14deg) rotateZ(-6deg) translateZ(40px);
+  animation: curr-float-a 9s var(--ease-in-out) infinite;
+}
+
+.kids-hero__shelf-item--b {
+  left: 38%;
+  top: 2%;
+  transform: rotateX(4deg) rotateY(-8deg) rotateZ(4deg) translateZ(72px);
+  animation: curr-float-b 11s var(--ease-in-out) infinite;
+}
+
+.kids-hero__shelf-item--c {
+  right: 6%;
+  top: 16%;
+  transform: rotateX(7deg) rotateY(-16deg) rotateZ(8deg) translateZ(24px);
+  animation: curr-float-c 13s var(--ease-in-out) infinite;
+}
+
+.kids-hero__shelf-item--d {
+  left: 16%;
+  bottom: 12%;
+  transform: rotateX(9deg) rotateY(12deg) rotateZ(5deg) translateZ(56px);
+  animation: curr-float-b 10s var(--ease-in-out) infinite reverse;
+}
+
+.kids-hero__shelf-item--e {
+  right: 22%;
+  bottom: 6%;
+  transform: rotateX(5deg) rotateY(-12deg) rotateZ(-7deg) translateZ(12px);
+  animation: curr-float-a 12s var(--ease-in-out) infinite reverse;
+}
+
+.kids-hero__shelf-base {
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  bottom: 2%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--ink) 26%, transparent), transparent);
+}
+
+.dark .kids-hero__shelf-base {
+  background: linear-gradient(90deg, transparent, var(--line-ink), transparent);
+}
+
+.kids-hero__shelf-note {
+  position: absolute;
+  left: 50%;
+  bottom: -1.4rem;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0.3em;
+  color: color-mix(in srgb, var(--ink) 38%, transparent);
+  white-space: nowrap;
+}
+
+.dark .kids-hero__shelf-note {
+  color: var(--muted-ink);
+}
+
+/* --- Grade selector ---------------------------------------------------- */
+
+.kids-grades {
+  padding: clamp(1rem, 2vw, 1.4rem);
+  border: 1px solid color-mix(in srgb, var(--ink) 13%, transparent);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--paper) 54%, transparent);
+}
+
+.dark .kids-grades {
+  border-color: var(--line-ink);
+  background: color-mix(in srgb, var(--ink-3) 54%, transparent);
+}
+
+.kids-grades__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.dark .kids-grades__head {
+  color: var(--muted-ink);
+}
+
+.kids-grades__active {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  color: var(--ink);
+}
+
+.dark .kids-grades__active {
+  color: var(--paper);
+}
+
+.kids-grades__active svg {
+  color: var(--accent-strong);
+}
+
+.kids-grades__grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.kids-grade {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.8rem 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  border-radius: 3px;
+  background: color-mix(in srgb, #ffffff 34%, var(--paper));
+  font-family: var(--font-text);
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    transform 240ms var(--ease-out),
+    border-color 240ms ease,
+    background-color 240ms ease,
+    color 240ms ease;
+}
+
+.dark .kids-grade {
+  border-color: var(--line-ink);
+  background: color-mix(in srgb, var(--ink-2) 70%, transparent);
+  color: var(--muted-ink);
+}
+
+.kids-grade:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--ink) 28%, transparent);
+  color: var(--ink);
+}
+
+.dark .kids-grade:hover {
+  color: var(--paper);
+}
+
+.kids-grade__icon {
+  font-size: 1.5rem;
+  line-height: 1;
+  transition: transform 320ms var(--ease-out);
+}
+
+.kids-grade:hover .kids-grade__icon {
+  transform: translateY(-2px) rotate(-4deg);
+}
+
+.kids-grade__label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.kids-grade.is-active {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.dark .kids-grade.is-active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--ink);
+}
+
+.kids-grade.is-active .kids-grade__icon {
+  transform: scale(1.08);
+}
+
+/* --- Chapter head ------------------------------------------------------ */
+
+.kids-chapter-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.dark .kids-chapter-head {
+  border-color: var(--line-ink);
+}
+
+.kids-chapter-head__left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.kids-chapter-head__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-strong);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.kids-chapter-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 2.2vw, 1.9rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.dark .kids-chapter-head h2 {
+  color: var(--paper);
+}
+
+.kids-chapter-head__tag {
+  padding: 0.28em 0.6em;
+  border: 1px solid color-mix(in srgb, var(--accent-strong) 50%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.dark .kids-chapter-head__tag {
+  color: var(--paper);
+}
+
+.kids-chapter-head__count {
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.dark .kids-chapter-head__count {
+  color: var(--muted-ink);
+}
+
+/* -------------------------------------------------------------------------
+   Shared curriculum banner (Classes 6–12 hub)
+   ------------------------------------------------------------------------- */
+
+.curr-banner {
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--ink) 13%, transparent);
+  border-radius: 3px;
+  background:
+    radial-gradient(70% 160% at 100% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 66%),
+    linear-gradient(150deg, color-mix(in srgb, #ffffff 46%, var(--paper)), color-mix(in srgb, var(--paper-2) 94%, transparent));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #ffffff 60%, transparent),
+    0 18px 44px rgba(10, 12, 9, 0.07);
+  overflow: hidden;
+}
+
+.dark .curr-banner {
+  border-color: var(--line-ink);
+  background:
+    radial-gradient(70% 160% at 100% 0%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 66%),
+    linear-gradient(150deg, var(--ink-3), var(--ink-2));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 22px 52px rgba(0, 0, 0, 0.4);
+}
+
+.curr-banner::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, var(--accent-strong), transparent 80%);
+  pointer-events: none;
+}
+
+.curr-banner--stack {
+  position: relative;
+}
+
+.curr-banner--compact::before {
+  width: 2px;
+}
+
+.curr-banner h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.35rem, 2.4vw, 2rem);
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+.curr-banner p {
+  color: var(--muted);
+}
+
+.dark .curr-banner p {
+  color: var(--muted-ink);
+}
+
+/* School curriculum class pills */
+.curr-class-grid button {
+  border-radius: 3px !important;
+}
+
+.curr-class-grid button:not([class*='bg-gradient']) {
+  border-color: color-mix(in srgb, var(--ink) 12%, transparent) !important;
+}
+
+.curr-class-grid button:hover {
+  transform: translateY(-2px);
+}
+
+/* -------------------------------------------------------------------------
+   Class 10 / Class 12 / Learning & tools index heads
+   ------------------------------------------------------------------------- */
+
+.curr-index-head {
+  border-bottom: 1px solid var(--line);
+  align-items: flex-end;
+}
+
+.dark .curr-index-head {
+  border-color: var(--line-ink);
+}
+
+.curr-index-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.9rem, 3.4vw, 3.2rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.curr-index-head p {
+  margin-top: 0.5rem;
+  max-width: 62ch;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.dark .curr-index-head p {
+  color: var(--muted-ink);
+}
+
+/* Chapter cards across the senior sections */
+.page-shell [id^='class-'] article,
+.page-shell [id^='class-'] [class*='chapter'] {
+  border-radius: 3px;
+}
+
+/* -------------------------------------------------------------------------
+   Motion
+   ------------------------------------------------------------------------- */
+
+@keyframes curr-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes curr-ring {
+  from {
+    transform: rotateX(64deg) rotateZ(0deg);
+  }
+  to {
+    transform: rotateX(64deg) rotateZ(360deg);
+  }
+}
+
+@keyframes curr-float-a {
+  0%,
+  100% {
+    transform: rotateX(6deg) rotateY(14deg) rotateZ(-6deg) translate3d(0, 0, 40px);
+  }
+  50% {
+    transform: rotateX(4deg) rotateY(10deg) rotateZ(-4deg) translate3d(0, -8px, 40px);
+  }
+}
+
+@keyframes curr-float-b {
+  0%,
+  100% {
+    transform: rotateX(4deg) rotateY(-8deg) rotateZ(4deg) translate3d(0, 0, 72px);
+  }
+  50% {
+    transform: rotateX(6deg) rotateY(-12deg) rotateZ(6deg) translate3d(0, 7px, 72px);
+  }
+}
+
+@keyframes curr-float-c {
+  0%,
+  100% {
+    transform: rotateX(7deg) rotateY(-16deg) rotateZ(8deg) translate3d(0, 0, 24px);
+  }
+  50% {
+    transform: rotateX(5deg) rotateY(-12deg) rotateZ(6deg) translate3d(0, -9px, 24px);
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Responsive
+   ------------------------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .kids-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .kids-hero__shelf {
+    order: -1;
+    min-height: 220px;
+  }
+
+  .kids-grades__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .kids-hero {
+    padding: 1.1rem;
+  }
+
+  .kids-hero__actions .btn {
+    width: 100%;
+  }
+
+  .kids-hero__shelf {
+    min-height: 190px;
+  }
+
+  .kids-grades__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .kids-grade:last-child {
+    grid-column: span 2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kids-hero,
+  .kids-hero__grid,
+  .kids-hero__shelf-item,
+  .kids-grade,
+  .curr-class-grid button {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .kids-hero__shelf-item {
+    transform: none !important;
+  }
+
+  .kids-grade:hover,
+  .curr-class-grid button:hover {
+    transform: none;
+  }
+}
