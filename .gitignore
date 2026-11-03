@@ -7,3 +7,8 @@ coverage/
 .env*
 !.env.example
 .aistudio/
+
+# Local agent tooling and skills
+.opencode/
+.opencode/skills/design-taste-frontend/
+.taste-skill/

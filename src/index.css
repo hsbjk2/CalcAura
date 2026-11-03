@@ -1,9 +1,11 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@import './styles/landing.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
-/* ==========================================
-   GLOBAL RESPONSIVE FOUNDATION
-========================================== */
+
+/* =========================================================================
+   Foundation
+   ========================================================================= */
 
 *,
 *::before,
@@ -15,7 +17,6 @@ html {
   width: 100%;
   min-width: 320px;
   min-height: 100%;
-  scroll-padding-top: 88px;
   overflow-x: clip;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -26,14 +27,13 @@ body {
   width: 100%;
   min-width: 320px;
   min-height: 100vh;
-  margin: 0;
-  font-family: 'Noto Sans Devanagari', 'Noto Sans CJK JP',
-    'Plus Jakarta Sans', 'Inter', sans-serif;
-  background-color: #F8FAFC;
-  color: #0F172A;
-  transition: background-color 0.2s ease, color 0.2s ease;
   overflow-x: clip;
   -webkit-tap-highlight-color: transparent;
+}
+
+html.dark body {
+  background-color: var(--ink);
+  color: var(--paper);
 }
 
 #root {
@@ -43,86 +43,10 @@ body {
   overflow-x: clip;
 }
 
-.dark body,
-html.dark body {
-  background-color: #05080D;
-  color: #F6F7FB;
-}
-/* ==========================================
-   GLOBAL RESPONSIVE FOUNDATION
-========================================== */
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-html {
-  width: 100%;
-  min-width: 320px;
-  min-height: 100%;
-  scroll-padding-top: 88px;
-  overflow-x: clip;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-  scroll-behavior: smooth;
-}
-
-body {
-  width: 100%;
-  min-width: 320px;
-  min-height: 100vh;
-  margin: 0;
-
-  font-family:
-    'Noto Sans Devanagari',
-    'Noto Sans CJK JP',
-    'Plus Jakarta Sans',
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
-
-  background-color: #F8FAFC;
-  color: #0F172A;
-
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
-
-  overflow-x: clip;
-  -webkit-tap-highlight-color: transparent;
-}
-
-#root {
-  width: 100%;
-  min-width: 320px;
-  min-height: 100vh;
-  overflow-x: clip;
-}
-
-.dark body,
-html.dark body {
-  background-color: #05080D;
-  color: #F6F7FB;
-}
-
-/* Prevent flex and grid children from forcing horizontal overflow */
 .flex,
 .grid {
   min-width: 0;
 }
-
-.font-mono {
-  font-family: 'JetBrains Mono', 'Noto Sans JP', monospace;
-}
-
-/* ==========================================
-   RESPONSIVE MEDIA ELEMENTS
-========================================== */
 
 img,
 video,
@@ -145,10 +69,6 @@ textarea {
   touch-action: manipulation;
 }
 
-button {
-  -webkit-tap-highlight-color: transparent;
-}
-
 input,
 textarea,
 select {
@@ -164,9 +84,9 @@ table {
   max-width: 100%;
 }
 
-/* ==========================================
-   CUSTOM VIOLET-GRAY SLIM SCROLLBAR
-========================================== */
+/* =========================================================================
+   Scrollbar
+   ========================================================================= */
 
 ::-webkit-scrollbar {
   width: 8px;
@@ -178,20 +98,18 @@ table {
 }
 
 .dark ::-webkit-scrollbar-track {
-  background: #0B0D16;
+  background: var(--ink);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(121, 87, 245, 0.35);
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
   border-radius: 4px;
   border: 2px solid transparent;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(121, 87, 245, 0.65);
+  background: color-mix(in srgb, var(--accent) 80%, transparent);
 }
-
-/* Thin horizontal scrollbars for carousels */
 
 .thin-scrollbar {
   overflow-x: auto;
@@ -204,33 +122,22 @@ table {
   width: 6px;
 }
 
-.thin-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
 .thin-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(121, 87, 245, 0.25);
-  border-radius: 3px;
+  background: color-mix(in srgb, var(--accent) 45%, transparent);
 }
-
-.thin-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(121, 87, 245, 0.55);
-}
-
-/* Firefox scrollbar support */
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(121, 87, 245, 0.4) transparent;
+  scrollbar-color: color-mix(in srgb, var(--accent) 45%, transparent) transparent;
 }
 
 .dark * {
-  scrollbar-color: rgba(121, 87, 245, 0.35) #0B0D16;
+  scrollbar-color: color-mix(in srgb, var(--accent) 40%, transparent) var(--ink);
 }
 
-/* ==========================================
-   MATHEMATICAL EQUATIONS - KATEX
-========================================== */
+/* =========================================================================
+   Mathematics typesetting
+   ========================================================================= */
 
 .katex-display {
   margin: 0.5em 0 !important;
@@ -247,9 +154,6 @@ table {
   line-height: 1.35;
 }
 
-/* Ensure fractions, square roots, radicals and limits
-   have vertical clearance */
-
 .katex .mord.sqrt,
 .katex .mfrac,
 .katex .mop {
@@ -257,112 +161,110 @@ table {
   padding-bottom: 2px;
 }
 
-/* ==========================================
-   EDITORIAL TYPOGRAPHY
-========================================== */
+/* =========================================================================
+   Legacy screens: keep the product usable, bring it onto the new palette.
+   The public pages are built from scratch; these rules re-skin the deeper
+   workspaces so the whole site reads as one product.
+   ========================================================================= */
 
-.font-serif-display {
-  font-family:
-    'DM Serif Display',
-    'Cormorant Garamond',
-    Georgia,
-    serif;
+:root {
+  --accent-legacy: #4f6900;
 }
 
-.font-editorial-serif {
-  font-family:
-    'Cormorant Garamond',
-    'DM Serif Display',
-    Georgia,
-    serif;
+.dark {
+  --accent-legacy: var(--accent);
 }
 
-.font-inter {
-  font-family:
-    'Inter',
-    system-ui,
-    -apple-system,
-    sans-serif;
+/* Brand violet and magenta become the one signal colour. */
+main [class*='text-[#7957F5]'],
+main [class*='text-[#D94BCB]'],
+main [class*='text-[#5558E8]'] {
+  color: var(--accent-legacy) !important;
 }
 
-/* ==========================================
-   PLAYFUL TOY SHOP ANIMATIONS
-   CLASSES 1-5
-========================================== */
+main [class*='bg-[#7957F5]']:not([class*='bg-gradient']),
+main [class*='bg-[#D94BCB]']:not([class*='bg-gradient']) {
+  background-color: var(--accent) !important;
+  color: var(--ink) !important;
+}
+
+main [class*='border-[#7957F5]'],
+main [class*='border-[#D94BCB]'] {
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent) !important;
+}
+
+/* No gradient fills anywhere in the legacy workspaces. */
+main .bg-gradient-to-r,
+main .bg-gradient-to-b,
+main .bg-gradient-to-l,
+main .bg-gradient-to-t,
+main .bg-gradient-to-br,
+main .bg-gradient-to-bl {
+  background-image: none !important;
+  background-color: var(--accent) !important;
+  color: var(--ink) !important;
+}
+
+main .bg-clip-text {
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+/* The old parallax canvas is replaced by the new surfaces. */
+main canvas.particle-network,
+main [data-legacy-particle] {
+  display: none !important;
+}
+
+/* Focus is visible everywhere, including inside tool workspaces. */
+main button:focus-visible,
+main a:focus-visible,
+main input:focus-visible,
+main select:focus-visible,
+main textarea:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+/* =========================================================================
+   Toy-shop animations retained for the junior learning surfaces.
+   ========================================================================= */
 
 @keyframes floatSlow {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-
-  50% {
-    transform: translateY(-8px) rotate(2deg);
-  }
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(2deg); }
 }
 
 @keyframes bounceGentle {
-  0%, 100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-6px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 
 @keyframes wiggleToy {
-  0%, 100% {
-    transform: rotate(0deg);
-  }
-
-  25% {
-    transform: rotate(-5deg) scale(1.05);
-  }
-
-  75% {
-    transform: rotate(5deg) scale(1.05);
-  }
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg) scale(1.05); }
+  75% { transform: rotate(5deg) scale(1.05); }
 }
 
 @keyframes popBurst {
-  0% {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-
-  60% {
-    transform: scale(1.15);
-    opacity: 1;
-  }
-
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+  0% { transform: scale(0.8); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
-.animate-float-slow {
-  animation: floatSlow 4s ease-in-out infinite;
-}
+.animate-float-slow { animation: floatSlow 4s ease-in-out infinite; }
+.animate-bounce-gentle { animation: bounceGentle 2.5s ease-in-out infinite; }
+.animate-wiggle-toy:hover { animation: wiggleToy 0.5s ease-in-out; }
+.animate-pop-burst { animation: popBurst 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
-.animate-bounce-gentle {
-  animation: bounceGentle 2.5s ease-in-out infinite;
-}
-
-.animate-wiggle-toy:hover {
-  animation: wiggleToy 0.5s ease-in-out;
-}
-
-.animate-pop-burst {
-  animation: popBurst 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-/* ==========================================
-   TABLET RESPONSIVENESS
-========================================== */
+/* =========================================================================
+   Responsive
+   ========================================================================= */
 
 @media (max-width: 1024px) {
-
   html {
     scroll-padding-top: 76px;
   }
@@ -370,29 +272,12 @@ table {
   .katex-display {
     max-width: 100%;
   }
-
 }
 
-/* ==========================================
-   MOBILE RESPONSIVENESS
-========================================== */
-
 @media (max-width: 640px) {
-
   html {
     scroll-padding-top: 68px;
   }
-
-  body {
-    font-size: 14px;
-  }
-
-  #root {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  /* Prevent large headings from overflowing */
 
   h1,
   h2,
@@ -400,16 +285,6 @@ table {
     overflow-wrap: break-word;
     word-wrap: break-word;
   }
-
-  /* Responsive images and visualizations */
-
-  img,
-  video,
-  canvas {
-    max-width: 100%;
-  }
-
-  /* Keep equations inside the viewport */
 
   .katex-display {
     width: 100%;
@@ -419,70 +294,35 @@ table {
     padding: 0.5rem 0.25rem !important;
   }
 
-  /* Prevent long mathematical expressions from
-     increasing the width of their containers */
-
   .katex {
     max-width: 100%;
   }
 
-  /* Keep wide tables scrollable */
-
   table {
-    display: block;
-    width: 100%;
-    overflow-x: auto;
-  }
-
-  /* Better touch scrolling */
-
-  .thin-scrollbar,
-  .katex-display {
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Respect small screen spacing */
-
-  section {
     max-width: 100%;
-    min-width: 0;
   }
-
-  /* Avoid horizontal overflow from code blocks */
 
   pre,
   code {
     overflow-wrap: anywhere;
   }
-
 }
 
-/* ==========================================
-   EXTRA SMALL MOBILE DEVICES
-========================================== */
-
 @media (max-width: 380px) {
-
   html {
     scroll-padding-top: 64px;
-  }
-
-  body {
-    font-size: 13px;
   }
 
   .katex-display {
     font-size: 0.85em;
   }
-
 }
 
-/* ==========================================
-   REDUCED MOTION ACCESSIBILITY
-========================================== */
+/* =========================================================================
+   Reduced motion
+   ========================================================================= */
 
 @media (prefers-reduced-motion: reduce) {
-
   *,
   *::before,
   *::after {
@@ -491,5 +331,4 @@ table {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-
 }

@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import calcauraLogo from '../../Logo.png';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Search,
   Sun,
@@ -9,14 +8,10 @@ import {
   Globe,
   ArrowRight,
   PenTool,
-  Compass,
-  GraduationCap,
-  History,
   LogIn,
   LogOut,
 } from 'lucide-react';
 import { Language, Translations } from '../i18n/translations.ts';
-import { GlobalSearchDropdown } from './GlobalSearchDropdown.tsx';
 import { useAuth } from '../context/AuthContext.tsx';
 import { UserButton } from '@clerk/clerk-react';
 import { getClerkAppearance } from '../lib/clerkConfig.ts';
@@ -41,9 +36,19 @@ const LANGUAGES: { code: Language; label: string; flag: string }[] = [
   { code: 'fr', label: 'Français', flag: 'FR' },
   { code: 'es', label: 'Español', flag: 'ES' },
   { code: 'it', label: 'Italiano', flag: 'IT' },
-  { code: 'ja', label: '日本語 (JA)', flag: 'JA' },
-  { code: 'hi', label: 'हिन्दी (HI)', flag: 'HI' },
+  { code: 'ja', label: '日本語', flag: 'JA' },
+  { code: 'hi', label: 'हिन्दी', flag: 'HI' },
 ];
+
+const BrandMark: React.FC = () => (
+  <span className="brand__mark" aria-hidden="true">
+    <svg viewBox="0 0 32 32" role="presentation" focusable="false">
+      <rect x="1.5" y="1.5" width="29" height="29" fill="none" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M7 25 L25 7" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="16" cy="16" r="5" fill="var(--accent)" />
+    </svg>
+  </span>
+);
 
 export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
@@ -59,334 +64,288 @@ export const Navbar: React.FC<NavbarProps> = ({
   isAboutView = false,
 }) => {
   const { user, isAuthenticated, logout } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
-  const [langMenuOpen, setLangMenuOpen] = useState<boolean>(false);
-  const [scrolledPastHero, setScrolledPastHero] = useState<boolean>(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolledPastHero(window.scrollY > 60);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [navTheme, setNavTheme] = useState<'paper' | 'ink'>('paper');
+  const langRef = useRef<HTMLDivElement | null>(null);
 
   const navLinks = [
-    { id: 'home', label: t.navOverview },
-    { id: 'playground', label: t.navPlayground },
-    { id: 'about', label: t.navAbout },
+    { id: 'home', label: t.navOverview || 'Overview' },
+    { id: 'platform', label: t.workspace || 'Workspace' },
+    { id: 'curriculum', label: t.navCurriculum || 'Curriculum' },
     { id: 'whiteboard', label: t.navWhiteboard || 'Whiteboard', icon: PenTool },
-    { id: 'history', label: t.navHistory || 'History', icon: History },
-    { id: 'platform', label: t.workspace },
+    { id: 'practice', label: 'Practice' },
+    { id: 'about', label: t.navAbout || 'About' },
   ];
 
-  const handleLinkClick = (id: string) => {
-    if (id === 'home') {
-      onSelectTab('home');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (id === 'about') {
-      onSelectTab('about');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+  useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 28);
+
+      if (!isLandingView) {
+        setNavTheme(darkMode || isAboutView ? 'ink' : 'paper');
+        return;
+      }
+
+      const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-nav-theme]'));
+      const marker = 68;
+      let theme: 'paper' | 'ink' = 'paper';
+      for (const section of sections) {
+        const rect = section.getBoundingClientRect();
+        if (rect.top <= marker && rect.bottom > marker) {
+          theme = section.dataset.navTheme === 'ink' ? 'ink' : 'paper';
+        }
+      }
+      setNavTheme(theme);
+    };
+
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [isLandingView, darkMode, isAboutView]);
+
+  useEffect(() => {
+    if (!langMenuOpen) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (langRef.current && !langRef.current.contains(event.target as Node)) setLangMenuOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setLangMenuOpen(false);
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [langMenuOpen]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [mobileMenuOpen]);
+
+  const go = (id: string) => {
+    setMobileMenuOpen(false);
+    setLangMenuOpen(false);
+    if (id === 'about') {
+      onOpenAbout();
     } else if (id === 'whiteboard') {
       try {
         if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
-          document.documentElement.requestFullscreen().catch(() => {});
+          document.documentElement.requestFullscreen().catch(() => undefined);
         }
-      } catch {}
-      onSelectTab('whiteboard');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (id === 'how-it-works') {
-      const el = document.getElementById('how-it-works');
-      if (el && isLandingView) {
-        el.scrollIntoView({ behavior: 'smooth' });
-      } else {
-        onSelectTab('home');
-        setTimeout(() => {
-          document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
-        }, 80);
+      } catch {
+        /* fullscreen is optional */
       }
+      onSelectTab('whiteboard');
     } else {
       onSelectTab(id);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    setMobileMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const initials = (user?.name || user?.email || 'C')
+    .split(/[\s@.]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('');
+
   return (
-    <header className="sticky top-2 sm:top-4 z-50 w-full min-w-0 px-2 sm:px-6 max-w-7xl mx-auto transition-all">
-      {/* Floating Translucent Bar with light/dark adaptive styling */}
-      <div
-        id="navbar-main-bar"
-        className={`relative z-50 w-full min-w-0 backdrop-blur-xl border rounded-2xl px-2 sm:px-5 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-4 transition-all ${
-          isAboutView
-            ? scrolledPastHero
-              ? 'bg-white/50 dark:bg-[#200D25]/60 backdrop-blur-md border border-white/50 dark:border-pink-900/30 text-[#200D25] dark:text-[#FFF9FD] shadow-[0_4px_24px_rgba(53,19,51,0.06)]'
-              : 'bg-white/35 dark:bg-[#200D25]/40 backdrop-blur-md border border-white/40 dark:border-pink-900/20 shadow-none text-[#200D25] dark:text-[#FFF9FD]'
-            : scrolledPastHero
-            ? 'bg-white/95 dark:bg-[#0E101D]/90 border-slate-300/80 dark:border-white/12 shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)]'
-            : 'bg-white/85 dark:bg-[#111321]/80 border-slate-200/90 dark:border-white/12 shadow-[0_4px_24px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]'
-        }`}
-      >
-        {/* CALCAURA Brand Logo */}
-        <button
-          onClick={() => {
-            onSelectTab('home');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
-          className="flex min-w-0 items-center gap-1.5 sm:gap-2.5 text-left group shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7957F5] rounded-lg cursor-pointer"
-          aria-label="CalcAura Home"
-        >
-          <img
-            src={calcauraLogo}
-            alt=""
-            aria-hidden="true"
-            draggable={false}
-            className="h-7 w-8 sm:h-8 sm:w-10 shrink-0 object-contain drop-shadow-[0_0_8px_rgba(121,87,245,0.22)]"
-          />
-          <span className="whitespace-nowrap text-sm sm:text-lg font-bold tracking-tight text-slate-900 dark:text-[#F6F7FB] group-hover:text-[#7957F5] dark:group-hover:text-white transition-colors">
-            CalcAura
-          </span>
+    <header
+      className={`site-nav${scrolled ? ' is-scrolled' : ''}`}
+      data-theme={navTheme}
+    >
+      <div className="site-nav__bar">
+        <button type="button" className="brand" onClick={() => go('home')} aria-label="CalcAura home">
+          <BrandMark />
+          <span className="brand__name">CalcAura</span>
         </button>
 
-        {/* Desktop Single-Line Navigation */}
-        <nav className="hidden xl:flex items-center gap-0.5 text-xs font-medium text-slate-600 dark:text-[#A6A9B8]">
-          {navLinks.map((item) => {
-            const isActive = activeTab === item.id;
-
+        <nav className="site-nav__links" aria-label="Primary">
+          {navLinks.map((link) => {
+            const isActive =
+              activeTab === link.id || (link.id === 'practice' && activeTab === 'platform');
             return (
               <button
-                key={item.id}
-                onClick={() => handleLinkClick(item.id)}
-                className={`px-2.5 py-1.5 rounded-lg transition-all whitespace-nowrap relative cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7957F5] ${
-                  isActive
-                    ? 'text-slate-900 dark:text-white font-semibold bg-slate-100 dark:bg-white/[0.08]'
-                    : 'hover:text-slate-900 dark:hover:text-[#F6F7FB] hover:bg-slate-100/60 dark:hover:bg-white/[0.04]'
-                }`}
+                key={link.id}
+                type="button"
+                className="site-nav__link"
+                aria-current={isActive ? 'page' : undefined}
+                onClick={() => go(link.id)}
               >
-                <span className="flex items-center gap-1.5">
-                  {item.icon && <item.icon className="w-3.5 h-3.5 text-[#7957F5] dark:text-[#D94BCB]" />}
-                  <span>{item.label}</span>
-                </span>
-                {isActive && (
-                  <span className="absolute bottom-0 left-2.5 right-2.5 h-[2px] bg-gradient-to-r from-[#7957F5] to-[#D94BCB] rounded-full" />
-                )}
+                {link.label}
               </button>
             );
           })}
         </nav>
 
-        {/* Right Section: Language + Search + Theme + Prominent CTA */}
-        <div className="ml-auto flex min-w-0 items-center justify-end gap-1 sm:gap-2 shrink-0">
-          {/* Language Switcher */}
-          <div className="relative">
+        <div className="site-nav__actions">
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={onOpenSearch}
+            aria-label="Search CalcAura"
+            title="Search"
+          >
+            <Search className="h-4 w-4" aria-hidden="true" />
+          </button>
+
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={onToggleDarkMode}
+            aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {darkMode ? (
+              <Sun className="h-4 w-4" aria-hidden="true" />
+            ) : (
+              <Moon className="h-4 w-4" aria-hidden="true" />
+            )}
+          </button>
+
+          <div className="nav-lang" ref={langRef}>
             <button
-              onClick={() => setLangMenuOpen(!langMenuOpen)}
-              className="flex h-8 w-8 sm:h-9 sm:w-auto shrink-0 items-center justify-center gap-1 sm:px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200/80 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-[11px] font-mono font-semibold text-slate-700 dark:text-[#A6A9B8] hover:text-slate-900 dark:hover:text-[#F6F7FB] border border-slate-200 dark:border-white/[0.08] transition-colors cursor-pointer"
-              title="Select Language"
-              aria-label="Select Language"
+              type="button"
+              className="icon-btn nav-lang__button"
+              onClick={() => setLangMenuOpen((open) => !open)}
+              aria-expanded={langMenuOpen}
+              aria-label="Choose language"
+              title="Language"
             >
-              <Globe className="w-3.5 h-3.5 text-[#7957F5]" />
-              <span className="hidden sm:inline">{currentLang.toUpperCase()}</span>
+              <Globe className="h-4 w-4" aria-hidden="true" />
+              <span>{currentLang.toUpperCase()}</span>
             </button>
 
             {langMenuOpen && (
-              <div
-                className="absolute right-0 mt-2 w-36 bg-white dark:bg-[#111321] rounded-xl border border-slate-200 dark:border-white/12 shadow-2xl py-1 z-50 text-xs animate-in fade-in"
-                onClick={() => setLangMenuOpen(false)}
-              >
-                {LANGUAGES.map((l) => (
+              <div className="lang-menu" role="menu">
+                {LANGUAGES.map((language) => (
                   <button
-                    key={l.code}
-                    onClick={() => onSelectLang(l.code)}
-                    className={`w-full text-left px-3 py-2 flex items-center justify-between hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-colors cursor-pointer ${
-                      currentLang === l.code
-                        ? 'font-bold text-[#7957F5] dark:text-[#D94BCB]'
-                        : 'text-slate-700 dark:text-[#A6A9B8]'
-                    }`}
+                    key={language.code}
+                    type="button"
+                    role="menuitem"
+                    aria-current={currentLang === language.code}
+                    onClick={() => {
+                      onSelectLang(language.code);
+                      setLangMenuOpen(false);
+                    }}
                   >
-                    <span>{l.label}</span>
-                    <span className="text-[10px] font-mono text-slate-400 dark:text-[#A6A9B8]/70">
-                      {l.flag}
-                    </span>
+                    <span>{language.label}</span>
+                    <span>{language.flag}</span>
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Premium Floating Global Search */}
-          <div className="flex shrink-0 items-center">
-            <GlobalSearchDropdown
-              onSelectTab={onSelectTab}
-              darkMode={darkMode}
-            />
-          </div>
-
-          {/* Theme Toggle - Light / Dark Mode Icon */}
-          <button
-            onClick={onToggleDarkMode}
-            className="h-8 w-8 sm:h-9 sm:w-9 p-1.5 sm:p-2 rounded-xl text-slate-700 hover:text-slate-900 dark:text-[#A6A9B8] dark:hover:text-[#F6F7FB] bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] border border-slate-200 dark:border-white/[0.08] transition-colors cursor-pointer shrink-0 flex items-center justify-center"
-            title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            aria-label={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-          >
-            {darkMode ? (
-              <Sun className="w-4 h-4 text-amber-400" />
-            ) : (
-              <Moon className="w-4 h-4 text-slate-700 dark:text-[#A6A9B8]" />
-            )}
-          </button>
-
-          {/* User Auth Section */}
           {isAuthenticated ? (
-            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-              <UserButton
-                afterSignOutUrl="/"
-                appearance={getClerkAppearance(darkMode)}
-              />
-            </div>
+            <UserButton afterSignOutUrl="/" appearance={getClerkAppearance(darkMode)} />
           ) : (
             <button
-              onClick={() => onSelectTab('sign-in')}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#7957F5]/15 to-[#D94BCB]/15 hover:from-[#7957F5]/25 hover:to-[#D94BCB]/25 text-[#7957F5] dark:text-[#D94BCB] border border-[#7957F5]/30 text-xs font-bold transition-all cursor-pointer shrink-0"
-              title="Sign in to your account"
-              aria-label="Sign In"
+              type="button"
+              className="icon-btn"
+              onClick={() => go('sign-in')}
+              aria-label="Sign in"
+              title="Sign in"
             >
-              <LogIn className="w-3.5 h-3.5" />
-              <span>Sign In</span>
+              <LogIn className="h-4 w-4" aria-hidden="true" />
             </button>
           )}
 
-
-          {/* Mobile Menu Hamburger (for screens < xl) - 3 lines icon */}
           <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="xl:hidden h-8 w-8 sm:h-9 sm:w-9 p-1.5 sm:p-2 rounded-xl text-slate-700 dark:text-[#A6A9B8] hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] border border-slate-200 dark:border-white/[0.08] transition-colors cursor-pointer shrink-0 flex items-center justify-center"
-            aria-label="Toggle navigation menu"
-            title="Menu"
+            type="button"
+            className="btn btn--sm site-nav__cta"
+            onClick={() => go('platform')}
           >
-            {mobileMenuOpen ? <X className="w-5 h-5 text-[#7957F5]" /> : <Menu className="w-5 h-5" />}
+            Open workspace
+            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </button>
+
+          <button
+            type="button"
+            className="icon-btn site-nav__menu-btn"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="site-mobile-nav"
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
           </button>
         </div>
       </div>
 
-      {/* Backdrop overlay for mobile menu */}
       {mobileMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 xl:hidden animate-in fade-in"
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div className="xl:hidden absolute inset-x-0 top-full z-50 mt-2 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain p-3 bg-white/95 dark:bg-[#111321]/95 backdrop-blur-2xl border border-slate-200 dark:border-white/12 rounded-2xl shadow-2xl space-y-1.5 animate-in fade-in slide-in-from-top-2">
-          {navLinks.map((item) => {
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => handleLinkClick(item.id)}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer flex items-center justify-between ${
-                  isActive
-                    ? 'bg-gradient-to-r from-[#7957F5]/15 to-[#D94BCB]/15 text-[#7957F5] dark:text-[#D94BCB] font-bold border border-[#7957F5]/30'
-                    : 'text-slate-700 dark:text-[#A6A9B8] hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06]'
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  {item.icon && <item.icon className="w-4 h-4 text-[#7957F5] dark:text-[#D94BCB]" />}
-                  <span>{item.label}</span>
-                </span>
-                {isActive ? (
-                  <span className="w-2 h-2 rounded-full bg-[#7957F5] dark:bg-[#D94BCB]" />
-                ) : (
-                  <span className="text-[10px] text-slate-400">→</span>
-                )}
+        <div className="mob-nav" id="site-mobile-nav">
+          <nav className="mob-nav__links" aria-label="Mobile">
+            {navLinks.map((link) => (
+              <button key={link.id} type="button" onClick={() => go(link.id)}>
+                <span>{link.label}</span>
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </button>
-            );
-          })}
+            ))}
+          </nav>
 
-          <div className="pt-2 border-t border-slate-200 dark:border-white/[0.08] flex flex-col gap-2">
-            {/* User Session inside Mobile Drawer */}
-            {isAuthenticated && user ? (
-              <div className="mb-1 flex min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-slate-100 p-3 dark:border-white/10 dark:bg-white/5">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#7957F5]/15 text-lg">
-                  {typeof user.avatar === 'string' && /^(https?:\/\/|data:image\/)/i.test(user.avatar) ? (
-                    <img
-                      src={user.avatar}
-                      alt={`${user.name || 'User'} avatar`}
-                      className="h-full w-full object-cover"
-                      referrerPolicy="no-referrer"
-                    />
-                  ) : (
-                    <span>{user.avatar || '🎓'}</span>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1 overflow-hidden">
-                  <div className="truncate text-xs font-bold leading-tight text-slate-900 dark:text-white">
-                    {user.name || 'Signed in'}
-                  </div>
-                  <div className="mt-1 truncate text-[10px] font-mono leading-tight text-slate-500 dark:text-slate-400">
-                    {user.email || ''}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    logout();
-                    setMobileMenuOpen(false);
-                  }}
-                  className="shrink-0 rounded-lg px-2.5 py-2 text-[11px] font-semibold text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/30"
-                >
-                  Sign Out
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onSelectTab('sign-in');
-                }}
-                className="w-full py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-[#7957F5]/20 to-[#D94BCB]/20 text-[#7957F5] dark:text-[#D94BCB] border border-[#7957F5]/30 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer mb-1"
-              >
-                <LogIn className="w-4 h-4" />
-                <span>Sign In to CalcAura</span>
-              </button>
-            )}
-            {/* Quick Theme Switcher inside Mobile Drawer */}
-            <button
-              onClick={onToggleDarkMode}
-              className="w-full py-2 px-3.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/[0.1] text-slate-700 dark:text-[#A6A9B8] flex items-center justify-between transition-colors cursor-pointer"
-            >
-              <span className="flex items-center gap-2">
-                {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-700" />}
-                <span>{darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}</span>
-              </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300">
-                {darkMode ? 'Dark' : 'Light'}
-              </span>
+          <div className="mob-nav__tools">
+            <button type="button" onClick={onOpenSearch}>
+              <Search className="h-4 w-4" aria-hidden="true" />
+              <span>Search</span>
             </button>
-
-            <button
-              onClick={() => {
-                onSelectTab('calculators');
-                setMobileMenuOpen(false);
-              }}
-              className="w-full py-2.5 px-4 bg-gradient-to-r from-[#7957F5] to-[#D94BCB] text-white text-xs font-semibold rounded-xl text-center shadow-[0_0_15px_rgba(121,87,245,0.3)] flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <span>{t.exploreTools}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => {
-                onOpenAbout();
-                setMobileMenuOpen(false);
-              }}
-              className="w-full text-center py-2 text-xs text-slate-600 dark:text-[#A6A9B8] hover:text-slate-900 dark:hover:text-white cursor-pointer"
-            >
-              {t.aboutTitle} · HSBJK
+            <button type="button" onClick={onToggleDarkMode}>
+              {darkMode ? <Sun className="h-4 w-4" aria-hidden="true" /> : <Moon className="h-4 w-4" aria-hidden="true" />}
+              <span>{darkMode ? 'Light mode' : 'Dark mode'}</span>
             </button>
           </div>
+
+          <div className="mob-nav__lang" role="group" aria-label="Language">
+            {LANGUAGES.map((language) => (
+              <button
+                key={language.code}
+                type="button"
+                aria-pressed={currentLang === language.code}
+                onClick={() => onSelectLang(language.code)}
+              >
+                {language.flag}
+              </button>
+            ))}
+          </div>
+
+          {isAuthenticated && user ? (
+            <div className="mob-nav__user">
+              <span className="mob-nav__avatar" aria-hidden="true">{initials || 'C'}</span>
+              <span className="mob-nav__identity">
+                <strong>{user.name || 'Signed in'}</strong>
+                <span>{user.email || ''}</span>
+              </span>
+              <button type="button" onClick={logout} aria-label="Sign out">
+                <LogOut className="h-4 w-4" aria-hidden="true" />
+                <span>Sign out</span>
+              </button>
+            </div>
+          ) : (
+            <button type="button" className="btn mob-nav__signin" onClick={() => go('sign-in')}>
+              <LogIn className="h-4 w-4" aria-hidden="true" />
+              Sign in to CalcAura
+            </button>
+          )}
+
+          <button type="button" className="btn mob-nav__cta" onClick={() => go('platform')}>
+            Open workspace
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </button>
         </div>
       )}
     </header>

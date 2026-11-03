@@ -24,9 +24,10 @@ export function isClerkConfigured(): boolean {
 }
 
 /**
- * CalcAura Theme for Clerk Prebuilt Components (SignIn, SignUp, UserButton)
+ * CalcAura theme for Clerk prebuilt components (SignIn, SignUp, UserButton).
+ * Ink, stone paper and the one chartreuse signal — no gradients.
  */
-export function getClerkAppearance(darkMode = true) {
+export function getClerkAppearance(darkMode = false) {
   return {
     layout: {
       socialButtonsPlacement: 'top' as const,
@@ -34,35 +35,38 @@ export function getClerkAppearance(darkMode = true) {
       logoPlacement: 'inside' as const,
     },
     variables: {
-      colorPrimary: '#7957F5',
-      colorText: darkMode ? '#F6F7FB' : '#0F172A',
-      colorTextSecondary: darkMode ? '#A6A9B8' : '#64748B',
-      colorBackground: darkMode ? '#0E101D' : '#FFFFFF',
-      colorInputBackground: darkMode ? '#181A2A' : '#F8FAFC',
-      colorInputText: darkMode ? '#FFFFFF' : '#0F172A',
-      colorNeutral: darkMode ? '#F6F7FB' : '#0F172A',
-      borderRadius: '0.75rem',
-      fontFamily: 'Plus Jakarta Sans, Inter, sans-serif',
-      fontSize: '0.875rem',
+      colorPrimary: darkMode ? '#c9f04e' : '#0a0c09',
+      colorPrimaryText: darkMode ? '#0a0c09' : '#e8e9e2',
+      colorText: darkMode ? '#e8e9e2' : '#0a0c09',
+      colorTextSecondary: darkMode ? '#a6ac9c' : '#555b4e',
+      colorBackground: darkMode ? '#11140f' : '#e8e9e2',
+      colorInputBackground: darkMode ? '#191d16' : '#dde0d5',
+      colorInputText: darkMode ? '#e8e9e2' : '#0a0c09',
+      colorNeutral: darkMode ? '#e8e9e2' : '#0a0c09',
+      borderRadius: '0.5rem',
+      fontFamily: 'Jost, Noto Sans Devanagari, Noto Sans JP, system-ui, sans-serif',
+      fontSize: '0.94rem',
     },
     elements: {
       card: darkMode
-        ? 'bg-[#0E101D] border border-white/10 shadow-2xl rounded-2xl'
-        : 'bg-white border border-slate-200 shadow-xl rounded-2xl',
-      headerTitle: 'font-bold text-lg tracking-tight',
-      headerSubtitle: 'text-xs text-slate-400',
+        ? 'bg-[#11140f] border border-[#e8e9e2]/15 rounded-lg'
+        : 'bg-[#e8e9e2] border border-[#0a0c09]/15 rounded-lg',
+      headerTitle: 'font-normal text-xl tracking-tight',
+      headerSubtitle: 'text-sm text-[#555b4e]',
       formButtonPrimary:
-        'bg-gradient-to-r from-[#7957F5] to-[#D94BCB] hover:brightness-110 active:scale-[0.98] text-white font-semibold shadow-md py-2.5 rounded-xl transition-all',
+        'bg-[#c9f04e] hover:bg-[#b6e22f] active:scale-[0.99] text-[#0a0c09] font-semibold py-2.5 rounded-full transition-colors',
       socialButtonsBlockButton: darkMode
-        ? 'bg-white/[0.06] hover:bg-white/[0.1] border border-white/10 text-white rounded-xl py-2.5'
-        : 'bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-800 rounded-xl py-2.5',
+        ? 'bg-transparent hover:bg-[#e8e9e2]/[0.08] border border-[#e8e9e2]/15 text-[#e8e9e2] rounded-full py-2.5'
+        : 'bg-transparent hover:bg-[#0a0c09]/[0.05] border border-[#0a0c09]/15 text-[#0a0c09] rounded-full py-2.5',
       formFieldInput: darkMode
-        ? 'bg-[#181A2A] border-white/12 text-white focus:border-[#7957F5] rounded-xl'
-        : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-[#7957F5] rounded-xl',
-      footerActionLink: 'text-[#7957F5] hover:text-[#D94BCB] font-semibold',
+        ? 'bg-[#191d16] border-[#e8e9e2]/15 text-[#e8e9e2] focus:border-[#c9f04e] rounded-md'
+        : 'bg-[#dde0d5] border-[#0a0c09]/15 text-[#0a0c09] focus:border-[#0a0c09] rounded-md',
+      footerActionLink: darkMode
+        ? 'text-[#c9f04e] hover:text-[#b6e22f] font-medium'
+        : 'text-[#4f6900] hover:text-[#0a0c09] font-medium',
       userButtonPopoverCard: darkMode
-        ? 'bg-[#0E101D] border border-white/12 shadow-2xl'
-        : 'bg-white border border-slate-200 shadow-2xl',
+        ? 'bg-[#11140f] border border-[#e8e9e2]/15'
+        : 'bg-[#e8e9e2] border border-[#0a0c09]/15',
     },
   };
 }
