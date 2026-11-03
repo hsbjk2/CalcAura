@@ -1,0 +1,477 @@
+/* =========================================================================
+   CALCAURA — Math playground
+   An ink hero with a live parametric surface, paper game cards beneath.
+   ========================================================================= */
+
+.pg-hero {
+  position: relative;
+  overflow: clip;
+  padding: clamp(1.4rem, 3vw, 3rem);
+  border-radius: 4px;
+  background:
+    radial-gradient(90% 130% at 12% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 62%),
+    linear-gradient(150deg, var(--ink-3) 0%, var(--ink) 100%);
+  color: var(--paper);
+  border: 1px solid var(--line-ink);
+  animation: pg-rise 760ms var(--ease-expo) both;
+}
+
+.pg-hero__grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(232, 233, 226, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232, 233, 226, 0.06) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(70% 80% at 60% 30%, #000, transparent 78%);
+  -webkit-mask-image: radial-gradient(70% 80% at 60% 30%, #000, transparent 78%);
+  pointer-events: none;
+}
+
+.pg-hero__ring {
+  position: absolute;
+  right: -8%;
+  top: -34%;
+  width: clamp(280px, 40vw, 560px);
+  aspect-ratio: 1;
+  border: 1px solid var(--line-ink);
+  border-radius: 50%;
+  transform: rotateX(64deg) rotateZ(-14deg);
+  animation: pg-ring 26s linear infinite;
+  pointer-events: none;
+}
+
+.pg-hero__glyph {
+  position: absolute;
+  font-family: var(--font-display);
+  color: rgba(232, 233, 226, 0.09);
+  pointer-events: none;
+  user-select: none;
+}
+
+.pg-hero__glyph--a {
+  left: 2%;
+  bottom: 4%;
+  font-size: clamp(3rem, 7vw, 6rem);
+  animation: pg-float 11s var(--ease-in-out) infinite;
+}
+
+.pg-hero__glyph--b {
+  right: 46%;
+  top: 4%;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  animation: pg-float 9s var(--ease-in-out) infinite reverse;
+}
+
+.pg-hero__inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  align-items: center;
+  gap: clamp(1.6rem, 4vw, 3.6rem);
+}
+
+.pg-hero__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.pg-hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.45em 0.9em;
+  border: 1px solid var(--line-ink);
+  border-radius: 999px;
+  background: rgba(232, 233, 226, 0.06);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: color-mix(in srgb, var(--paper) 72%, transparent);
+}
+
+.pg-hero__eyebrow svg {
+  color: var(--accent);
+}
+
+.pg-hero__title {
+  margin: 0;
+  max-width: 26ch;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2.1rem, 3.8vw, 3.6rem);
+  line-height: 0.99;
+  letter-spacing: -0.035em;
+  color: var(--paper);
+  text-wrap: balance;
+}
+
+.page-shell .pg-hero__title {
+  max-width: 26ch;
+  font-size: clamp(2.1rem, 3.8vw, 3.6rem);
+}
+
+.pg-hero__lead {
+  margin: 0;
+  max-width: 50ch;
+  font-size: clamp(0.94rem, 1rem + 0.14vw, 1.08rem);
+  line-height: 1.6;
+  color: color-mix(in srgb, var(--paper) 64%, transparent);
+}
+
+.pg-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  padding-top: 0.35rem;
+}
+
+.pg-hero__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.3rem;
+  margin: 0.3rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.82rem;
+  color: color-mix(in srgb, var(--paper) 56%, transparent);
+}
+
+.pg-hero__facts li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.pg-hero__facts svg {
+  color: var(--accent);
+}
+
+.pg-hero__stage {
+  min-width: 0;
+}
+
+.pg-hero__frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.8rem;
+  border: 1px solid var(--line-ink);
+  border-radius: 3px;
+  background:
+    radial-gradient(80% 120% at 70% 20%, rgba(201, 240, 78, 0.12), transparent 62%),
+    linear-gradient(160deg, #151a12, #0a0c09);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.18);
+  transition: transform 620ms var(--ease-out);
+}
+
+.pg-hero__frame:hover {
+  transform: translateY(-4px);
+}
+
+.pg-hero__frame-label,
+.pg-hero__frame-foot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: rgba(232, 233, 226, 0.62);
+}
+
+.pg-hero__frame-foot svg {
+  color: var(--accent);
+}
+
+.pg-hero__canvas {
+  width: 100%;
+  height: clamp(180px, 22vw, 280px);
+  display: block;
+  cursor: grab;
+  touch-action: none;
+}
+
+.pg-hero__canvas:active {
+  cursor: grabbing;
+}
+
+/* --- Tabs -------------------------------------------------------------- */
+
+.pg-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.dark .pg-tabs {
+  border-color: var(--line-ink);
+}
+
+.pg-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 40%, transparent);
+  font-family: var(--font-text);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    background-color 220ms ease,
+    color 220ms ease,
+    border-color 220ms ease,
+    transform 220ms var(--ease-out);
+}
+
+.dark .pg-tab {
+  border-color: var(--line-ink);
+  background: color-mix(in srgb, var(--ink-3) 46%, transparent);
+  color: var(--muted-ink);
+}
+
+.pg-tab em {
+  font-style: normal;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  padding: 0.1em 0.4em;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.pg-tab:hover {
+  transform: translateY(-1px);
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--ink) 30%, transparent);
+}
+
+.dark .pg-tab:hover {
+  color: var(--paper);
+}
+
+.pg-tab.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.dark .pg-tab.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+/* --- Section heads ----------------------------------------------------- */
+
+.pg-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.dark .pg-section-head {
+  border-color: var(--line-ink);
+}
+
+.pg-section-head__left {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.pg-section-head__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-strong);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.pg-section-head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2vw, 1.7rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.dark .pg-section-head h3 {
+  color: var(--paper);
+}
+
+.pg-section-head__meta {
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--muted);
+}
+
+.dark .pg-section-head__meta {
+  color: var(--muted-ink);
+}
+
+/* --- Lab panels -------------------------------------------------------- */
+
+.pg-lab {
+  border: 1px solid color-mix(in srgb, var(--ink) 13%, transparent);
+  border-radius: 3px;
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, #ffffff 46%, var(--paper)),
+    color-mix(in srgb, var(--paper-2) 94%, transparent)
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #ffffff 60%, transparent),
+    0 2px 8px rgba(10, 12, 9, 0.05);
+  padding: clamp(1.1rem, 2.4vw, 2rem);
+}
+
+.dark .pg-lab {
+  border-color: var(--line-ink);
+  background: linear-gradient(150deg, var(--ink-3), var(--ink-2));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 2px 8px rgba(0, 0, 0, 0.28);
+}
+
+.pg-lab h3,
+.pg-lab h4 {
+  font-family: var(--font-text);
+}
+
+/* Game cards keep their own colour accents but borrow the paper frame. */
+.page-shell .pg-lab [class~='rounded-3xl'],
+.page-shell .pg-lab [class~='rounded-2xl'] {
+  border-radius: 3px;
+}
+
+.pg-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  padding: 0.55rem 0.95rem;
+  border: 1px solid color-mix(in srgb, var(--ink) 16%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 50%, transparent);
+  font-family: var(--font-text);
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 200ms ease, border-color 200ms ease, transform 200ms var(--ease-out);
+}
+
+.dark .pg-back {
+  border-color: var(--line-ink);
+  background: color-mix(in srgb, var(--ink-3) 50%, transparent);
+  color: var(--muted-ink);
+}
+
+.pg-back:hover {
+  transform: translateX(-3px);
+  color: var(--ink);
+}
+
+.dark .pg-back:hover {
+  color: var(--paper);
+}
+
+/* --- Motion ------------------------------------------------------------ */
+
+@keyframes pg-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 24px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes pg-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -12px, 0);
+  }
+}
+
+@keyframes pg-ring {
+  from {
+    transform: rotateX(64deg) rotateZ(0deg);
+  }
+  to {
+    transform: rotateX(64deg) rotateZ(360deg);
+  }
+}
+
+/* --- Responsive -------------------------------------------------------- */
+
+@media (max-width: 1024px) {
+  .pg-hero__inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pg-hero__stage {
+    order: -1;
+  }
+
+  .pg-hero__canvas {
+    height: clamp(180px, 40vw, 260px);
+  }
+}
+
+@media (max-width: 560px) {
+  .pg-hero {
+    padding: 1.1rem;
+  }
+
+  .pg-hero__actions .btn {
+    width: 100%;
+  }
+
+  .pg-tab {
+    flex: 1 1 calc(50% - 0.5rem);
+    justify-content: space-between;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pg-hero,
+  .pg-hero__ring,
+  .pg-hero__glyph,
+  .pg-hero__frame,
+  .pg-tab,
+  .pg-back {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .pg-hero__frame:hover,
+  .pg-tab:hover,
+  .pg-back:hover {
+    transform: none;
+  }
+}

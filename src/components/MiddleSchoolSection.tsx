@@ -11,6 +11,7 @@ import {
   Layers,
   GraduationCap,
 } from 'lucide-react';
+import '../styles/curriculum.css';
 
 interface MiddleSchoolSectionProps {
   onNavigateStage: (stageId: string) => void;
@@ -40,7 +41,7 @@ export const MiddleSchoolSection: React.FC<MiddleSchoolSectionProps> = ({
   return (
     <div className="w-full space-y-6">
       {/* Grade Selector Switcher */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#111321] border border-slate-200 dark:border-white/10 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="curr-banner curr-banner--compact flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5">
         <div>
           <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#7957F5] dark:text-[#D94BCB] block">
             Middle School & Pre-Secondary Continuum

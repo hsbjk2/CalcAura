@@ -35,12 +35,10 @@ import {
 } from './layerUtils.ts';
 import { whiteboardSounds } from './soundEffects.ts';
 import { TopToolbar } from './TopToolbar.tsx';
-import { LeftToolbar, MobileToolStrip } from './LeftToolbar.tsx';
-import { PropertiesBar } from './PropertiesBar.tsx';
+import { LeftToolbar, MobileToolStrip } from './LeftToolbar.tsx';import { PropertiesBar } from './PropertiesBar.tsx';
 import { SheetStrip } from './SheetStrip.tsx';
 import { NewSheetModal } from './NewSheetModal.tsx';
 import { StickerEmojiModal } from './StickerEmojiModal.tsx';
-import { ShapesLibraryModal } from './ShapesLibraryModal.tsx';
 import { ExportModal } from './ExportModal.tsx';
 import { AlertTriangle, Trash2, X, Copy, Check, Save, ZoomIn, ZoomOut, Maximize2, ChevronDown, Frame, Crosshair } from 'lucide-react';
 import {
@@ -91,7 +89,6 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
 
   // Modals
   const [newSheetModalOpen, setNewSheetModalOpen] = useState<boolean>(false);
-  const [shapesModalOpen, setShapesModalOpen] = useState<boolean>(false);
   const [stickerModalOpen, setStickerModalOpen] = useState<boolean>(false);
   const [exportModalOpen, setExportModalOpen] = useState<boolean>(false);
   const [sheetPendingDelete, setSheetPendingDelete] = useState<Sheet | null>(null);
@@ -144,7 +141,7 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
   const isMountedRef = useRef<boolean>(false);
 
   // Boundary notifications stay visible for exactly 1.5 seconds.
-  const boundaryToastTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const boundaryToastTimerRef = useRef<number | null>(null);
 
   const showBoundaryToast = useCallback((message: string) => {
     if (boundaryToastTimerRef.current !== null) {
@@ -1938,7 +1935,6 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
         onSelectShape={setActiveShape}
         onOpenImageUpload={() => imageInputRef.current?.click()}
         onOpenStickerModal={() => setStickerModalOpen(true)}
-        onOpenShapesModal={() => setShapesModalOpen(true)}
         onInsertShape={handleInsertShape}
       />
 
@@ -1952,7 +1948,6 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
           onSelectShape={setActiveShape}
           onOpenImageUpload={() => imageInputRef.current?.click()}
           onOpenStickerModal={() => setStickerModalOpen(true)}
-          onOpenShapesModal={() => setShapesModalOpen(true)}
           onInsertShape={handleInsertShape}
           className="hidden md:flex"
         />
@@ -2247,18 +2242,6 @@ export const WhiteboardWorkspace: React.FC<WhiteboardWorkspaceProps> = ({
         isOpen={stickerModalOpen}
         onClose={() => setStickerModalOpen(false)}
         onInsertSticker={handleInsertSticker}
-      />
-
-      {/* Central Shapes Library Modal */}
-      <ShapesLibraryModal
-        isOpen={shapesModalOpen}
-        onClose={() => setShapesModalOpen(false)}
-        activeShape={activeShape}
-        onSelectShape={(shape) => {
-          setActiveShape(shape);
-          handleSelectTool(shape as ToolType);
-        }}
-        onInsertShape={handleInsertShape}
       />
 
       {/* Dedicated Export Modal */}

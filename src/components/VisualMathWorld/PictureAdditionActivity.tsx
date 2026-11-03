@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { VisualObject, VisualAssetType, VISUAL_ASSETS } from './VisualAssetLibrary.tsx';
-import { Plus, Equal, Sparkles, RotateCw, CheckCircle2, ArrowRight, Lightbulb } from 'lucide-react';
+import { Reveal } from '../ui/Depth.tsx';
+import { Plus, Equal, Sparkles, RotateCw, CheckCircle2, ArrowRight } from 'lucide-react';
+import '../../styles/visual-activities.css';
 
 export const PictureAdditionActivity: React.FC = () => {
   const [assetType, setAssetType] = useState<VisualAssetType>('apple');
@@ -30,204 +32,208 @@ export const PictureAdditionActivity: React.FC = () => {
     setIsCombined(true);
   };
 
-  const options = [sum - 1, sum, sum + 1, sum + 2].filter((v) => v > 0).sort((a, b) => a - b);
   // Guarantee 4 unique options
   const uniqueOpts = Array.from(new Set([sum, sum + 1, Math.max(1, sum - 1), sum + 2])).sort((a, b) => a - b);
 
+  const progress = userAnswer !== null ? 100 : isCombined ? 62 : 26;
+  const progressLabel =
+    userAnswer !== null ? 'Answered' : isCombined ? 'Groups combined' : 'Combine the groups';
+
   return (
-    <div className="w-full max-w-4xl mx-auto p-4 sm:p-6 bg-white dark:bg-[#111321] rounded-3xl border border-slate-200 dark:border-white/10 shadow-lg space-y-6">
+    <Reveal as="section" className="va-shell" delay={40}>
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-white/[0.06]">
-        <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-500 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-emerald-500/25">
-            +
-          </div>
+      <div className="va-head">
+        <div className="va-head__id">
+          <div className="va-mark" aria-hidden="true">+</div>
           <div>
-            <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+            <h3 className="va-title">
               <span>Picture Addition</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono font-semibold">
-                Class 1–3
-              </span>
+              <span className="va-chip">Class 1–3</span>
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Combine groups of objects to understand how addition works!
-            </p>
+            <p className="va-sub">Put two groups together. The total is the sum.</p>
           </div>
         </div>
 
-        <button
-          onClick={handleNewPuzzle}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95"
-        >
+        <button type="button" onClick={handleNewPuzzle} className="va-btn va-btn--ink va-btn--sm">
           <RotateCw className="w-3.5 h-3.5" />
-          <span>New Addition</span>
+          <span>New addition</span>
         </button>
       </div>
 
-      {/* Instruction */}
-      <div className="text-center space-y-1">
-        <h4 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-          {groupA} {groupA === 1 ? meta.name : meta.plural} + {groupB} {groupB === 1 ? meta.name : meta.plural} = ?
-        </h4>
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          Click <strong>Combine Groups</strong> to watch the two collections come together into one group!
-        </p>
-      </div>
-
-      {/* Visual Addition Stage */}
-      {!isCombined ? (
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 p-6 rounded-3xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10">
-          {/* Group 1 */}
-          <div className="flex-1 text-center p-4 rounded-2xl bg-white dark:bg-[#0B0D16] border border-slate-200 dark:border-white/10 shadow-xs min-w-[140px]">
-            <span className="text-xs font-mono font-bold text-slate-500 block mb-2">
-              Group 1 ({groupA})
-            </span>
-            <div className="flex flex-wrap items-center justify-center gap-2 min-h-[70px]">
-              {Array.from({ length: groupA }).map((_, i) => (
-                <VisualObject key={i} type={assetType} size="md" />
-              ))}
-            </div>
-            <span className="text-lg font-black font-mono text-emerald-600 dark:text-emerald-400 mt-2 block">
-              {groupA}
-            </span>
-          </div>
-
-          {/* Plus Sign */}
-          <div className="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-black flex items-center justify-center shrink-0 text-xl">
-            <Plus className="w-6 h-6 stroke-[3]" />
-          </div>
-
-          {/* Group 2 */}
-          <div className="flex-1 text-center p-4 rounded-2xl bg-white dark:bg-[#0B0D16] border border-slate-200 dark:border-white/10 shadow-xs min-w-[140px]">
-            <span className="text-xs font-mono font-bold text-slate-500 block mb-2">
-              Group 2 ({groupB})
-            </span>
-            <div className="flex flex-wrap items-center justify-center gap-2 min-h-[70px]">
-              {Array.from({ length: groupB }).map((_, i) => (
-                <VisualObject key={i} type={assetType} size="md" />
-              ))}
-            </div>
-            <span className="text-lg font-black font-mono text-teal-600 dark:text-teal-400 mt-2 block">
-              {groupB}
-            </span>
-          </div>
-
-          {/* Equals Sign */}
-          <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 font-black flex items-center justify-center shrink-0 text-xl">
-            <Equal className="w-6 h-6 stroke-[3]" />
-          </div>
-
-          {/* Combine Action Card */}
-          <button
-            onClick={handleCombine}
-            className="flex-1 p-5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:brightness-110 active:scale-95 text-white font-bold text-xs sm:text-sm shadow-md cursor-pointer transition-all flex flex-col items-center justify-center gap-2 min-w-[140px]"
-          >
-            <Sparkles className="w-5 h-5 animate-spin" />
-            <span>Combine Groups!</span>
-          </button>
+      {/* Progress rail */}
+      <div className="va-progress">
+        <div className="va-progress__meta">
+          <span>Progress</span>
+          <span>{progressLabel}</span>
         </div>
-      ) : (
-        /* Combined View */
-        <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-emerald-500/10 to-teal-500/10 border-2 border-emerald-500/30 text-center space-y-4 animate-in zoom-in-95 duration-300">
-          <span className="text-xs font-mono font-bold text-emerald-600 uppercase tracking-widest block">
-            Combined Collection (Total)
-          </span>
-
-          {/* All objects combined together */}
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 p-4 min-h-[100px]">
-            {Array.from({ length: sum }).map((_, i) => (
-              <VisualObject
-                key={i}
-                type={assetType}
-                size="lg"
-                isCounted={true}
-                countedNumber={i + 1}
-                className="animate-in zoom-in-75 duration-200"
-              />
-            ))}
-          </div>
-
-          {/* Animated Equation Banner */}
-          <div className="inline-flex items-center gap-3 px-6 py-2.5 rounded-2xl bg-white dark:bg-[#0B0D16] border border-emerald-500/30 text-lg sm:text-2xl font-black font-mono shadow-sm">
-            <span className="text-emerald-600">{groupA}</span>
-            <span className="text-slate-400">+</span>
-            <span className="text-teal-600">{groupB}</span>
-            <span className="text-slate-400">=</span>
-            <span className="text-emerald-600 font-extrabold">{sum}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Answer Picking (when not yet answered) */}
-      <div className="space-y-3 pt-2">
-        <span className="text-xs font-mono uppercase tracking-wider text-slate-400 block text-center">
-          What is the total sum?
-        </span>
-
-        <div className="grid grid-cols-4 gap-3 max-w-md mx-auto">
-          {uniqueOpts.map((opt) => {
-            const isSelected = userAnswer === opt;
-            const isCorrect = isSelected && opt === sum;
-            const isWrong = isSelected && opt !== sum;
-
-            return (
-              <button
-                key={opt}
-                onClick={() => {
-                  setUserAnswer(opt);
-                  setIsCombined(true);
-                }}
-                className={`py-3 rounded-2xl font-mono text-xl font-black transition-all cursor-pointer ${
-                  isCorrect
-                    ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 scale-105'
-                    : isWrong
-                    ? 'bg-rose-500 text-white'
-                    : 'bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.05] dark:hover:bg-white/10 text-slate-800 dark:text-white border border-slate-200 dark:border-white/10'
-                }`}
-              >
-                {opt}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Feedback & Explanation */}
-      {userAnswer !== null && (
         <div
-          className={`p-4 rounded-2xl text-center space-y-1 animate-in zoom-in-95 ${
-            userAnswer === sum
-              ? 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-800 dark:text-emerald-300'
-              : 'bg-rose-500/15 border border-rose-500/40 text-rose-800 dark:text-rose-300'
-          }`}
+          className="va-rail"
+          role="progressbar"
+          aria-label="Addition progress"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={progress}
         >
-          {userAnswer === sum ? (
-            <>
-              <div className="flex items-center justify-center gap-1.5 font-bold text-base">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                <span>Superb! {groupA} + {groupB} = {sum} {meta.plural.toLowerCase()}!</span>
-              </div>
-              <p className="text-xs">
-                When you put {groupA} {groupA === 1 ? meta.name : meta.plural} and {groupB} {groupB === 1 ? meta.name : meta.plural} together, you get exactly {sum} {meta.plural}.
-              </p>
-              <button
-                onClick={handleNewPuzzle}
-                className="mt-2 px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-xs inline-flex items-center gap-1 cursor-pointer"
-              >
-                <span>Next Addition Puzzle</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </>
-          ) : (
-            <>
-              <div className="font-bold text-sm">Not quite!</div>
-              <p className="text-xs">
-                Count the combined objects above: {groupA} plus {groupB} makes {sum}.
-              </p>
-            </>
-          )}
+          <span className="va-rail__fill" style={{ width: `${progress}%` }} />
         </div>
-      )}
-    </div>
+      </div>
+
+      <div className="va-body">
+        {/* Instruction */}
+        <div className="va-prompt">
+          <span className="va-kicker">Activity instruction</span>
+          <h4 className="va-question">
+            {groupA} {groupA === 1 ? meta.name : meta.plural} + {groupB}{' '}
+            {groupB === 1 ? meta.name : meta.plural} = ?
+          </h4>
+          <p className="va-hintline">Combine the groups, then choose the total below.</p>
+        </div>
+
+        {/* Visual addition stage */}
+        {!isCombined ? (
+          <div className="va-stage">
+            {/* Group 1 */}
+            <div className="va-groupcard">
+              <span className="va-groupcard__label">Group 1 · {groupA}</span>
+              <div className="va-groupcard__objects">
+                {Array.from({ length: groupA }).map((_, i) => (
+                  <VisualObject key={i} type={assetType} size="md" className="va-object" />
+                ))}
+              </div>
+              <span className="va-groupcard__num">{groupA}</span>
+            </div>
+
+            {/* Plus sign */}
+            <span className="va-op" aria-hidden="true">
+              <Plus className="w-6 h-6 stroke-[3]" />
+            </span>
+
+            {/* Group 2 */}
+            <div className="va-groupcard">
+              <span className="va-groupcard__label">Group 2 · {groupB}</span>
+              <div className="va-groupcard__objects">
+                {Array.from({ length: groupB }).map((_, i) => (
+                  <VisualObject key={i} type={assetType} size="md" className="va-object" />
+                ))}
+              </div>
+              <span className="va-groupcard__num">{groupB}</span>
+            </div>
+
+            {/* Equals sign */}
+            <span className="va-op va-op--muted" aria-hidden="true">
+              <Equal className="w-6 h-6 stroke-[3]" />
+            </span>
+
+            {/* Combine action */}
+            <button type="button" onClick={handleCombine} className="va-combine">
+              <Sparkles className="va-combine__icon w-5 h-5" />
+              <span className="va-combine__label">Combine groups</span>
+              <span className="va-combine__hint">See the total</span>
+            </button>
+          </div>
+        ) : (
+          /* Combined view */
+          <div className="va-combined">
+            <span className="va-combined__kicker">Combined collection · total</span>
+
+            <div className="va-tray va-tray--combined">
+              <span className="va-tray__surface" aria-hidden="true" />
+              {Array.from({ length: sum }).map((_, i) => (
+                <VisualObject
+                  key={i}
+                  type={assetType}
+                  size="lg"
+                  isCounted={true}
+                  countedNumber={i + 1}
+                  className="va-object"
+                />
+              ))}
+            </div>
+
+            {/* Equation banner */}
+            <div className="va-equation" aria-label={`${groupA} plus ${groupB} equals ${sum}`}>
+              <span>{groupA}</span>
+              <span className="va-equation__op">+</span>
+              <span>{groupB}</span>
+              <span className="va-equation__op">=</span>
+              <span
+                className={`va-equation__result${userAnswer === sum ? ' is-revealed' : ''}`}
+              >
+                {sum}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Answer picking */}
+        <div className="va-answer-block">
+          <span className="va-answer-caption">What is the total sum?</span>
+
+          <div className="va-answers">
+            {uniqueOpts.map((opt) => {
+              const isSelected = userAnswer === opt;
+              const isCorrect = isSelected && opt === sum;
+              const isWrong = isSelected && opt !== sum;
+
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => {
+                    setUserAnswer(opt);
+                    setIsCombined(true);
+                  }}
+                  className={`va-answer${isCorrect ? ' is-correct' : ''}${isWrong ? ' is-wrong' : ''}`}
+                  aria-pressed={isSelected}
+                >
+                  <span className="va-answer__value">{opt}</span>
+                  <span className="va-answer__label">
+                    {opt === 1 ? meta.name : meta.plural}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Feedback & explanation */}
+        {userAnswer !== null && (
+          <div
+            className={`va-feedback ${userAnswer === sum ? 'is-correct' : 'is-wrong'}`}
+            role="status"
+            aria-live="polite"
+          >
+            {userAnswer === sum ? (
+              <>
+                <div className="va-feedback__title">
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span>
+                    Superb — {groupA} + {groupB} = {sum} {meta.plural.toLowerCase()}!
+                  </span>
+                </div>
+                <p className="va-feedback__body">
+                  When you put {groupA} {groupA === 1 ? meta.name : meta.plural} and {groupB}{' '}
+                  {groupB === 1 ? meta.name : meta.plural} together, you get exactly {sum}{' '}
+                  {meta.plural}.
+                </p>
+                <button type="button" onClick={handleNewPuzzle} className="va-btn va-btn--sm">
+                  <span>Next addition puzzle</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="va-feedback__title">
+                  <span>Not quite — count once more.</span>
+                </div>
+                <p className="va-feedback__body">
+                  Count the combined objects above: {groupA} plus {groupB} makes {sum}.
+                </p>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </Reveal>
   );
 };

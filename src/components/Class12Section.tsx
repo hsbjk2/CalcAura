@@ -17,6 +17,7 @@ import {
   Layers,
   Filter,
 } from 'lucide-react';
+import '../styles/curriculum.css';
 
 interface Class12SectionProps {
   t: Translations;
@@ -64,7 +65,7 @@ export const Class12Section: React.FC<Class12SectionProps> = ({
     <div id="class-12-mathematics" className="w-full">
       {/* Section Header or Streamlined Controls */}
       {!hideHeader ? (
-        <div className="pb-6 mb-8 border-b border-slate-200 dark:border-white/10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="curr-index-head pb-6 mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-purple-500/10 dark:bg-purple-500/20 border border-purple-500/30 text-purple-700 dark:text-purple-300 text-xs font-mono font-semibold mb-3">
               <BookOpen className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />

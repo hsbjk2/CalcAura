@@ -1,0 +1,1621 @@
+/* =========================================================================
+   CALCAURA — interactive geometry construction desk
+   Scoped to the geometry tool. Paper / ink / chartreuse, Bodoni display,
+   Jost UI, hairline frames and one outer-frame tilt.
+   ========================================================================= */
+
+.geometry-desk {
+  --geo-canvas: color-mix(in srgb, var(--paper) 74%, #ffffff);
+  --geo-grid: rgba(10, 12, 9, 0.07);
+  --geo-line: var(--ink);
+  --geo-line-soft: color-mix(in srgb, var(--ink) 34%, transparent);
+  --geo-fill: color-mix(in srgb, var(--accent) 24%, transparent);
+  --geo-accent: color-mix(in srgb, var(--accent-strong) 72%, var(--ink));
+  --geo-label: var(--muted);
+  --geo-label-strong: var(--ink);
+  --geo-panel-bg: color-mix(in srgb, var(--paper) 84%, #ffffff);
+  --geo-field-bg: color-mix(in srgb, var(--paper) 68%, transparent);
+  --geo-chip-bg: color-mix(in srgb, var(--paper) 76%, transparent);
+  --geo-chrome: color-mix(in srgb, var(--paper-3) 44%, var(--paper));
+  --geo-chrome-text: var(--ink);
+  --geo-chrome-muted: var(--muted);
+  --geo-chrome-line: var(--line);
+  --geo-note-bg: color-mix(in srgb, var(--paper) 90%, #ffffff);
+
+  position: relative;
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.dark .geometry-desk {
+  --geo-canvas: color-mix(in srgb, var(--ink-2) 80%, #000000);
+  --geo-grid: color-mix(in srgb, var(--paper) 12%, transparent);
+  --geo-line: var(--paper);
+  --geo-line-soft: color-mix(in srgb, var(--paper) 38%, transparent);
+  --geo-fill: color-mix(in srgb, var(--accent) 17%, transparent);
+  --geo-accent: var(--accent);
+  --geo-label: var(--muted-ink);
+  --geo-label-strong: var(--paper);
+  --geo-panel-bg: var(--ink-2);
+  --geo-field-bg: color-mix(in srgb, var(--ink-3) 68%, transparent);
+  --geo-chip-bg: color-mix(in srgb, var(--ink-3) 78%, transparent);
+  --geo-chrome: var(--ink-3);
+  --geo-chrome-text: var(--paper);
+  --geo-chrome-muted: var(--muted-ink);
+  --geo-chrome-line: var(--line-ink);
+  --geo-note-bg: var(--ink-2);
+
+  color: var(--paper);
+}
+
+.geometry-desk *,
+.geometry-desk *::before,
+.geometry-desk *::after {
+  box-sizing: border-box;
+}
+
+/* -------------------------------------------------------------------------
+   Header
+   ------------------------------------------------------------------------- */
+
+.geometry-head {
+  padding-bottom: clamp(20px, 3vw, 34px);
+  border-bottom: 1px solid var(--line);
+}
+
+.dark .geometry-desk .geometry-head {
+  border-bottom-color: var(--line-ink);
+}
+
+.geometry-head__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.geometry-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.geometry-kicker svg {
+  width: 14px;
+  height: 14px;
+  color: var(--muted);
+}
+
+.geometry-kicker--muted {
+  color: var(--muted);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+}
+
+.dark .geometry-desk .geometry-kicker {
+  color: var(--paper);
+}
+
+.dark .geometry-desk .geometry-kicker svg,
+.dark .geometry-desk .geometry-kicker--muted {
+  color: var(--muted-ink);
+}
+
+.geometry-head__grid {
+  display: grid;
+  gap: 22px;
+  margin-top: 18px;
+}
+
+@media (min-width: 760px) {
+  .geometry-head__grid {
+    grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
+    align-items: end;
+    gap: clamp(28px, 5vw, 72px);
+  }
+}
+
+.geometry-desk .geometry-title {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: clamp(2.7rem, 5.2vw, 4.9rem);
+  font-weight: 500;
+  letter-spacing: -0.038em;
+  line-height: 0.9;
+  text-wrap: balance;
+}
+
+.geometry-title__amp {
+  color: var(--muted);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.geometry-title__second {
+  display: block;
+}
+
+.dark .geometry-desk .geometry-title {
+  color: var(--paper);
+}
+
+.dark .geometry-desk .geometry-title__amp {
+  color: var(--muted-ink);
+}
+
+.geometry-head__aside {
+  min-width: 0;
+}
+
+.geometry-lede {
+  max-width: 46ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(0.98rem, 0.95rem + 0.15vw, 1.08rem);
+  line-height: 1.55;
+}
+
+.dark .geometry-desk .geometry-lede {
+  color: var(--muted-ink);
+}
+
+.geometry-head__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.geometry-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 25px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--geo-chip-bg);
+  color: var(--muted);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.dark .geometry-desk .geometry-chip {
+  border-color: var(--line-ink);
+  color: var(--muted-ink);
+}
+
+/* -------------------------------------------------------------------------
+   Shape palette
+   ------------------------------------------------------------------------- */
+
+.geometry-palette-wrap {
+  margin-top: 18px;
+}
+
+.geometry-palette {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--paper-2) 62%, transparent);
+}
+
+.dark .geometry-desk .geometry-palette {
+  border-color: var(--line-ink);
+  background: color-mix(in srgb, var(--ink-2) 82%, transparent);
+}
+
+.geometry-palette__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 2px 10px;
+}
+
+.geometry-section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.geometry-section-label svg {
+  width: 13px;
+  height: 13px;
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+
+.geometry-section-label--small {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+}
+
+.dark .geometry-desk .geometry-section-label {
+  color: var(--paper);
+}
+
+.dark .geometry-desk .geometry-section-label svg {
+  color: var(--muted-ink);
+}
+
+.geometry-section-note {
+  color: var(--muted);
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+}
+
+.dark .geometry-desk .geometry-section-note {
+  color: var(--muted-ink);
+}
+
+.geometry-palette__rail {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 3px;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--ink) 24%, transparent) transparent;
+}
+
+.geometry-palette__rail::-webkit-scrollbar {
+  height: 3px;
+}
+
+.geometry-palette__rail::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--ink) 24%, transparent);
+}
+
+.dark .geometry-desk .geometry-palette__rail {
+  scrollbar-color: color-mix(in srgb, var(--paper) 26%, transparent) transparent;
+}
+
+.dark .geometry-desk .geometry-palette__rail::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--paper) 26%, transparent);
+}
+
+.geometry-shape-tab {
+  position: relative;
+  display: flex;
+  flex: 1 1 112px;
+  align-items: center;
+  gap: 8px;
+  min-width: 112px;
+  padding: 9px 10px 9px 9px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color var(--t-ui) var(--ease-out),
+    border-color var(--t-ui) var(--ease-out),
+    color var(--t-ui) var(--ease-out),
+    transform var(--t-ui) var(--ease-out);
+}
+
+.geometry-shape-tab__glyph {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  opacity: 0.72;
+  transition: opacity var(--t-ui) var(--ease-out), transform var(--t-ui) var(--ease-out);
+}
+
+.geometry-shape-tab__glyph svg {
+  width: 15px;
+  height: 15px;
+}
+
+.geometry-shape-tab__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+.geometry-shape-tab__label {
+  overflow: hidden;
+  color: currentColor;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.geometry-shape-tab__meta {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 8.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.geometry-shape-tab__index {
+  position: absolute;
+  top: 6px;
+  right: 7px;
+  color: currentColor;
+  font-size: 7.5px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  opacity: 0.46;
+}
+
+.dark .geometry-desk .geometry-shape-tab {
+  color: var(--muted-ink);
+}
+
+.dark .geometry-desk .geometry-shape-tab__meta {
+  color: var(--muted-ink);
+}
+
+@media (hover: hover) {
+  .geometry-shape-tab:hover {
+    background: color-mix(in srgb, var(--paper) 72%, transparent);
+    border-color: var(--line);
+    color: var(--ink);
+    transform: translateY(-2px);
+  }
+
+  .geometry-shape-tab:hover .geometry-shape-tab__glyph {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+
+  .geometry-shape-tab:hover .geometry-shape-tab__meta {
+    color: var(--muted);
+  }
+
+  .dark .geometry-desk .geometry-shape-tab:hover {
+    background: var(--ink-3);
+    border-color: var(--line-ink);
+    color: var(--paper);
+  }
+
+  .dark .geometry-desk .geometry-shape-tab:hover .geometry-shape-tab__meta {
+    color: var(--muted-ink);
+  }
+}
+
+.geometry-shape-tab.is-active,
+.geometry-shape-tab.is-active:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+  box-shadow: 0 10px 22px rgba(10, 12, 9, 0.14);
+  transform: translateY(0);
+}
+
+.geometry-shape-tab.is-active .geometry-shape-tab__glyph {
+  opacity: 1;
+}
+
+.geometry-shape-tab.is-active .geometry-shape-tab__meta {
+  color: color-mix(in srgb, var(--paper) 66%, transparent);
+}
+
+.dark .geometry-desk .geometry-shape-tab.is-active,
+.dark .geometry-desk .geometry-shape-tab.is-active:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--ink);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
+}
+
+.dark .geometry-desk .geometry-shape-tab.is-active .geometry-shape-tab__meta {
+  color: color-mix(in srgb, var(--ink) 68%, transparent);
+}
+
+/* -------------------------------------------------------------------------
+   Main desk grid
+   ------------------------------------------------------------------------- */
+
+.geometry-grid {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+@media (min-width: 1024px) {
+  .geometry-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .geometry-col--inputs,
+  .geometry-col--canvas,
+  .geometry-col--results {
+    grid-column: span 4;
+  }
+}
+
+.geometry-col {
+  min-width: 0;
+}
+
+/* -------------------------------------------------------------------------
+   Quiet panels
+   ------------------------------------------------------------------------- */
+
+.geometry-desk .geometry-panel {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--geo-panel-bg);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #ffffff 56%, transparent),
+    0 12px 30px rgba(10, 12, 9, 0.06);
+  transition: border-color var(--t-ui) var(--ease-out);
+}
+
+.dark .geometry-desk .geometry-panel {
+  border-color: var(--line-ink);
+  background: var(--geo-panel-bg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 16px 36px rgba(0, 0, 0, 0.34);
+}
+
+@media (hover: hover) {
+  .geometry-desk .geometry-panel:hover {
+    border-color: color-mix(in srgb, var(--ink) 28%, transparent);
+  }
+
+  .dark .geometry-desk .geometry-panel:hover {
+    border-color: color-mix(in srgb, var(--paper) 28%, transparent);
+  }
+}
+
+.geometry-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.dark .geometry-desk .geometry-panel__head {
+  border-bottom-color: var(--line-ink);
+}
+
+.geometry-desk .geometry-panel__title {
+  margin: 6px 0 0;
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.dark .geometry-desk .geometry-panel__title {
+  color: var(--paper);
+}
+
+.geometry-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 2px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-text);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: color var(--t-hover) ease, transform var(--t-ui) var(--ease-out);
+}
+
+.geometry-reset svg {
+  width: 13px;
+  height: 13px;
+  transition: transform var(--t-ui) var(--ease-out);
+}
+
+.dark .geometry-desk .geometry-reset {
+  color: var(--muted-ink);
+}
+
+@media (hover: hover) {
+  .geometry-reset:hover {
+    color: var(--ink);
+    transform: translateY(-1px);
+  }
+
+  .geometry-reset:hover svg {
+    transform: rotate(-35deg);
+  }
+
+  .dark .geometry-desk .geometry-reset:hover {
+    color: var(--paper);
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Presets
+   ------------------------------------------------------------------------- */
+
+.geometry-presets {
+  padding: 12px 0 2px;
+}
+
+.geometry-presets .geometry-section-label {
+  margin-bottom: 8px;
+}
+
+.geometry-presets__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.geometry-preset {
+  display: inline-flex;
+  align-items: center;
+  min-height: 25px;
+  padding: 4px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-text);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  cursor: pointer;
+  transition:
+    background-color var(--t-hover) ease,
+    border-color var(--t-hover) ease,
+    color var(--t-hover) ease,
+    transform var(--t-ui) var(--ease-out);
+}
+
+.dark .geometry-desk .geometry-preset {
+  border-color: var(--line-ink);
+  color: var(--muted-ink);
+}
+
+@media (hover: hover) {
+  .geometry-preset:hover {
+    background: var(--accent);
+    border-color: var(--accent-strong);
+    color: var(--accent-ink);
+    transform: translateY(-2px);
+  }
+}
+
+.geometry-preset:active {
+  transform: translateY(0);
+}
+
+/* -------------------------------------------------------------------------
+   Value inputs
+   ------------------------------------------------------------------------- */
+
+.geometry-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.geometry-fields__pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.geometry-field {
+  min-width: 0;
+  padding: 9px 10px 8px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: var(--geo-field-bg);
+  transition:
+    border-color var(--t-ui) var(--ease-out),
+    background-color var(--t-ui) var(--ease-out),
+    transform var(--t-ui) var(--ease-out);
+}
+
+.dark .geometry-desk .geometry-field {
+  border-color: var(--line-ink);
+}
+
+@media (hover: hover) {
+  .geometry-field:hover,
+  .geometry-field:focus-within {
+    border-color: color-mix(in srgb, var(--ink) 32%, transparent);
+    transform: translateY(-1px);
+  }
+
+  .dark .geometry-desk .geometry-field:hover,
+  .dark .geometry-desk .geometry-field:focus-within {
+    border-color: color-mix(in srgb, var(--paper) 30%, transparent);
+  }
+}
+
+.geometry-field__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.geometry-field__label {
+  color: var(--ink);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  line-height: 1.25;
+}
+
+.dark .geometry-desk .geometry-field__label {
+  color: var(--paper);
+}
+
+.geometry-field__unit {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.dark .geometry-desk .geometry-field__unit {
+  color: var(--muted-ink);
+}
+
+.geometry-field__row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.geometry-nudge {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 25px;
+  height: 27px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color var(--t-hover) ease,
+    border-color var(--t-hover) ease,
+    color var(--t-hover) ease,
+    transform var(--t-press) var(--ease-out);
+}
+
+.dark .geometry-desk .geometry-nudge {
+  border-color: var(--line-ink);
+  color: var(--paper);
+}
+
+@media (hover: hover) {
+  .geometry-nudge:hover {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+
+  .dark .geometry-desk .geometry-nudge:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--ink);
+  }
+}
+
+.geometry-nudge:active {
+  transform: scale(0.95);
+}
+
+.geometry-field__input-wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.geometry-number {
+  width: 100%;
+  min-width: 0;
+  padding: 3px 2px;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 22%, transparent);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: 13.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+  outline: none;
+  transition:
+    border-color var(--t-hover) ease,
+    background-color var(--t-hover) ease,
+    box-shadow var(--t-hover) ease;
+}
+
+.geometry-number:focus {
+  border-bottom-color: var(--accent-strong);
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--accent-strong) 55%, transparent);
+}
+
+.geometry-number::-webkit-outer-spin-button,
+.geometry-number::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+.geometry-number {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.dark .geometry-desk .geometry-number {
+  border-bottom-color: color-mix(in srgb, var(--paper) 24%, transparent);
+  color: var(--paper);
+}
+
+.dark .geometry-desk .geometry-number:focus {
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+
+.geometry-slider {
+  margin-top: 7px;
+}
+
+.geometry-range {
+  display: block;
+  width: 100%;
+  height: 14px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.geometry-range::-webkit-slider-runnable-track {
+  height: 2px;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--ink) 18%, transparent);
+}
+
+.geometry-range::-moz-range-track {
+  height: 2px;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--ink) 18%, transparent);
+}
+
+.geometry-range::-webkit-slider-thumb {
+  width: 12px;
+  height: 12px;
+  margin-top: -5px;
+  border: 2px solid var(--accent-strong);
+  border-radius: 50%;
+  background: var(--ink);
+  -webkit-appearance: none;
+  appearance: none;
+  transition: transform var(--t-hover) var(--ease-out);
+}
+
+.geometry-range::-moz-range-thumb {
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--accent-strong);
+  border-radius: 50%;
+  background: var(--ink);
+  transition: transform var(--t-hover) var(--ease-out);
+}
+
+.geometry-range:hover::-webkit-slider-thumb {
+  transform: scale(1.16);
+}
+
+.geometry-range:hover::-moz-range-thumb {
+  transform: scale(1.16);
+}
+
+.dark .geometry-desk .geometry-range::-webkit-slider-runnable-track,
+.dark .geometry-desk .geometry-range::-moz-range-track {
+  background: color-mix(in srgb, var(--paper) 22%, transparent);
+}
+
+.dark .geometry-desk .geometry-range::-webkit-slider-thumb,
+.dark .geometry-desk .geometry-range::-moz-range-thumb {
+  background: var(--paper);
+}
+
+.geometry-slider__scale {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 1px;
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+.dark .geometry-desk .geometry-slider__scale {
+  color: var(--muted-ink);
+}
+
+/* -------------------------------------------------------------------------
+   Validation status
+   ------------------------------------------------------------------------- */
+
+.geometry-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--paper-3) 38%, transparent);
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+.geometry-status svg {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  margin-top: 1px;
+}
+
+.geometry-status strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.dark .geometry-desk .geometry-status {
+  border-color: var(--line-ink);
+  background: color-mix(in srgb, var(--ink-3) 66%, transparent);
+  color: var(--muted-ink);
+}
+
+.dark .geometry-desk .geometry-status strong {
+  color: var(--paper);
+}
+
+.geometry-status--invalid {
+  border-style: dashed;
+}
+
+.geometry-status--valid {
+  border-color: color-mix(in srgb, var(--accent-strong) 46%, var(--line));
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--ink);
+}
+
+.dark .geometry-desk .geometry-status--valid {
+  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--paper);
+}
+
+/* -------------------------------------------------------------------------
+   Canvas frame — the only surface that tilts
+   ------------------------------------------------------------------------- */
+
+.geometry-canvas-stage {
+  min-width: 0;
+}
+
+.geometry-desk .geometry-canvas-card {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: var(--geo-note-bg);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #ffffff 52%, transparent),
+    0 24px 50px rgba(10, 12, 9, 0.15);
+}
+
+.dark .geometry-desk .geometry-canvas-card {
+  border-color: var(--line-ink);
+  background: var(--geo-note-bg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 28px 58px rgba(0, 0, 0, 0.42);
+}
+
+.geometry-canvas-card::before {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  width: 44%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  pointer-events: none;
+}
+
+/* Keep the drawing crisp: the canvas frame tilts, but it does not glow over
+   the construction itself. */
+.geometry-desk .geometry-canvas-card::after {
+  display: none;
+}
+
+.geometry-canvas__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 13px;
+  border-bottom: 1px solid var(--geo-chrome-line);
+  background: var(--geo-chrome);
+}
+
+.geometry-canvas__bar .geometry-section-label {
+  color: var(--geo-chrome-text);
+}
+
+.geometry-canvas__bar .geometry-section-label svg {
+  color: var(--geo-accent);
+}
+
+.dark .geometry-desk .geometry-canvas__bar .geometry-section-label {
+  color: var(--geo-chrome-text);
+}
+
+.dark .geometry-desk .geometry-canvas__bar .geometry-section-label svg {
+  color: var(--geo-accent);
+}
+
+.geometry-canvas__status {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 5px;
+  color: var(--geo-chrome-muted);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.geometry-canvas__status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--geo-chrome-muted);
+}
+
+.geometry-canvas__status.is-valid {
+  color: var(--geo-chrome-text);
+}
+
+.geometry-canvas__status.is-valid .geometry-canvas__status-dot {
+  background: var(--accent-strong);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.dark .geometry-desk .geometry-canvas__status.is-valid .geometry-canvas__status-dot {
+  background: var(--accent);
+}
+
+.geometry-canvas__status.is-invalid .geometry-canvas__status-dot {
+  border: 1px solid currentColor;
+  background: transparent;
+}
+
+.geometry-canvas {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 352px;
+  padding: 30px 18px 22px;
+  overflow: hidden;
+  background-color: var(--geo-canvas);
+  background-image:
+    radial-gradient(
+      90% 80% at 50% 0%,
+      color-mix(in srgb, var(--accent) 10%, transparent),
+      transparent 68%
+    ),
+    linear-gradient(var(--geo-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--geo-grid) 1px, transparent 1px);
+  background-position: center;
+  background-size: auto, 26px 26px, 26px 26px;
+}
+
+.geometry-corner {
+  position: absolute;
+  z-index: 1;
+  width: 11px;
+  height: 11px;
+  border: 0 solid color-mix(in srgb, var(--geo-accent) 74%, transparent);
+  pointer-events: none;
+}
+
+.geometry-corner--tl {
+  top: 10px;
+  left: 10px;
+  border-top-width: 1px;
+  border-left-width: 1px;
+}
+
+.geometry-corner--tr {
+  top: 10px;
+  right: 10px;
+  border-top-width: 1px;
+  border-right-width: 1px;
+}
+
+.geometry-corner--bl {
+  bottom: 10px;
+  left: 10px;
+  border-bottom-width: 1px;
+  border-left-width: 1px;
+}
+
+.geometry-corner--br {
+  right: 10px;
+  bottom: 10px;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+}
+
+.geometry-canvas__figure {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+}
+
+.geometry-diagram {
+  display: block;
+  width: 100%;
+  max-width: 330px;
+  height: auto;
+  overflow: visible;
+}
+
+/* SVG drawing language */
+.geo-shape {
+  fill: var(--geo-fill);
+  stroke: var(--geo-line);
+  stroke-linejoin: round;
+  transition: stroke var(--t-ui) ease, fill var(--t-ui) ease, stroke-width var(--t-ui) ease;
+}
+
+.geo-solid-line {
+  fill: none;
+  stroke: var(--geo-line);
+  stroke-linecap: round;
+  transition: stroke var(--t-ui) ease;
+}
+
+.geo-vector {
+  fill: none;
+  stroke: var(--geo-accent);
+  stroke-linecap: round;
+  transition: stroke var(--t-ui) ease;
+}
+
+.geo-measure {
+  fill: none;
+  stroke: var(--geo-accent);
+  stroke-dasharray: 4 3;
+  stroke-linecap: round;
+  transition: stroke var(--t-ui) ease;
+}
+
+.geo-axis {
+  stroke: var(--geo-line-soft);
+  stroke-width: 1;
+}
+
+.geo-dash {
+  fill: none;
+  stroke: var(--geo-line-soft);
+  stroke-dasharray: 3 3;
+  stroke-linecap: round;
+}
+
+.geo-right-angle {
+  fill: none;
+  stroke: var(--geo-line-soft);
+}
+
+.geo-point {
+  fill: var(--geo-line);
+}
+
+.geo-point--accent {
+  fill: var(--geo-accent);
+}
+
+.geo-label {
+  fill: var(--geo-label);
+  font-family: var(--font-text);
+  font-weight: 500;
+  letter-spacing: 0.015em;
+}
+
+.geo-label--strong {
+  fill: var(--geo-label-strong);
+  font-weight: 600;
+}
+
+.geo-label--accent {
+  fill: var(--geo-accent);
+  font-weight: 600;
+}
+
+.geo-invalid {
+  fill: var(--geo-label);
+  font-family: var(--font-text);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .geometry-canvas-card:hover .geo-shape {
+    stroke-width: 2.9;
+  }
+}
+
+/* Measured chips under the canvas */
+.geometry-canvas__measures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  border-top: 1px solid var(--geo-chrome-line);
+  background: var(--geo-chrome);
+}
+
+.geometry-measure-chip {
+  min-width: 0;
+  padding: 9px 10px 10px;
+  border-right: 1px solid var(--geo-chrome-line);
+}
+
+.geometry-measure-chip:last-child {
+  border-right: 0;
+}
+
+.geometry-measure-chip.is-accent {
+  background: color-mix(in srgb, var(--accent) 13%, transparent);
+}
+
+.geometry-measure-chip__label {
+  display: block;
+  overflow: hidden;
+  color: var(--geo-chrome-muted);
+  font-size: 8.5px;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  line-height: 1;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.geometry-measure-chip__value {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  margin-top: 3px;
+  overflow: hidden;
+  color: var(--geo-chrome-text);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.geometry-measure-chip.is-accent .geometry-measure-chip__value {
+  text-decoration: underline;
+  text-decoration-color: var(--accent-strong);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+
+.geometry-measure-chip__unit {
+  color: var(--geo-chrome-muted);
+  font-size: 8px;
+  font-weight: 500;
+}
+
+/* Relationship / proof note */
+.geometry-note {
+  padding: 12px 14px 14px;
+  border-top: 1px solid var(--geo-chrome-line);
+  background: var(--geo-note-bg);
+}
+
+.geometry-note__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.geometry-note__tag {
+  overflow: hidden;
+  color: var(--geo-chrome-muted);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  line-height: 1;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.geometry-note__stamp {
+  flex: 0 0 auto;
+  padding-bottom: 1px;
+  border-bottom: 1px solid color-mix(in srgb, var(--geo-accent) 52%, transparent);
+  color: var(--geo-accent);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.geometry-desk .geometry-note__statement {
+  margin: 7px 0 0;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.22;
+  text-wrap: balance;
+}
+
+.dark .geometry-desk .geometry-note__statement {
+  color: var(--paper);
+}
+
+.geometry-note__detail {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.dark .geometry-desk .geometry-note__detail {
+  color: var(--muted-ink);
+}
+
+/* -------------------------------------------------------------------------
+   Results and proof panel
+   ------------------------------------------------------------------------- */
+
+.geometry-live {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.geometry-live::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent-strong);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.dark .geometry-desk .geometry-live {
+  color: var(--muted-ink);
+}
+
+.dark .geometry-desk .geometry-live::before {
+  background: var(--accent);
+}
+
+.geometry-results-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.geometry-result {
+  min-width: 0;
+  padding: 8px 9px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: var(--geo-field-bg);
+  transition:
+    border-color var(--t-ui) var(--ease-out),
+    transform var(--t-ui) var(--ease-out);
+}
+
+.dark .geometry-desk .geometry-result {
+  border-color: var(--line-ink);
+}
+
+@media (hover: hover) {
+  .geometry-result:hover {
+    border-color: color-mix(in srgb, var(--ink) 30%, transparent);
+    transform: translateY(-1px);
+  }
+
+  .dark .geometry-desk .geometry-result:hover {
+    border-color: color-mix(in srgb, var(--paper) 28%, transparent);
+  }
+}
+
+.geometry-result__label {
+  display: block;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.015em;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dark .geometry-desk .geometry-result__label {
+  color: var(--muted-ink);
+}
+
+.geometry-result__value {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  margin-top: 3px;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dark .geometry-desk .geometry-result__value {
+  color: var(--paper);
+}
+
+.geometry-result__unit {
+  color: var(--muted);
+  font-size: 8.5px;
+  font-weight: 400;
+}
+
+.dark .geometry-desk .geometry-result__unit {
+  color: var(--muted-ink);
+}
+
+.geometry-results-empty {
+  margin: 12px 0 0;
+  padding: 12px;
+  border: 1px dashed var(--line);
+  border-radius: 2px;
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+.dark .geometry-desk .geometry-results-empty {
+  border-color: var(--line-ink);
+  color: var(--muted-ink);
+}
+
+.geometry-formula-block,
+.geometry-substitution-block {
+  margin-top: 10px;
+  padding: 9px 10px 8px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: var(--geo-field-bg);
+  transition: border-color var(--t-ui) var(--ease-out);
+}
+
+.geometry-formula-block {
+  border-color: color-mix(in srgb, var(--accent-strong) 38%, var(--line));
+  background: color-mix(in srgb, var(--accent) 11%, transparent);
+}
+
+.dark .geometry-desk .geometry-formula-block {
+  border-color: color-mix(in srgb, var(--accent) 25%, transparent);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+
+.dark .geometry-desk .geometry-substitution-block {
+  border-color: var(--line-ink);
+}
+
+.geometry-block-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.dark .geometry-desk .geometry-block-label {
+  color: var(--muted-ink);
+}
+
+.geometry-formula,
+.geometry-substitution {
+  color: var(--ink) !important;
+  font-size: 11.5px;
+}
+
+.geometry-formula .katex,
+.geometry-substitution .katex {
+  color: var(--ink) !important;
+}
+
+.dark .geometry-desk .geometry-formula,
+.dark .geometry-desk .geometry-substitution {
+  color: var(--paper) !important;
+}
+
+.dark .geometry-desk .geometry-formula .katex,
+.dark .geometry-desk .geometry-substitution .katex {
+  color: var(--paper) !important;
+}
+
+.geometry-desk .katex-display {
+  margin: 0;
+}
+
+.geometry-desk .katex {
+  font-size: 1.02em;
+}
+
+.geometry-steps {
+  display: grid;
+  gap: 5px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.dark .geometry-desk .geometry-steps {
+  border-top-color: var(--line-ink);
+}
+
+.geometry-steps .geometry-block-label {
+  margin-bottom: 2px;
+}
+
+.geometry-step {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  gap: 6px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.dark .geometry-desk .geometry-step {
+  color: var(--muted-ink);
+}
+
+.geometry-step__index {
+  padding-top: 1px;
+  color: var(--ink);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+}
+
+.dark .geometry-desk .geometry-step__index {
+  color: var(--paper);
+}
+
+/* -------------------------------------------------------------------------
+   Focus and reduced motion
+   ------------------------------------------------------------------------- */
+
+.geometry-desk :is(button, input):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .geometry-shape-tab,
+  .geometry-shape-tab__glyph,
+  .geometry-preset,
+  .geometry-field,
+  .geometry-nudge,
+  .geometry-reset,
+  .geometry-reset svg,
+  .geometry-result,
+  .geo-shape,
+  .geo-solid-line,
+  .geo-vector,
+  .geo-measure,
+  .geometry-range::-webkit-slider-thumb,
+  .geometry-range::-moz-range-thumb {
+    transition: none !important;
+  }
+
+  .geometry-shape-tab:hover,
+  .geometry-preset:hover,
+  .geometry-field:hover,
+  .geometry-result:hover,
+  .geometry-reset:hover,
+  .geometry-nudge:active {
+    transform: none !important;
+  }
+
+  .geometry-reset:hover svg {
+    transform: none !important;
+  }
+}

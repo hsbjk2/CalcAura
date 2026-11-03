@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Authentication and account screens carry no content to index.
+Disallow: /sign-in
+Disallow: /sign-up
+Disallow: /history
+
+Sitemap: https://calcaura.in/sitemap.xml

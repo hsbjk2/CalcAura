@@ -20,6 +20,7 @@ import {
   Layers,
   Award,
 } from 'lucide-react';
+import '../styles/curriculum.css';
 
 export { Class10Section } from './Class10Section.tsx';
 export { Class12Section } from './Class12Section.tsx';
@@ -158,7 +159,7 @@ export const SchoolCurriculumSection: React.FC<SchoolCurriculumSectionProps> = (
   return (
     <div id="school-curriculum" className="w-full space-y-8">
       {/* Top Class Switcher Banner */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#111321] border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+      <div className="curr-banner curr-banner--stack p-5 sm:p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-white/[0.06]">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#7957F5]/10 border border-[#7957F5]/30 text-[#7957F5] dark:text-[#D94BCB] text-xs font-mono font-semibold mb-1.5">
@@ -175,7 +176,7 @@ export const SchoolCurriculumSection: React.FC<SchoolCurriculumSectionProps> = (
         </div>
 
         {/* Intuitive Class Selector Pills */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-9 gap-2">
+        <div className="curr-class-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-9 gap-2">
           {CLASS_LEVELS.map((lvl) => {
             const isSelected = selectedClass === lvl.id;
             const Icon = lvl.icon;
@@ -186,21 +187,21 @@ export const SchoolCurriculumSection: React.FC<SchoolCurriculumSectionProps> = (
                 onClick={() => setSelectedClass(lvl.id)}
                 className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[76px] ${
                   isSelected
-                    ? 'bg-gradient-to-r from-[#7957F5] to-[#D94BCB] text-white border-transparent shadow-md scale-[1.02]'
+                    ? 'bg-gradient-to-r from-[#7957F5] to-[#D94BCB] border-transparent shadow-md scale-[1.02]'
                     : 'bg-slate-50 hover:bg-slate-100/80 dark:bg-white/[0.03] dark:hover:bg-white/[0.06] border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300'
                 }`}
               >
                 <div className="flex items-center justify-between gap-1 w-full">
-                  <span className={`text-[10px] font-mono font-bold uppercase tracking-wider ${isSelected ? 'text-white/80' : 'text-slate-400'}`}>
+                  <span className={`text-[10px] font-mono font-bold uppercase tracking-wider ${isSelected ? 'opacity-70' : 'text-slate-400'}`}>
                     {lvl.badge}
                   </span>
-                  <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-slate-500'}`} />
+                  <Icon className={`w-3.5 h-3.5 ${isSelected ? '' : 'text-slate-500'}`} />
                 </div>
                 <div>
-                  <div className={`text-xs font-black truncate ${isSelected ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
+                  <div className={`text-xs font-black truncate ${isSelected ? '' : 'text-slate-900 dark:text-white'}`}>
                     {lvl.title}
                   </div>
-                  <div className={`text-[10px] truncate ${isSelected ? 'text-white/90' : 'text-slate-500 dark:text-slate-400'}`}>
+                  <div className={`text-[10px] truncate ${isSelected ? 'opacity-80' : 'text-slate-500 dark:text-slate-400'}`}>
                     {lvl.subtitle}
                   </div>
                 </div>

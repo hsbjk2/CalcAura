@@ -1,0 +1,1934 @@
+/* =========================================================================
+   CALCAURA — Multiplication studio (tables 1–30)
+   Paper, ink and one chartreuse signal. Glass panels, hairline rules and a
+   CSS-only 3D table object. Scoped to .mult-studio so the shared page skin
+   is never overwritten.
+   ========================================================================= */
+
+.mult-studio {
+  --m-text: var(--ink);
+  --m-muted: var(--muted);
+  --m-line: var(--line);
+  --m-line-strong: rgba(10, 12, 9, 0.26);
+  --m-soft: color-mix(in srgb, var(--ink) 5%, transparent);
+  --m-input: #ffffff;
+  --m-icon-accent: color-mix(in srgb, var(--accent-strong) 62%, var(--ink));
+  --m-sheet-back: color-mix(in srgb, var(--accent) 24%, var(--paper-2));
+  --m-sheet-back-text: var(--ink);
+  --m-sheet-mid: color-mix(in srgb, #ffffff 64%, var(--paper));
+  --m-sheet-mid-text: var(--ink);
+  --m-sheet-front: var(--ink);
+  --m-sheet-front-text: var(--paper);
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 1.6vw, 20px);
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: clamp(14px, 2.4vw, 32px) clamp(10px, 2vw, 22px) clamp(48px, 6vw, 84px);
+  color: var(--m-text);
+  font-family: var(--font-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.dark .mult-studio {
+  --m-text: var(--paper);
+  --m-muted: var(--muted-ink);
+  --m-line: var(--line-ink);
+  --m-line-strong: rgba(232, 233, 226, 0.3);
+  --m-soft: color-mix(in srgb, var(--paper) 7%, transparent);
+  --m-input: var(--ink-3);
+  --m-icon-accent: var(--accent);
+  --m-sheet-back: color-mix(in srgb, var(--accent) 18%, var(--ink-2));
+  --m-sheet-back-text: var(--paper);
+  --m-sheet-mid: var(--ink-2);
+  --m-sheet-mid-text: var(--paper);
+  --m-sheet-front: var(--ink-3);
+  --m-sheet-front-text: var(--paper);
+}
+
+.mult-studio.is-fullscreen {
+  min-height: 100vh;
+  max-width: none;
+  overflow-y: auto;
+  background: var(--paper);
+}
+
+.dark .mult-studio.is-fullscreen {
+  background: var(--ink);
+}
+
+.mult-studio :where(button, input):focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 3px;
+}
+
+.mult-studio .mult-icon {
+  width: 1.05em;
+  height: 1.05em;
+  flex: none;
+  stroke-width: 1.8;
+}
+
+.mult-studio .mult-icon--accent {
+  color: var(--m-icon-accent);
+}
+
+.mult-studio .mult-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--m-muted);
+}
+
+/* -------------------------------------------------------------------------
+   Buttons / chips
+   ------------------------------------------------------------------------- */
+
+.mult-studio .mult-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 46px;
+  padding: 0 1.15rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--m-text);
+  font: 600 0.84rem/1 var(--font-text);
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition:
+    background-color 240ms var(--ease-out),
+    border-color 240ms var(--ease-out),
+    color 240ms var(--ease-out),
+    transform 240ms var(--ease-out);
+}
+
+.mult-studio .mult-btn:active {
+  transform: translateY(1px);
+}
+
+.mult-studio .mult-btn--accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.mult-studio .mult-btn--accent:hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+
+.mult-studio .mult-btn--accent svg {
+  transition: transform 260ms var(--ease-out);
+}
+
+.mult-studio .mult-btn--accent:hover svg {
+  transform: translateX(2px);
+}
+
+.mult-studio .mult-btn--quiet {
+  border-color: var(--m-line);
+  color: var(--m-text);
+}
+
+.mult-studio .mult-btn--quiet:hover {
+  background: var(--m-soft);
+  border-color: var(--m-line-strong);
+}
+
+.mult-studio .mult-btn--sm {
+  min-height: 38px;
+  padding-inline: 0.85rem;
+  font-size: 0.76rem;
+}
+
+.mult-studio .mult-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid var(--m-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--m-text);
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition:
+    background-color 220ms var(--ease-out),
+    border-color 220ms var(--ease-out),
+    transform 220ms var(--ease-out);
+}
+
+.mult-studio .mult-icon-btn:hover:not(:disabled) {
+  background: var(--m-soft);
+  border-color: var(--m-line-strong);
+  transform: translateY(-1px);
+}
+
+.mult-studio .mult-icon-btn:disabled {
+  opacity: 0.34;
+  cursor: not-allowed;
+}
+
+.mult-studio .mult-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  padding: 0.42rem 0.72rem;
+  border: 1px solid var(--m-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 30%, transparent);
+  color: var(--m-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.dark .mult-studio .mult-chip {
+  background: color-mix(in srgb, var(--ink-3) 54%, transparent);
+}
+
+/* -------------------------------------------------------------------------
+   Hero
+   ------------------------------------------------------------------------- */
+
+.mult-studio .mult-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.02fr) minmax(300px, 0.98fr);
+  align-items: center;
+  gap: clamp(24px, 4vw, 64px);
+  overflow: hidden;
+  padding: clamp(26px, 4.2vw, 58px);
+  border: 1px solid var(--m-line);
+  border-radius: 3px;
+  background:
+    radial-gradient(74% 96% at 4% 0%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 66%),
+    radial-gradient(60% 80% at 100% 100%, color-mix(in srgb, var(--stone) 24%, transparent), transparent 70%),
+    linear-gradient(150deg, color-mix(in srgb, #ffffff 44%, var(--paper)) 0%, var(--paper-2) 100%);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #ffffff 58%, transparent),
+    0 26px 64px rgba(10, 12, 9, 0.09);
+}
+
+.dark .mult-studio .mult-hero {
+  background:
+    radial-gradient(74% 96% at 4% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 66%),
+    radial-gradient(60% 80% at 100% 100%, color-mix(in srgb, var(--stone) 12%, transparent), transparent 70%),
+    linear-gradient(150deg, var(--ink-3) 0%, var(--ink-2) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 28px 68px rgba(0, 0, 0, 0.4);
+}
+
+.mult-studio .mult-hero .aurora {
+  opacity: 0.9;
+}
+
+.mult-studio .mult-hero__copy,
+.mult-studio .mult-hero__visual {
+  position: relative;
+  z-index: 1;
+}
+
+.mult-studio .mult-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: clamp(14px, 1.6vw, 20px);
+  color: var(--m-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.mult-studio .mult-hero__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.65rem, 5.2vw, 5rem);
+  font-weight: 500;
+  line-height: 0.91;
+  letter-spacing: -0.035em;
+  color: var(--m-text);
+  text-wrap: balance;
+}
+
+.mult-studio .mult-hero__title em {
+  font-style: italic;
+  font-weight: 400;
+  box-shadow: inset 0 -0.13em 0 color-mix(in srgb, var(--accent) 62%, transparent);
+}
+
+.mult-studio .mult-hero__lead {
+  max-width: 44ch;
+  margin: clamp(16px, 2vw, 24px) 0 0;
+  color: var(--m-muted);
+  font-size: clamp(0.92rem, 1.4vw, 1.04rem);
+  line-height: 1.55;
+}
+
+.mult-studio .mult-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.42rem;
+  margin-top: clamp(18px, 2.2vw, 28px);
+}
+
+/* ---- 3D table object --------------------------------------------------- */
+
+.mult-studio .mult-hero__visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: clamp(340px, 38vw, 440px);
+}
+
+.mult-studio .mult-object {
+  position: relative;
+  width: min(330px, 76vw);
+  height: clamp(340px, 36vw, 400px);
+  transform-style: preserve-3d;
+}
+
+.mult-studio .mult-object__halo {
+  position: absolute;
+  inset: 4% 0 10%;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 38%, transparent), transparent 68%);
+  filter: blur(28px);
+  transform: translateZ(-60px);
+}
+
+.mult-studio .mult-object__stack {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  animation: mult-stack-float 9s var(--ease-in-out) infinite;
+}
+
+.mult-studio .mult-object__sheet {
+  position: absolute;
+  inset: 7% 6%;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(16px, 2.6vw, 26px);
+  border: 1px solid var(--m-line);
+  border-radius: 3px;
+}
+
+.mult-studio .mult-object__sheet--back {
+  z-index: 1;
+  background: var(--m-sheet-back);
+  color: var(--m-sheet-back-text);
+  transform: translate3d(-20px, -14px, -70px) rotate(-7deg);
+  box-shadow: 0 18px 42px rgba(10, 12, 9, 0.14);
+}
+
+.mult-studio .mult-object__sheet--mid {
+  z-index: 2;
+  background: var(--m-sheet-mid);
+  color: var(--m-sheet-mid-text);
+  transform: translate3d(12px, 5px, -30px) rotate(4deg);
+  box-shadow: 0 22px 48px rgba(10, 12, 9, 0.16);
+}
+
+.mult-studio .mult-object__sheet--front {
+  z-index: 3;
+  background:
+    radial-gradient(90% 80% at 100% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 62%),
+    var(--m-sheet-front);
+  color: var(--m-sheet-front-text);
+  border-color: color-mix(in srgb, var(--paper) 20%, transparent);
+  transform: translate3d(0, 0, 26px) rotate(-1.2deg);
+  box-shadow: 0 34px 64px rgba(10, 12, 9, 0.32);
+}
+
+.dark .mult-studio .mult-object__sheet--front {
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--line-ink));
+}
+
+.mult-studio .mult-object__topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.68;
+}
+
+.mult-studio .mult-object__rule {
+  display: block;
+  width: 100%;
+  height: 1px;
+  margin-top: 18px;
+  background: currentColor;
+  opacity: 0.24;
+}
+
+.mult-studio .mult-object__rule--short {
+  width: 54%;
+  margin-top: 7px;
+}
+
+.mult-studio .mult-object__ghost-number {
+  margin-top: auto;
+  font-family: var(--font-display);
+  font-size: clamp(7rem, 12vw, 10rem);
+  line-height: 0.7;
+  text-align: right;
+  opacity: 0.14;
+}
+
+.mult-studio .mult-object__mini {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.mult-studio .mult-object__mini span {
+  display: grid;
+  place-items: center;
+  min-height: 32px;
+  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  border-radius: 2px;
+  font-size: 0.66rem;
+  font-weight: 600;
+  opacity: 0.82;
+}
+
+.mult-studio .mult-object__equation {
+  display: flex;
+  align-items: baseline;
+  gap: 0.12em;
+  margin-top: auto;
+  font-family: var(--font-display);
+  font-size: clamp(3.4rem, 6vw, 4.7rem);
+  font-weight: 500;
+  line-height: 0.9;
+  letter-spacing: -0.045em;
+}
+
+.mult-studio .mult-object__equation span {
+  font-size: 0.56em;
+  color: var(--accent);
+  transform: translateY(-0.06em);
+}
+
+.mult-studio .mult-object__product {
+  margin-top: 0.18em;
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 3vw, 2.2rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+}
+
+.mult-studio .mult-object__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+@keyframes mult-stack-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotateZ(0deg);
+  }
+  50% {
+    transform: translate3d(0, -9px, 0) rotateZ(0.5deg);
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Toolbar
+   ------------------------------------------------------------------------- */
+
+.mult-studio .mult-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 14px clamp(16px, 2vw, 22px);
+  border-radius: 3px;
+}
+
+.mult-studio .mult-toolbar__status {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mult-studio .mult-toolbar__title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.mult-studio .mult-toolbar__title strong {
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.mult-studio .mult-toolbar__range {
+  color: var(--m-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+}
+
+.mult-studio .mult-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.mult-studio .mult-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.48rem;
+  min-height: 40px;
+  padding: 0 0.9rem;
+  border: 1px solid var(--m-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--m-text);
+  font: 600 0.76rem/1 var(--font-text);
+  cursor: pointer;
+  transition:
+    background-color 220ms var(--ease-out),
+    border-color 220ms var(--ease-out),
+    color 220ms var(--ease-out),
+    transform 220ms var(--ease-out);
+}
+
+.mult-studio .mult-action:hover {
+  background: var(--m-soft);
+  border-color: var(--m-line-strong);
+  transform: translateY(-1px);
+}
+
+.mult-studio .mult-action.is-on {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  border-color: color-mix(in srgb, var(--accent-strong) 70%, var(--m-line));
+}
+
+.mult-studio .mult-action.is-on .mult-icon {
+  color: var(--m-icon-accent);
+}
+
+.mult-studio .mult-action--accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.mult-studio .mult-action--accent:hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+
+/* -------------------------------------------------------------------------
+   Table switcher
+   ------------------------------------------------------------------------- */
+
+.mult-studio .mult-switcher {
+  padding: clamp(16px, 2.1vw, 22px);
+  border-radius: 3px;
+}
+
+.mult-studio .mult-switcher__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.mult-studio .mult-switcher__hint {
+  margin: 6px 0 0;
+  color: var(--m-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.mult-studio .mult-switcher__nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.mult-studio .mult-switcher__grid {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.mult-studio .mult-table-btn {
+  min-height: 42px;
+  padding: 0.35rem 0.2rem;
+  border: 1px solid var(--m-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, #ffffff 28%, transparent);
+  color: var(--m-text);
+  font: 600 0.82rem/1 var(--font-text);
+  cursor: pointer;
+  transition:
+    background-color 220ms var(--ease-out),
+    border-color 220ms var(--ease-out),
+    color 220ms var(--ease-out),
+    transform 220ms var(--ease-out),
+    box-shadow 220ms var(--ease-out);
+}
+
+.dark .mult-studio .mult-table-btn {
+  background: color-mix(in srgb, var(--paper) 4%, transparent);
+}
+
+.mult-studio .mult-table-btn:hover {
+  border-color: color-mix(in srgb, var(--accent-strong) 62%, var(--m-line));
+  transform: translateY(-1px);
+}
+
+.mult-studio .mult-table-btn.is-active {
+  background: var(--accent);
+  border-color: var(--accent-strong);
+  color: var(--ink);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #ffffff 45%, transparent) inset,
+    0 6px 18px color-mix(in srgb, var(--accent) 26%, transparent);
+  transform: translateY(-1px);
+}
+
+/* -------------------------------------------------------------------------
+   Mode + range controls
+   ------------------------------------------------------------------------- */
+
+.mult-studio .mult-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 3px;
+}
+
+.mult-studio .mult-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.mult-studio .mult-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 38px;
+  padding: 0 0.8rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--m-muted);
+  font: 600 0.76rem/1 var(--font-text);
+  cursor: pointer;
+  transition:
+    background-color 220ms var(--ease-out),
+    border-color 220ms var(--ease-out),
+    color 220ms var(--ease-out),
+    transform 220ms var(--ease-out);
+}
+
+.mult-studio .mult-mode:hover {
+  background: var(--m-soft);
+  color: var(--m-text);
+}
+
+.mult-studio .mult-mode.is-active {
+  background: var(--accent);
+  border-color: var(--accent-strong);
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+
+.mult-studio .mult-range {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.mult-studio .mult-range > .mult-kicker {
+  margin-right: 4px;
+}
+
+.mult-studio .mult-range__btn {
+  min-width: 44px;
+  min-height: 34px;
+  padding: 0 0.55rem;
+  border: 1px solid var(--m-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--m-muted);
+  font: 600 0.74rem/1 var(--font-text);
+  cursor: pointer;
+  transition:
+    background-color 220ms var(--ease-out),
+    border-color 220ms var(--ease-out),
+    color 220ms var(--ease-out);
+}
+
+.mult-studio .mult-range__btn:hover {
+  border-color: var(--m-line-strong);
+  color: var(--m-text);
+}
+
+.mult-studio .mult-range__btn.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.dark .mult-studio .mult-range__btn.is-active {
+  background: var(--paper);
+  border-color: var(--paper);
+  color: var(--ink);
+}
+
+/* -------------------------------------------------------------------------
+   Learn mode
+   ------------------------------------------------------------------------- */
+
+.mult-studio .mult-learn {
+  display: grid;
+  grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+  gap: clamp(12px, 1.4vw, 18px);
+  align-items: start;
+}
+
+.mult-studio .mult-panel {
+  min-width: 0;
+  padding: clamp(18px, 2.2vw, 26px);
+  border-radius: 3px;
+}
+
+.mult-studio .mult-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.mult-studio .mult-panel__title {
+  margin: 4px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 2.4vw, 1.9rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.mult-studio .mult-panel__hint {
+  color: var(--m-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+}
+
+.mult-studio .mult-recitation {
+  display: flex;
+  flex-direction: column;
+  max-height: 690px;
+  overflow: hidden;
+}
+
+.mult-studio .mult-recitation__list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--m-text) 24%, transparent) transparent;
+}
+
+.mult-studio .mult-recitation__list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.mult-studio .mult-recitation__list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--m-text) 22%, transparent);
+}
+
+.mult-studio .mult-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  border: 1px solid transparent;
+  border-bottom-color: var(--m-line);
+  border-radius: 3px;
+  transition:
+    background-color 200ms var(--ease-out),
+    border-color 200ms var(--ease-out),
+    color 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
+}
+
+.mult-studio .mult-row:hover {
+  background: var(--m-soft);
+}
+
+.mult-studio .mult-row.is-active {
+  background: var(--accent);
+  border-color: var(--accent-strong);
+  color: var(--ink);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.mult-studio .mult-row__select {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex: 1;
+  min-width: 0;
+  padding: 0.62rem 0.45rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mult-studio .mult-row__index {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 2px;
+  background: var(--m-soft);
+  color: var(--m-muted);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  flex: none;
+}
+
+.mult-studio .mult-row.is-active .mult-row__index {
+  background: color-mix(in srgb, var(--ink) 12%, transparent);
+  color: var(--ink);
+}
+
+.mult-studio .mult-row__expr {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.mult-studio .mult-row__right {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding-right: 0.4rem;
+}
+
+.mult-studio .mult-row__product {
+  font-family: var(--font-display);
+  font-size: 1.18rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.mult-studio .mult-row__audio {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  opacity: 0.5;
+  cursor: pointer;
+  transition:
+    background-color 180ms var(--ease-out),
+    opacity 180ms var(--ease-out);
+}
+
+.mult-studio .mult-row__audio:hover {
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  opacity: 1;
+}
+
+/* ---- Visual panel ------------------------------------------------------ */
+
+.mult-studio .mult-visual {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.mult-studio .mult-equation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: clamp(16px, 2.2vw, 22px);
+  border: 1px solid color-mix(in srgb, var(--accent-strong) 40%, var(--m-line));
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--accent) 11%, transparent);
+}
+
+.dark .mult-studio .mult-equation {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.mult-studio .mult-equation__line {
+  margin-top: 8px;
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 3.4vw, 2.7rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.mult-studio .mult-equation__line strong {
+  font-weight: 500;
+  box-shadow: inset 0 -0.12em 0 color-mix(in srgb, var(--accent) 64%, transparent);
+}
+
+.mult-studio .mult-equation__note {
+  margin: 8px 0 0;
+  color: var(--m-muted);
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+.mult-studio .mult-array {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mult-studio .mult-array__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--m-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.mult-studio .mult-array__canvas {
+  display: flex;
+  justify-content: center;
+  overflow-x: auto;
+  padding: clamp(16px, 2.2vw, 24px);
+  border: 1px solid var(--m-line);
+  border-radius: 3px;
+  background-color: color-mix(in srgb, var(--paper-2) 62%, transparent);
+}
+
+.dark .mult-studio .mult-array__canvas {
+  background-color: color-mix(in srgb, var(--ink-3) 72%, transparent);
+}
+
+.mult-studio .mult-array__grid {
+  display: grid;
+  gap: 6px;
+  width: max-content;
+}
+
+.mult-studio .mult-dot {
+  display: block;
+  width: clamp(10px, 1.1vw, 16px);
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 76%, var(--ink));
+  transition:
+    transform 200ms var(--ease-out),
+    background-color 200ms var(--ease-out);
+}
+
+.dark .mult-studio .mult-dot {
+  border-color: color-mix(in srgb, var(--paper) 22%, transparent);
+}
+
+.mult-studio .mult-dot:hover {
+  transform: scale(1.24);
+  background: var(--accent);
+}
+
+.mult-studio .mult-addition {
+  padding-top: 16px;
+  border-top: 1px solid var(--m-line);
+}
+
+.mult-studio .mult-addition p {
+  margin: 8px 0 0;
+  color: var(--m-text);
+  font-size: clamp(0.88rem, 1.3vw, 1rem);
+  font-weight: 500;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.mult-studio .mult-addition strong {
+  font-weight: 600;
+  box-shadow: inset 0 -0.16em 0 color-mix(in srgb, var(--accent) 58%, transparent);
+}
+
+/* -------------------------------------------------------------------------
+   Practice / drill
+   ------------------------------------------------------------------------- */
+
+.mult-studio .mult-stage {
+  width: 100%;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.mult-studio .mult-practice {
+  padding: clamp(20px, 3vw, 34px);
+  border-radius: 3px;
+}
+
+.mult-studio .mult-practice__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.mult-studio .mult-practice__hint {
+  color: var(--m-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+}
+
+.mult-studio .mult-question {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(34px, 6vw, 64px) clamp(18px, 4vw, 40px);
+  border: 1px solid var(--m-line);
+  border-radius: 3px;
+  background:
+    radial-gradient(60% 120% at 100% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 68%),
+    color-mix(in srgb, var(--paper-2) 64%, transparent);
+  text-align: center;
+}
+
+.dark .mult-studio .mult-question {
+  background:
+    radial-gradient(60% 120% at 100% 0%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 68%),
+    color-mix(in srgb, var(--ink-3) 76%, transparent);
+}
+
+.mult-studio .mult-question__ghost {
+  position: absolute;
+  right: 4%;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-display);
+  font-size: clamp(8rem, 18vw, 13rem);
+  font-weight: 500;
+  line-height: 1;
+  color: color-mix(in srgb, var(--m-text) 6%, transparent);
+  pointer-events: none;
+}
+
+.dark .mult-studio .mult-question__ghost {
+  color: color-mix(in srgb, var(--paper) 7%, transparent);
+}
+
+.mult-studio .mult-question__line {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 7.5vw, 5rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--m-text);
+}
+
+.mult-studio .mult-question__line span {
+  color: var(--m-muted);
+}
+
+.mult-studio .mult-question--missing .mult-question__line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.12em 0.22em;
+  font-size: clamp(2.15rem, 5.4vw, 3.5rem);
+}
+
+.mult-studio .mult-question--missing .mult-question__line span {
+  color: var(--m-text);
+}
+
+.mult-studio .mult-question--missing .mult-question__line span:nth-child(2),
+.mult-studio .mult-question--missing .mult-question__line span:nth-child(4) {
+  color: var(--m-muted);
+}
+
+.mult-studio .mult-question--compact {
+  padding: clamp(26px, 4vw, 42px) 20px;
+}
+
+.mult-studio .mult-question--compact .mult-question__line {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+}
+
+.mult-studio .mult-question--compact .mult-question__line span {
+  font-size: 0.72em;
+}
+
+.mult-studio .mult-answer {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 18px;
+}
+
+.mult-studio .mult-input {
+  width: 200px;
+  min-height: 50px;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--m-line-strong);
+  border-radius: 3px;
+  background: var(--m-input);
+  color: var(--m-text);
+  font-family: var(--font-text);
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+  transition:
+    border-color 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out);
+}
+
+.mult-studio .mult-input::placeholder {
+  color: var(--m-muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.mult-studio .mult-input:focus {
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 26%, transparent);
+  outline: none;
+}
+
+.mult-studio .mult-input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.mult-studio .mult-input[type='number']::-webkit-outer-spin-button,
+.mult-studio .mult-input[type='number']::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+.mult-studio .mult-feedback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.46rem;
+  margin-top: 16px;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--m-line);
+  border-radius: 3px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.mult-studio .mult-feedback.is-correct {
+  border-color: color-mix(in srgb, var(--accent-strong) 62%, var(--m-line));
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.mult-studio .mult-feedback.is-wrong {
+  border-color: color-mix(in srgb, #b3443a 46%, var(--m-line));
+  background: color-mix(in srgb, #b3443a 8%, transparent);
+}
+
+.dark .mult-studio .mult-feedback.is-wrong {
+  border-color: color-mix(in srgb, #e08a7e 44%, var(--m-line));
+  background: color-mix(in srgb, #b3443a 16%, transparent);
+}
+
+/* ---- Speed drill ------------------------------------------------------- */
+
+.mult-studio .mult-drill__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-bottom: 14px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--m-line);
+}
+
+.mult-studio .mult-drill__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--m-muted);
+}
+
+.mult-studio .mult-drill__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.mult-studio .mult-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--m-line);
+  border-radius: 999px;
+  color: var(--m-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.mult-studio .mult-drill__ready,
+.mult-studio .mult-drill__done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: clamp(26px, 5vw, 48px) 8px 8px;
+  text-align: center;
+}
+
+.mult-studio .mult-drill__glyph {
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 10vw, 6.5rem);
+  font-weight: 500;
+  line-height: 0.8;
+  color: color-mix(in srgb, var(--accent-strong) 54%, var(--m-text));
+}
+
+.mult-studio .mult-drill__ready h3,
+.mult-studio .mult-drill__done h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.65rem, 3vw, 2.2rem);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+}
+
+.mult-studio .mult-drill__ready p {
+  max-width: 42ch;
+  margin: 0;
+  color: var(--m-muted);
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+.mult-studio .mult-drill__ready .mult-btn,
+.mult-studio .mult-drill__done .mult-btn {
+  margin-top: 8px;
+}
+
+.mult-studio .mult-drill__active {
+  padding-top: 16px;
+}
+
+.mult-studio .mult-answer--compact .mult-input {
+  width: min(240px, 100%);
+}
+
+.mult-studio .mult-drill__trophy {
+  width: 2.1rem;
+  height: 2.1rem;
+}
+
+.mult-studio .mult-drill__score {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 200px;
+  padding: 14px 22px;
+  border: 1px solid color-mix(in srgb, var(--accent-strong) 46%, var(--m-line));
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.mult-studio .mult-drill__score span {
+  color: var(--m-muted);
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.mult-studio .mult-drill__score strong {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3.4vw, 2.6rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+/* -------------------------------------------------------------------------
+   Patterns
+   ------------------------------------------------------------------------- */
+
+.mult-studio .mult-patterns {
+  margin-top: clamp(14px, 2.4vw, 30px);
+  padding-top: clamp(28px, 4vw, 48px);
+  border-top: 1px solid var(--m-line);
+}
+
+.mult-studio .mult-patterns__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  align-items: end;
+  gap: clamp(16px, 3vw, 42px);
+  margin-bottom: clamp(18px, 2.6vw, 28px);
+}
+
+.mult-studio .mult-patterns__title {
+  margin: 8px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.mult-studio .mult-patterns__lead {
+  max-width: 38ch;
+  margin: 0;
+  color: var(--m-muted);
+  font-size: clamp(0.86rem, 1.3vw, 0.96rem);
+  line-height: 1.55;
+}
+
+.mult-studio .mult-patterns__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.mult-studio .mult-pattern {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: clamp(18px, 2vw, 24px);
+  border-radius: 3px;
+  transition:
+    transform 300ms var(--ease-out),
+    border-color 300ms var(--ease-out),
+    box-shadow 300ms var(--ease-out);
+}
+
+.mult-studio .mult-pattern:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent-strong) 40%, var(--m-line));
+}
+
+.mult-studio .mult-pattern__index {
+  color: var(--m-muted);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.mult-studio .mult-pattern__title {
+  margin: 10px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.28rem, 1.7vw, 1.5rem);
+  font-weight: 500;
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+}
+
+.mult-studio .mult-pattern__copy {
+  margin: 8px 0 0;
+  color: var(--m-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.mult-studio .mult-pattern__math {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--m-line);
+  color: var(--m-text);
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.mult-studio .mult-pattern__math strong {
+  font-weight: 600;
+  box-shadow: inset 0 -0.16em 0 color-mix(in srgb, var(--accent) 58%, transparent);
+}
+
+.mult-studio .mult-pattern__math--stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mult-studio .mult-pattern__math--anchors {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+}
+
+.mult-studio .mult-pattern__proof {
+  display: block;
+  margin-top: 4px;
+  padding-left: 8px;
+  border-left: 1px solid color-mix(in srgb, var(--accent-strong) 54%, var(--m-line));
+  color: var(--m-muted);
+  font-size: 0.72rem;
+}
+
+/* -------------------------------------------------------------------------
+   Printable sheet modal
+   ------------------------------------------------------------------------- */
+
+.mult-studio .mult-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: clamp(10px, 3vw, 32px);
+}
+
+.mult-studio .mult-modal__scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: color-mix(in srgb, var(--ink) 62%, transparent);
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.mult-studio .mult-modal__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(940px, 100%);
+  max-height: min(90vh, 920px);
+  overflow: hidden;
+  border: 1px solid var(--m-line);
+  border-radius: 3px;
+  background: var(--paper);
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.35);
+}
+
+.dark .mult-studio .mult-modal__panel {
+  background: var(--ink-2);
+  border-color: var(--line-ink);
+}
+
+.mult-studio .mult-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px clamp(16px, 2vw, 22px);
+  border-bottom: 1px solid var(--m-line);
+}
+
+.mult-studio .mult-modal__title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.mult-studio .mult-modal__icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border: 1px solid color-mix(in srgb, var(--accent-strong) 48%, var(--m-line));
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--m-icon-accent);
+  font-size: 1.15rem;
+}
+
+.mult-studio .mult-modal__title h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.12rem, 2vw, 1.4rem);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.mult-studio .mult-modal__title p {
+  margin: 4px 0 0;
+  color: var(--m-muted);
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.mult-studio .mult-modal__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px clamp(16px, 2vw, 22px);
+  border-bottom: 1px solid var(--m-line);
+}
+
+.mult-studio .mult-modal__group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.mult-studio .mult-modal__group > .mult-kicker {
+  margin-right: 4px;
+}
+
+.mult-studio .mult-segment {
+  min-height: 32px;
+  padding: 0 0.68rem;
+  border: 1px solid var(--m-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--m-muted);
+  font: 600 0.7rem/1 var(--font-text);
+  cursor: pointer;
+  transition:
+    background-color 200ms var(--ease-out),
+    border-color 200ms var(--ease-out),
+    color 200ms var(--ease-out);
+}
+
+.mult-studio .mult-segment:hover {
+  border-color: var(--m-line-strong);
+  color: var(--m-text);
+}
+
+.mult-studio .mult-segment.is-active {
+  background: var(--accent);
+  border-color: var(--accent-strong);
+  color: var(--ink);
+}
+
+.mult-studio .mult-modal__preview {
+  display: flex;
+  justify-content: center;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: clamp(14px, 2.4vw, 28px);
+  background:
+    radial-gradient(80% 80% at 50% 0%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 70%),
+    var(--paper-3);
+}
+
+.dark .mult-studio .mult-modal__preview {
+  background:
+    radial-gradient(80% 80% at 50% 0%, color-mix(in srgb, var(--accent) 5%, transparent), transparent 70%),
+    var(--ink);
+}
+
+.mult-studio .mult-modal__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px clamp(16px, 2vw, 22px);
+  border-top: 1px solid var(--m-line);
+}
+
+.mult-studio .mult-modal__foot-right {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ---- The printed sheet (always ink on white paper) --------------------- */
+
+.mult-studio .mult-sheet {
+  width: 100%;
+  max-width: 760px;
+  padding: clamp(20px, 4vw, 38px);
+  border: 1px solid rgba(10, 12, 9, 0.18);
+  border-radius: 2px;
+  background: #ffffff;
+  color: #0a0c09;
+  font-family: var(--font-text);
+  box-shadow: 0 18px 40px rgba(10, 12, 9, 0.14);
+}
+
+.mult-studio .mult-sheet__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid #0a0c09;
+}
+
+.mult-studio .mult-sheet__head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 2vw, 1.3rem);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: #0a0c09;
+}
+
+.mult-studio .mult-sheet__head p {
+  margin: 5px 0 0;
+  color: #555b4e;
+  font-size: 0.68rem;
+}
+
+.mult-studio #calcaura-print-sheet p {
+  color: #555b4e;
+}
+
+.mult-studio .mult-sheet__meta {
+  color: #0a0c09;
+  font-size: 0.62rem;
+  line-height: 1.65;
+  text-align: right;
+}
+
+.mult-studio .mult-sheet__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding-top: 18px;
+}
+
+.mult-studio .mult-sheet__grid.is-single {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 460px;
+  margin-inline: auto;
+}
+
+.mult-studio .mult-sheet__table {
+  padding: 12px;
+  border: 1px solid rgba(10, 12, 9, 0.22);
+  border-radius: 2px;
+  background: #fbfbf8;
+}
+
+.mult-studio .mult-sheet__caption {
+  padding-bottom: 7px;
+  margin-bottom: 7px;
+  border-bottom: 1px solid rgba(10, 12, 9, 0.22);
+  color: #0a0c09;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.mult-studio .mult-sheet__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.mult-studio .mult-sheet__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 3px 1px;
+  border-bottom: 1px dotted rgba(10, 12, 9, 0.18);
+  color: #0a0c09;
+  font-size: 0.68rem;
+  line-height: 1.5;
+}
+
+.mult-studio .mult-sheet__row span:last-child {
+  font-weight: 600;
+}
+
+.mult-studio .mult-sheet__foot {
+  padding-top: 14px;
+  margin-top: 16px;
+  border-top: 1px solid rgba(10, 12, 9, 0.18);
+  color: #555b4e;
+  font-size: 0.6rem;
+  text-align: center;
+}
+
+/* -------------------------------------------------------------------------
+   Responsive
+   ------------------------------------------------------------------------- */
+
+@media (max-width: 1080px) {
+  .mult-studio .mult-hero {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.82fr);
+  }
+
+  .mult-studio .mult-patterns__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 920px) {
+  .mult-studio .mult-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mult-studio .mult-hero__visual {
+    min-height: 330px;
+    order: 2;
+  }
+
+  .mult-studio .mult-learn {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mult-studio .mult-recitation {
+    max-height: 520px;
+  }
+
+  .mult-studio .mult-switcher__grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .mult-studio .mult-patterns__head {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+@media (max-width: 640px) {
+  .mult-studio {
+    gap: 12px;
+  }
+
+  .mult-studio .mult-hero {
+    padding: 24px 18px;
+  }
+
+  .mult-studio .mult-hero__title {
+    font-size: clamp(2.35rem, 11vw, 3.2rem);
+  }
+
+  .mult-studio .mult-hero__meta {
+    gap: 0.35rem;
+  }
+
+  .mult-studio .mult-chip {
+    padding: 0.36rem 0.56rem;
+    font-size: 0.62rem;
+  }
+
+  .mult-studio .mult-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .mult-studio .mult-actions {
+    width: 100%;
+  }
+
+  .mult-studio .mult-action {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  .mult-studio .mult-switcher__grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .mult-studio .mult-table-btn {
+    min-height: 38px;
+    font-size: 0.76rem;
+  }
+
+  .mult-studio .mult-controls {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .mult-studio .mult-mode {
+    flex: 1 1 calc(50% - 4px);
+    justify-content: center;
+  }
+
+  .mult-studio .mult-range {
+    width: 100%;
+  }
+
+  .mult-studio .mult-range__btn {
+    flex: 1 1 auto;
+  }
+
+  .mult-studio .mult-answer {
+    flex-direction: column;
+  }
+
+  .mult-studio .mult-input {
+    width: 100%;
+  }
+
+  .mult-studio .mult-answer .mult-btn {
+    min-height: 48px;
+  }
+
+  .mult-studio .mult-patterns__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mult-studio .mult-modal__head {
+    align-items: flex-start;
+  }
+
+  .mult-studio .mult-modal__title {
+    align-items: flex-start;
+  }
+
+  .mult-studio .mult-modal__controls {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .mult-studio .mult-sheet__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mult-studio .mult-sheet__meta {
+    text-align: left;
+  }
+
+  .mult-studio .mult-modal__foot {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .mult-studio .mult-modal__foot-right {
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 380px) {
+  .mult-studio .mult-switcher__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .mult-studio .mult-mode {
+    flex: 1 1 100%;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Reduced motion
+   ------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .mult-studio *,
+  .mult-studio *::before,
+  .mult-studio *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .mult-studio .mult-object__stack {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .mult-studio .mult-table-btn:hover,
+  .mult-studio .mult-mode.is-active,
+  .mult-studio .mult-action:hover,
+  .mult-studio .mult-icon-btn:hover,
+  .mult-studio .mult-pattern:hover,
+  .mult-studio .mult-dot:hover {
+    transform: none !important;
+  }
+}

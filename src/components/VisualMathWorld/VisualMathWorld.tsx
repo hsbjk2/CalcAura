@@ -1,16 +1,9 @@
 import React, { useState } from 'react';
 import {
-  Sparkles,
-  Calculator,
-  PieChart,
-  Shapes,
-  ShoppingBag,
   ArrowLeft,
-  BookOpen,
-  CheckCircle2,
+  ArrowRight,
   Filter,
-  Layers,
-  Award
+  Sparkles
 } from 'lucide-react';
 import { CountingActivity } from './CountingActivity.tsx';
 import { PictureAdditionActivity } from './PictureAdditionActivity.tsx';
@@ -20,6 +13,8 @@ import { PictureDivisionActivity } from './PictureDivisionActivity.tsx';
 import { VisualFractionsActivity } from './VisualFractionsActivity.tsx';
 import { ShapeDiscoveryActivity } from './ShapeDiscoveryActivity.tsx';
 import { EverydayMathActivity } from './EverydayMathActivity.tsx';
+import { Aurora, GlassPanel, Reveal, Tilt3D } from '../ui/Depth.tsx';
+import '../../styles/visual-math.css';
 
 export type VisualActivityId =
   | 'counting'
@@ -143,6 +138,31 @@ const ACTIVITIES: ActivityMeta[] = [
   }
 ];
 
+const CATEGORY_LABELS: Record<ActivityMeta['category'], string> = {
+  numbers: 'Counting',
+  arithmetic: 'Arithmetic',
+  fractions: 'Fractions',
+  geometry: 'Geometry',
+  applied: 'Everyday maths'
+};
+
+const CATEGORY_FILTERS = [
+  { id: 'all', label: 'All topics' },
+  { id: 'numbers', label: 'Counting' },
+  { id: 'arithmetic', label: 'Arithmetic' },
+  { id: 'fractions', label: 'Fractions' },
+  { id: 'geometry', label: 'Shapes' },
+  { id: 'applied', label: 'Everyday' }
+];
+
+const AppleDots: React.FC<{ count: number }> = ({ count }) => (
+  <span className="vm-apple-row">
+    {Array.from({ length: count }, (_, index) => (
+      <span key={index} className="vm-apple-dot" />
+    ))}
+  </span>
+);
+
 interface VisualMathWorldProps {
   initialActivity?: VisualActivityId;
   initialClass?: number;
@@ -166,190 +186,360 @@ export const VisualMathWorld: React.FC<VisualMathWorldProps> = ({
     return classMatch && catMatch;
   });
 
+  const hasFilters = selectedClass !== 'all' || selectedCategory !== 'all';
+
+  const resetFilters = () => {
+    setSelectedClass('all');
+    setSelectedCategory('all');
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="vm-hub max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* If an activity is selected, show activity view with back button */}
       {activeActivity ? (
-        <div className="space-y-6">
+        <div className="vm-activity-view">
           {/* Responsive activity navigation */}
-          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <button
-              type="button"
-              onClick={() => setActiveActivity(null)}
-              className="inline-flex min-h-11 w-fit shrink-0 items-center justify-center gap-2 whitespace-nowrap px-4 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-            >
+          <div className="vm-activity-bar">
+            <button type="button" onClick={() => setActiveActivity(null)} className="vm-back">
               <ArrowLeft className="w-4 h-4 shrink-0" aria-hidden="true" />
               <span>Back to Visual Math World</span>
             </button>
 
             {/* Quick switcher among activities */}
-            <div className="flex w-full min-w-0 items-center gap-2 overflow-x-auto pb-1 sm:flex-1 sm:justify-end">
+            <div className="vm-switcher" role="group" aria-label="Switch visual activity">
               {ACTIVITIES.map((act) => (
                 <button
                   key={act.id}
                   type="button"
                   onClick={() => setActiveActivity(act.id)}
                   title={act.title}
+                  aria-label={`Switch to ${act.title}`}
                   aria-pressed={activeActivity === act.id}
-                  className={`inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap px-3 py-2 rounded-lg text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
-                    activeActivity === act.id
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/60'
-                  }`}
+                  className="vm-switch"
                 >
                   <span aria-hidden="true">{act.icon}</span>
-                  <span className="hidden md:inline">{act.title.split(' ')[0]}</span>
+                  <span className="vm-switch__label">{act.title.split(' ')[0]}</span>
                 </button>
               ))}
             </div>
           </div>
 
           {/* Render Active Activity */}
-          {activeActivity === 'counting' && <CountingActivity />}
-          {activeActivity === 'addition' && <PictureAdditionActivity />}
-          {activeActivity === 'subtraction' && <PictureSubtractionActivity />}
-          {activeActivity === 'multiplication' && <PictureMultiplicationActivity />}
-          {activeActivity === 'division' && <PictureDivisionActivity />}
-          {activeActivity === 'fractions' && <VisualFractionsActivity />}
-          {activeActivity === 'shapes' && <ShapeDiscoveryActivity />}
-          {activeActivity === 'everyday' && <EverydayMathActivity />}
+          <div className="vm-activity-body">
+            {activeActivity === 'counting' && <CountingActivity />}
+            {activeActivity === 'addition' && <PictureAdditionActivity />}
+            {activeActivity === 'subtraction' && <PictureSubtractionActivity />}
+            {activeActivity === 'multiplication' && <PictureMultiplicationActivity />}
+            {activeActivity === 'division' && <PictureDivisionActivity />}
+            {activeActivity === 'fractions' && <VisualFractionsActivity />}
+            {activeActivity === 'shapes' && <ShapeDiscoveryActivity />}
+            {activeActivity === 'everyday' && <EverydayMathActivity />}
+          </div>
         </div>
       ) : (
         /* Master Hub View */
-        <div className="space-y-8">
-          {/* Hero Banner */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-900 via-blue-900 to-sky-900 text-white p-8 sm:p-10 shadow-2xl border border-indigo-700/50">
-            <div className="relative z-10 max-w-3xl space-y-4">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-bold uppercase tracking-wider backdrop-blur-sm">
-                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                Image-Based Mathematics Learning
-              </div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight">
-                Visual Math World
-              </h1>
-              <p className="text-base sm:text-lg text-blue-100 font-medium leading-relaxed">
-                Learn mathematics through original illustrations of fruits, animals, familiar toys, delicious food,
-                and everyday objects. Every visual picture connects directly to true mathematical equations.
-              </p>
-              {/* Fast links */}
-              <div className="pt-2 flex flex-wrap gap-3">
-                {onNavigateTables && (
-                  <button
-                    onClick={onNavigateTables}
-                    className="px-4 py-2 rounded-xl bg-white text-blue-900 font-bold text-xs uppercase tracking-wider hover:bg-blue-50 transition-all shadow-md"
-                  >
-                    Multiplication Tables (1–30) →
-                  </button>
-                )}
-                {onNavigatePlayground && (
-                  <button
-                    onClick={onNavigatePlayground}
-                    className="px-4 py-2 rounded-xl bg-blue-600/60 border border-blue-400/40 text-white font-bold text-xs uppercase tracking-wider hover:bg-blue-600 transition-all"
-                  >
-                    Open Math Playground 🧪
-                  </button>
-                )}
-              </div>
-            </div>
-            {/* Decorative background visual elements */}
-            <div className="absolute right-6 -bottom-6 opacity-20 pointer-events-none text-9xl select-none hidden md:block">
-              🍎🍕📐
-            </div>
-          </div>
+        <div className="vm-hub__view">
+          {/* Editorial hero */}
+          <Reveal>
+            <section className="vm-hero" aria-labelledby="vm-hero-title">
+              <Aurora />
+              <div className="vm-hero__grid math-grid" aria-hidden="true" />
 
-          {/* Filtering controls */}
-          <div className="bg-white dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700/60 rounded-2xl p-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
-            {/* Class Selector */}
-            <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
-              <span className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mr-1">
-                <Filter className="w-3.5 h-3.5" /> Class:
-              </span>
-              <button
-                onClick={() => setSelectedClass('all')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                  selectedClass === 'all'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
-                }`}
-              >
-                All Classes (1–5)
-              </button>
-              {[1, 2, 3, 4, 5].map((cls) => (
-                <button
-                  key={cls}
-                  onClick={() => setSelectedClass(cls)}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                    selectedClass === cls
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
-                  }`}
-                >
-                  Class {cls}
-                </button>
-              ))}
-            </div>
+              <div className="vm-hero__inner">
+                <div className="vm-hero__copy">
+                  <p className="vm-kicker">
+                    <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+                    Picture-based mathematics · Class 1–5
+                  </p>
 
-            {/* Category Filter */}
-            <div className="flex items-center gap-1.5 w-full md:w-auto overflow-x-auto">
-              {[
-                { id: 'all', label: 'All Topics' },
-                { id: 'numbers', label: 'Counting' },
-                { id: 'arithmetic', label: 'Arithmetic' },
-                { id: 'fractions', label: 'Fractions' },
-                { id: 'geometry', label: 'Shapes' },
-                { id: 'applied', label: 'Everyday' }
-              ].map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
-                    selectedCategory === cat.id
-                      ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Activities Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredActivities.map((act) => (
-              <div
-                key={act.id}
-                onClick={() => setActiveActivity(act.id)}
-                className="group cursor-pointer bg-white dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700/60 rounded-2xl p-6 flex flex-col justify-between hover:shadow-xl hover:border-blue-400 dark:hover:border-blue-500 transition-all transform hover:-translate-y-1"
-              >
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="w-14 h-14 rounded-2xl bg-gray-50 dark:bg-gray-900/60 border border-gray-100 dark:border-gray-700 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
-                      {act.icon}
-                    </div>
-                    <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                      {act.badge}
+                  <h1 id="vm-hero-title" className="vm-hero__title">
+                    <span className="vm-hero__title-line">Visual Math</span>
+                    <span className="vm-hero__title-line vm-hero__title-line--last">
+                      World<span className="vm-hero__dot">.</span>
                     </span>
+                  </h1>
+
+                  <p className="vm-hero__lead">
+                    Count apples, split fractions, tilt solids. Every illustration in this room
+                    becomes an equation you can read.
+                  </p>
+
+                  <div className="vm-hero__actions">
+                    <a className="vm-btn" href="#vm-activities">
+                      Browse activities
+                      <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                    </a>
+                    {onNavigateTables && (
+                      <button type="button" onClick={onNavigateTables} className="vm-quiet-btn">
+                        Tables 1–30
+                      </button>
+                    )}
+                    {onNavigatePlayground && (
+                      <button type="button" onClick={onNavigatePlayground} className="vm-quiet-btn">
+                        Math playground
+                      </button>
+                    )}
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                      {act.title}
-                    </h3>
-                    <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mt-0.5">
-                      {act.subtitle}
-                    </p>
-                    <p className="text-xs text-gray-600 dark:text-gray-300 mt-2 line-clamp-3">
-                      {act.description}
-                    </p>
-                  </div>
+
+                  <p className="vm-hero__meta">
+                    <span>{ACTIVITIES.length} hands-on activities</span>
+                    <span>Picture → number</span>
+                    <span>Class 1–5</span>
+                  </p>
                 </div>
-                <div className="pt-4 border-t border-gray-100 dark:border-gray-700/60 flex items-center justify-between text-xs font-bold text-blue-600 dark:text-blue-400">
-                  <span>Start Activity</span>
-                  <span>→</span>
+
+                <div className="vm-hero__art">
+                  <Tilt3D className="vm-hero__stage" strength={6}>
+                    <span className="vm-stage__ring" aria-hidden="true" />
+                    <span className="vm-stage__index" aria-hidden="true">
+                      Fig. 01 / counting, fractions, solids
+                    </span>
+
+                    <div className="vm-stage__scene" aria-hidden="true">
+                      <span className="vm-stage__caption vm-stage__caption--sum">3 + 2 = 5</span>
+                      <span className="vm-stage__caption vm-stage__caption--half">1/2</span>
+                      <span className="vm-stage__caption vm-stage__caption--area">4 × 3 = 12</span>
+
+                      <div className="vm-stage__obj vm-stage__obj--apple">
+                        <span className="vm-apple">
+                          <span className="vm-apple__leaf" />
+                          <span className="vm-apple__stem" />
+                          <span className="vm-apple__highlight" />
+                        </span>
+                        <span className="vm-stage__tag">apple</span>
+                      </div>
+
+                      <div className="vm-stage__obj vm-stage__obj--cube">
+                        <span className="vm-cube">
+                          <span className="vm-cube__face vm-cube__face--front" />
+                          <span className="vm-cube__face vm-cube__face--side" />
+                          <span className="vm-cube__face vm-cube__face--top" />
+                        </span>
+                        <span className="vm-stage__tag">solid</span>
+                      </div>
+
+                      <div className="vm-stage__obj vm-stage__obj--fraction">
+                        <span className="vm-fraction-bar">
+                          {[0, 1, 2, 3].map((part) => (
+                            <span key={part} className={part < 2 ? 'is-filled' : ''} />
+                          ))}
+                        </span>
+                        <span className="vm-stage__tag">fraction bar</span>
+                      </div>
+                    </div>
+
+                    <span className="vm-stage__foot" aria-hidden="true">
+                      picture → number
+                    </span>
+                  </Tilt3D>
                 </div>
               </div>
-            ))}
+            </section>
+          </Reveal>
+
+          {/* Filters + activity shelf */}
+          <div id="vm-activities" className="vm-shelf">
+            <Reveal delay={70}>
+              <GlassPanel as="section" className="vm-filters">
+                <h2 className="sr-only">Filter visual math activities</h2>
+                <div className="vm-filters__head">
+                  <p className="vm-kicker">
+                    <Filter className="w-3.5 h-3.5" aria-hidden="true" />
+                    Filter the shelf
+                  </p>
+                  <p className="vm-filters__count" aria-live="polite">
+                    {filteredActivities.length} of {ACTIVITIES.length} activities
+                  </p>
+                </div>
+
+                <div className="vm-filters__row">
+                  <span className="vm-filters__label" id="vm-class-label">Class</span>
+                  <div className="vm-pills" role="group" aria-labelledby="vm-class-label">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedClass('all')}
+                      aria-pressed={selectedClass === 'all'}
+                      className="vm-pill"
+                    >
+                      All classes
+                    </button>
+                    {[1, 2, 3, 4, 5].map((cls) => (
+                      <button
+                        key={cls}
+                        type="button"
+                        onClick={() => setSelectedClass(cls)}
+                        aria-pressed={selectedClass === cls}
+                        className="vm-pill"
+                      >
+                        Class {cls}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="vm-filters__row">
+                  <span className="vm-filters__label" id="vm-topic-label">Topic</span>
+                  <div className="vm-pills vm-pills--topic" role="group" aria-labelledby="vm-topic-label">
+                    {CATEGORY_FILTERS.map((cat) => (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => setSelectedCategory(cat.id)}
+                        aria-pressed={selectedCategory === cat.id}
+                        className="vm-pill"
+                      >
+                        {cat.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="vm-filters__foot">
+                  <span>
+                    {selectedClass === 'all' ? 'Every class' : `Class ${selectedClass}`}
+                    {' · '}
+                    {selectedCategory === 'all'
+                      ? 'every topic'
+                      : CATEGORY_LABELS[selectedCategory as ActivityMeta['category']] ?? selectedCategory}
+                  </span>
+                  {hasFilters && (
+                    <button type="button" onClick={resetFilters} className="vm-reset">
+                      Reset filters
+                    </button>
+                  )}
+                </div>
+              </GlassPanel>
+            </Reveal>
+
+            <Reveal delay={110}>
+              <div className="vm-grid-head">
+                <div>
+                  <p className="vm-kicker">The shelf</p>
+                  <h2 className="vm-section-title">Pick a picture. Read the maths.</h2>
+                </div>
+                <p className="vm-grid-head__note">
+                  Each activity is an interactive model, not a worksheet. Open one and change it.
+                </p>
+              </div>
+            </Reveal>
+
+            <div className="vm-grid">
+              {filteredActivities.map((act, index) => (
+                <Reveal key={act.id} className="vm-grid__cell" delay={Math.min(index * 60, 360)}>
+                  <Tilt3D as="article" className="vm-card glass-surface" strength={6}>
+                    <button
+                      type="button"
+                      onClick={() => setActiveActivity(act.id)}
+                      className="vm-card__button"
+                      aria-label={`Open ${act.title} — ${act.badge}, ${CATEGORY_LABELS[act.category]}`}
+                    >
+                      <span className="vm-card__top">
+                        <span className="vm-card__icon" aria-hidden="true">{act.icon}</span>
+                        <span className="vm-card__badge">{act.badge}</span>
+                      </span>
+
+                      <span className="vm-card__category">{CATEGORY_LABELS[act.category]}</span>
+                      <span className="vm-card__title">{act.title}</span>
+                      <span className="vm-card__subtitle">{act.subtitle}</span>
+                      <span className="vm-card__desc">{act.description}</span>
+
+                      <span className="vm-card__foot">
+                        <span>Open activity</span>
+                        <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+                      </span>
+                    </button>
+                  </Tilt3D>
+                </Reveal>
+              ))}
+            </div>
+
+            {filteredActivities.length === 0 && (
+              <p className="vm-empty">
+                Nothing matches that class and topic yet. <button type="button" onClick={resetFilters}>Clear the filters</button> to see all eight activities.
+              </p>
+            )}
           </div>
+
+          {/* Visual → equation explainer */}
+          <Reveal delay={60}>
+            <section className="vm-explain" aria-labelledby="vm-explain-title">
+              <div className="vm-section-head">
+                <p className="vm-kicker">Visual → equation</p>
+                <h2 id="vm-explain-title" className="vm-section-title">
+                  The picture is the working.
+                </h2>
+                <p className="vm-section-sub">
+                  A model earns its place when the symbols stop being a rule to memorise and start
+                  being a description of what is already on the page.
+                </p>
+              </div>
+
+              <div className="vm-explain__grid">
+                <GlassPanel as="article" className="vm-explain__card">
+                  <div className="vm-explain__art" aria-hidden="true">
+                    <div className="vm-sum">
+                      <AppleDots count={3} />
+                      <span className="vm-op">+</span>
+                      <AppleDots count={2} />
+                      <span className="vm-op">=</span>
+                      <span className="vm-sum__total">5</span>
+                    </div>
+                  </div>
+                  <div className="vm-explain__body">
+                    <span className="vm-explain__label">Counting · addition</span>
+                    <p className="vm-explain__equation">3 + 2 = 5</p>
+                    <p className="vm-explain__note">
+                      Three apples in one basket, two in the other. Combine the baskets and the
+                      total is visible before it is counted.
+                    </p>
+                  </div>
+                </GlassPanel>
+
+                <GlassPanel as="article" className="vm-explain__card">
+                  <div className="vm-explain__art" aria-hidden="true">
+                    <div className="vm-fraction-explain">
+                      <span className="vm-frac-bar">
+                        {[0, 1, 2, 3].map((part) => (
+                          <span key={part} className={part < 2 ? 'is-filled' : ''} />
+                        ))}
+                      </span>
+                      <span className="vm-frac-eq">2/4 = 1/2</span>
+                    </div>
+                  </div>
+                  <div className="vm-explain__body">
+                    <span className="vm-explain__label">Fractions · equivalence</span>
+                    <p className="vm-explain__equation">1/2</p>
+                    <p className="vm-explain__note">
+                      Two of four equal parts shaded is the same region as one of two. The bar
+                      shows why the fractions are equivalent.
+                    </p>
+                  </div>
+                </GlassPanel>
+
+                <GlassPanel as="article" className="vm-explain__card">
+                  <div className="vm-explain__art" aria-hidden="true">
+                    <div className="vm-area-explain">
+                      <span className="vm-area-dim">4</span>
+                      <div className="vm-area-grid">
+                        {Array.from({ length: 12 }, (_, cell) => (
+                          <span key={cell} />
+                        ))}
+                      </div>
+                      <span className="vm-area-dim vm-area-dim--height">3</span>
+                    </div>
+                  </div>
+                  <div className="vm-explain__body">
+                    <span className="vm-explain__label">Geometry · area</span>
+                    <p className="vm-explain__equation">4 × 3 = 12</p>
+                    <p className="vm-explain__note">
+                      Four squares across, three rows down. Multiply the sides and the twelve
+                      squares are already on the grid.
+                    </p>
+                  </div>
+                </GlassPanel>
+              </div>
+            </section>
+          </Reveal>
         </div>
       )}
     </div>

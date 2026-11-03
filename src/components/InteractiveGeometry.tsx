@@ -12,14 +12,17 @@ import {
   GeometryResult,
 } from '../math/geometry.ts';
 import { MathView } from './MathView.tsx';
+import { Reveal, GlassPanel } from './ui/Depth.tsx';
 import {
   RotateCcw,
   AlertTriangle,
   CheckCircle2,
   Sparkles,
   Layers,
-  Edit3,
+  Compass,
+  Ruler,
 } from 'lucide-react';
+import '../styles/geometry.css';
 
 type ShapeType =
   | 'triangle'
@@ -42,6 +45,99 @@ interface ValueInputProps {
   unit?: string;
   onChange: (val: number) => void;
 }
+
+interface Measure {
+  label: string;
+  value: string;
+  unit?: string;
+  accent?: boolean;
+}
+
+interface RelationshipNote {
+  tag: string;
+  statement: string;
+  detail: string;
+}
+
+const SHAPE_OPTIONS: { id: ShapeType; label: string; meta: string }[] = [
+  { id: 'triangle', label: 'Triangle', meta: 'Heron' },
+  { id: 'rightTriangle', label: 'Right triangle', meta: 'Pythagoras' },
+  { id: 'circle', label: 'Circle', meta: 'π · radius' },
+  { id: 'rectangle', label: 'Rectangle', meta: 'l × w' },
+  { id: 'coordinate2d', label: 'Coordinate', meta: 'Δx · Δy' },
+  { id: 'polygon', label: 'Polygon', meta: 'n-gon' },
+  { id: 'cylinder', label: 'Cylinder', meta: 'πr²h' },
+  { id: 'sphere', label: 'Sphere', meta: '4/3 πr³' },
+  { id: 'cone', label: 'Cone', meta: '⅓ πr²h' },
+];
+
+const tidy = (value?: string | number): string => {
+  if (value === undefined || value === null || value === '') return '—';
+  const text = String(value);
+  if (!text.includes('.')) return text;
+  return text.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+};
+
+const ShapeGlyph: React.FC<{ shape: ShapeType }> = ({ shape }) => {
+  const common = {
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.5,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+  };
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      {shape === 'triangle' && <path d="M12 4 21 20H3Z" {...common} />}
+      {shape === 'rightTriangle' && (
+        <>
+          <path d="M5 20V5l14 15H5Z" {...common} />
+          <path d="M5 15h5v5" {...common} opacity="0.55" />
+        </>
+      )}
+      {shape === 'circle' && <circle cx="12" cy="12" r="7.5" {...common} />}
+      {shape === 'rectangle' && <rect x="4" y="6.5" width="16" height="11" rx="0.5" {...common} />}
+      {shape === 'coordinate2d' && (
+        <>
+          <path d="M4 20V4M4 20h16" {...common} />
+          <path d="M7 16 17 7" {...common} />
+          <circle cx="7" cy="16" r="1.2" fill="currentColor" />
+          <circle cx="17" cy="7" r="1.2" fill="currentColor" />
+        </>
+      )}
+      {shape === 'polygon' && <path d="M12 4l7 4v8l-7 4-7-4V8Z" {...common} />}
+      {shape === 'cylinder' && (
+        <>
+          <ellipse cx="12" cy="6" rx="6" ry="2.5" {...common} />
+          <path d="M6 6v12c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5V6" {...common} />
+          <path d="M6 18c0-1.4 2.7-2.5 6-2.5s6 1.1 6 2.5" {...common} opacity="0.55" />
+        </>
+      )}
+      {shape === 'sphere' && (
+        <>
+          <circle cx="12" cy="12" r="7.5" {...common} />
+          <ellipse cx="12" cy="12" rx="7.5" ry="3" {...common} opacity="0.55" />
+        </>
+      )}
+      {shape === 'cone' && (
+        <>
+          <path d="M12 4 6 18M12 4l6 14" {...common} />
+          <ellipse cx="12" cy="18" rx="6" ry="2.5" {...common} />
+        </>
+      )}
+    </svg>
+  );
+};
+
+const Preset: React.FC<{ onClick: () => void; children: React.ReactNode }> = ({
+  onClick,
+  children,
+}) => (
+  <button type="button" onClick={onClick} className="geometry-preset">
+    {children}
+  </button>
+);
 
 const ValuePuttingField: React.FC<ValueInputProps> = ({
   id,
@@ -75,53 +171,50 @@ const ValuePuttingField: React.FC<ValueInputProps> = ({
   const sliderMin = min !== undefined ? min : Math.min(0, value);
 
   return (
-    <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 space-y-2">
-      <div className="flex items-center justify-between text-xs">
-        <label htmlFor={id} className="font-semibold text-slate-800 dark:text-slate-200">
+    <div className="geometry-field">
+      <div className="geometry-field__head">
+        <label htmlFor={id} className="geometry-field__label">
           {label}
         </label>
-        {unit && (
-          <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-            {unit}
-          </span>
-        )}
+        {unit && <span className="geometry-field__unit">{unit}</span>}
       </div>
 
-      {/* Direct Value Putting Box & Nudge Controls */}
-      <div className="flex items-center gap-1.5">
+      <div className="geometry-field__row">
         <button
           type="button"
           onClick={() => nudge(-step)}
-          className="w-7 h-7 rounded-lg bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/20 text-slate-700 dark:text-slate-200 flex items-center justify-center font-bold text-xs cursor-pointer select-none transition-colors"
+          className="geometry-nudge"
           title={`Decrease by ${step}`}
+          aria-label={`Decrease ${label} by ${step}`}
         >
-          -
+          −
         </button>
 
-        <div className="relative flex-1">
+        <div className="geometry-field__input-wrap">
           <input
             id={id}
             type="number"
             step={step}
             value={value}
             onChange={handleNumberChange}
-            className="w-full px-2.5 py-1 text-xs font-mono font-bold text-slate-900 dark:text-white bg-white dark:bg-[#111321] border border-slate-300 dark:border-white/15 rounded-lg focus:ring-2 focus:ring-sky-500 focus:outline-none transition-all shadow-inner"
-            placeholder="Put value..."
+            className="geometry-number"
+            placeholder="Value"
+            inputMode="decimal"
           />
         </div>
 
         <button
           type="button"
           onClick={() => nudge(step)}
-          className="w-7 h-7 rounded-lg bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/20 text-slate-700 dark:text-slate-200 flex items-center justify-center font-bold text-xs cursor-pointer select-none transition-colors"
+          className="geometry-nudge"
           title={`Increase by ${step}`}
+          aria-label={`Increase ${label} by ${step}`}
         >
           +
         </button>
       </div>
 
-      {/* Synchronized Continuous Slider */}
-      <div className="pt-1">
+      <div className="geometry-slider">
         <input
           type="range"
           min={sliderMin}
@@ -129,11 +222,12 @@ const ValuePuttingField: React.FC<ValueInputProps> = ({
           step={step}
           value={value}
           onChange={(e) => onChange(parseFloat(e.target.value))}
-          className="w-full accent-sky-500 cursor-pointer h-1.5 bg-slate-200 dark:bg-white/15 rounded-lg"
+          className="geometry-range"
+          aria-label={`${label} slider`}
         />
-        <div className="flex justify-between text-[10px] text-slate-400 font-mono mt-0.5">
+        <div className="geometry-slider__scale">
           <span>{sliderMin}</span>
-          <span>slider track</span>
+          <span>range</span>
           <span>{sliderMax}</span>
         </div>
       </div>
@@ -247,887 +341,1228 @@ export const InteractiveGeometry: React.FC = () => {
     }
   };
 
+  const propertyValue = (fragment: string) =>
+    result.properties.find((property) =>
+      property.label.toLowerCase().includes(fragment.toLowerCase()),
+    )?.value;
+
+  const measures: Measure[] = (() => {
+    switch (selectedShape) {
+      case 'triangle':
+        return [
+          { label: 'a', value: tidy(triA), unit: 'u' },
+          { label: 'b', value: tidy(triB), unit: 'u' },
+          { label: 'c', value: tidy(triC), unit: 'u' },
+          { label: 'area', value: tidy(propertyValue('Area')), unit: 'u²', accent: true },
+        ];
+      case 'rightTriangle':
+        return [
+          { label: 'a', value: tidy(rtA), unit: 'u' },
+          { label: 'b', value: tidy(rtB), unit: 'u' },
+          { label: 'c', value: tidy(propertyValue('Hypotenuse')), unit: 'u', accent: true },
+        ];
+      case 'circle':
+        return [
+          { label: 'r', value: tidy(circR), unit: 'u' },
+          { label: 'd', value: tidy(propertyValue('Diameter')), unit: 'u' },
+          { label: 'C', value: tidy(propertyValue('Circumference')), unit: 'u' },
+          { label: 'A', value: tidy(propertyValue('Area')), unit: 'u²', accent: true },
+        ];
+      case 'rectangle':
+        return [
+          { label: 'l', value: tidy(rectL), unit: 'u' },
+          { label: 'w', value: tidy(rectW), unit: 'u' },
+          { label: 'A', value: tidy(propertyValue('Area')), unit: 'u²', accent: true },
+        ];
+      case 'coordinate2d':
+        return [
+          { label: 'Δx', value: tidy(propertyValue('Horizontal Offset')), unit: 'u' },
+          { label: 'Δy', value: tidy(propertyValue('Vertical Offset')), unit: 'u' },
+          { label: 'd', value: tidy(propertyValue('Distance')), unit: 'u', accent: true },
+        ];
+      case 'polygon':
+        return [
+          { label: 'n', value: tidy(polySides) },
+          { label: 's', value: tidy(polyLength), unit: 'u' },
+          { label: '∠int', value: tidy(propertyValue('Interior Angle')), unit: '°', accent: true },
+        ];
+      case 'cylinder':
+        return [
+          { label: 'r', value: tidy(cylR), unit: 'u' },
+          { label: 'h', value: tidy(cylH), unit: 'u' },
+          { label: 'V', value: tidy(propertyValue('Volume')), unit: 'u³', accent: true },
+        ];
+      case 'sphere':
+        return [
+          { label: 'r', value: tidy(sphR), unit: 'u' },
+          { label: 'd', value: tidy(propertyValue('Diameter')), unit: 'u' },
+          { label: 'A', value: tidy(propertyValue('Surface Area')), unit: 'u²' },
+          { label: 'V', value: tidy(propertyValue('Volume')), unit: 'u³', accent: true },
+        ];
+      case 'cone':
+        return [
+          { label: 'r', value: tidy(coneR), unit: 'u' },
+          { label: 'h', value: tidy(coneH), unit: 'u' },
+          { label: 'l', value: tidy(propertyValue('Slant Height')), unit: 'u' },
+          { label: 'V', value: tidy(propertyValue('Volume')), unit: 'u³', accent: true },
+        ];
+      default:
+        return [];
+    }
+  })();
+
+  const relationship: RelationshipNote = (() => {
+    if (!result.valid) {
+      return {
+        tag: 'Constraint check',
+        statement: 'No valid construction yet.',
+        detail: result.error ?? 'Adjust the dimensions until the shape conditions are met.',
+      };
+    }
+
+    switch (selectedShape) {
+      case 'triangle':
+        return {
+          tag: 'Angle sum · Law of Cosines',
+          statement: `${tidy(propertyValue('Angle A'))}° + ${tidy(propertyValue('Angle B'))}° + ${tidy(propertyValue('Angle C'))}° = 180°`,
+          detail: `Sides a = ${triA}, b = ${triB}, c = ${triC}. Heron area = ${tidy(propertyValue('Area'))} sq units.`,
+        };
+      case 'rightTriangle':
+        return {
+          tag: 'Pythagorean relation',
+          statement: `a² + b² = c²  →  ${rtA}² + ${rtB}² = ${(rtA * rtA + rtB * rtB).toFixed(2)}`,
+          detail: `Hypotenuse c = ${tidy(propertyValue('Hypotenuse'))} units. Area = ${tidy(propertyValue('Area'))} sq units.`,
+        };
+      case 'circle':
+        return {
+          tag: 'Radius · circumference',
+          statement: `C = πd = ${tidy(propertyValue('Circumference'))}`,
+          detail: `r = ${circR}, d = ${tidy(propertyValue('Diameter'))}. Area = πr² = ${tidy(propertyValue('Area'))} sq units.`,
+        };
+      case 'rectangle':
+        return {
+          tag: 'Area · perimeter',
+          statement: `A = l × w = ${tidy(propertyValue('Area'))}`,
+          detail: `${rectL} × ${rectW} sq units · perimeter = ${tidy(propertyValue('Perimeter'))} units · diagonal = ${tidy(propertyValue('Diagonal'))}.`,
+        };
+      case 'coordinate2d':
+        return {
+          tag: 'Distance formula',
+          statement: `d = √(Δx² + Δy²) = ${tidy(propertyValue('Distance'))}`,
+          detail: `Δx = ${tidy(propertyValue('Horizontal Offset'))}, Δy = ${tidy(propertyValue('Vertical Offset'))} · midpoint ${tidy(propertyValue('Midpoint'))} · slope ${tidy(propertyValue('Slope'))}.`,
+        };
+      case 'polygon':
+        return {
+          tag: 'Interior angle',
+          statement: `(${polySides} − 2) × 180° ÷ ${polySides} = ${tidy(propertyValue('Interior Angle'))}°`,
+          detail: `Perimeter = ${tidy(propertyValue('Perimeter'))} units · apothem = ${tidy(propertyValue('Apothem'))} units.`,
+        };
+      case 'cylinder':
+        return {
+          tag: 'Volume · surface',
+          statement: `V = πr²h = ${tidy(propertyValue('Volume'))}`,
+          detail: `r = ${cylR}, h = ${cylH}. Curved area = ${tidy(propertyValue('Curved Surface Area'))} sq units · total = ${tidy(propertyValue('Total Surface Area'))}.`,
+        };
+      case 'sphere':
+        return {
+          tag: 'Volume · surface',
+          statement: `V = 4/3 πr³ = ${tidy(propertyValue('Volume'))}`,
+          detail: `r = ${sphR}. Surface area = ${tidy(propertyValue('Surface Area'))} sq units · diameter = ${tidy(propertyValue('Diameter'))}.`,
+        };
+      case 'cone':
+        return {
+          tag: 'Slant height',
+          statement: `l² = r² + h²  →  l = ${tidy(propertyValue('Slant Height'))}`,
+          detail: `r = ${coneR}, h = ${coneH}. Volume = ${tidy(propertyValue('Volume'))} cubic units · total area = ${tidy(propertyValue('Total Surface Area'))}.`,
+        };
+      default:
+        return { tag: 'Relationship', statement: '', detail: '' };
+    }
+  })();
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-in fade-in">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-slate-200 dark:border-white/10">
-        <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-mono font-medium mb-2">
-            <Edit3 className="w-3.5 h-3.5" />
-            <span>Interactive Value Putting & Live Geometry Engine</span>
+    <div className="geometry-desk max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <Reveal className="geometry-head">
+        <div className="geometry-head__meta">
+          <span className="geometry-kicker">
+            <Compass aria-hidden="true" />
+            Construction desk
+          </span>
+          <span className="geometry-kicker geometry-kicker--muted">
+            Interactive geometry · 09 shapes
+          </span>
+        </div>
+
+        <div className="geometry-head__grid">
+          <div>
+            <h2 className="geometry-title">
+              Geometry <span className="geometry-title__amp">&amp;</span>
+              <span className="geometry-title__second">spatial mensuration</span>
+            </h2>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            Geometry & Spatial Mensuration
-          </h2>
-          <p className="mt-1 text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-3xl">
-            Put custom dimensions, lengths, coordinates, or angles. The engine validates geometric inequalities, plots real-time vector diagrams, and renders step-by-step substitution proofs.
-          </p>
-        </div>
 
-        {/* Quick Shape Selector Ribbon */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-[#111321] rounded-xl border border-slate-200 dark:border-white/10 overflow-x-auto max-w-full">
-          {[
-            { id: 'triangle', label: 'Triangle (Heron)' },
-            { id: 'rightTriangle', label: 'Right Triangle' },
-            { id: 'circle', label: 'Circle' },
-            { id: 'rectangle', label: 'Rectangle' },
-            { id: 'coordinate2d', label: 'Coordinate 2D' },
-            { id: 'polygon', label: 'Regular Polygon' },
-            { id: 'cylinder', label: 'Cylinder 3D' },
-            { id: 'sphere', label: 'Sphere 3D' },
-            { id: 'cone', label: 'Cone 3D' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setSelectedShape(tab.id as ShapeType)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all whitespace-nowrap shrink-0 cursor-pointer ${
-                selectedShape === tab.id
-                  ? 'bg-sky-500 text-white shadow-sm font-semibold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Main 3-Column Grid: Value Putting Controls + Vector Visualization + Step Proofs */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Value Putting Panel */}
-        <div className="lg:col-span-4 bg-white dark:bg-[#111321] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-white/10 shadow-xs space-y-5">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
-                Put Values: {result.shapeName}
-              </h3>
+          <div className="geometry-head__aside">
+            <p className="geometry-lede">
+              Put custom dimensions, coordinates, or angles. The engine validates the
+              geometric inequalities, plots the figure in real time, and keeps a substitution
+              proof beside the construction.
+            </p>
+            <div className="geometry-head__tags">
+              <span className="geometry-chip">Real-time vectors</span>
+              <span className="geometry-chip">Validity checks</span>
+              <span className="geometry-chip">Step proofs</span>
             </div>
-            <button
-              onClick={handleReset}
-              className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset</span>
-            </button>
+          </div>
+        </div>
+      </Reveal>
+
+      <Reveal delay={80} className="geometry-palette-wrap">
+        <div className="geometry-palette">
+          <div className="geometry-palette__head">
+            <span className="geometry-section-label">
+              <Layers aria-hidden="true" />
+              Shape palette
+            </span>
+            <span className="geometry-section-note">Select a construction</span>
           </div>
 
-          {/* Value Putting Presets */}
-          <div className="space-y-1.5">
-            <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-amber-500" />
-              <span>Quick Value Presets:</span>
-            </span>
-            <div className="flex flex-wrap gap-1.5">
+          <div className="geometry-palette__rail" role="group" aria-label="Shape palette">
+            {SHAPE_OPTIONS.map((tab, index) => {
+              const isActive = selectedShape === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setSelectedShape(tab.id)}
+                  className={`geometry-shape-tab${isActive ? ' is-active' : ''}`}
+                  aria-pressed={isActive}
+                >
+                  <span className="geometry-shape-tab__glyph" aria-hidden="true">
+                    <ShapeGlyph shape={tab.id} />
+                  </span>
+                  <span className="geometry-shape-tab__text">
+                    <span className="geometry-shape-tab__label">{tab.label}</span>
+                    <span className="geometry-shape-tab__meta">{tab.meta}</span>
+                  </span>
+                  <span className="geometry-shape-tab__index" aria-hidden="true">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </Reveal>
+
+      <div className="geometry-grid">
+        <Reveal delay={140} className="geometry-col geometry-col--inputs">
+          <GlassPanel className="geometry-panel">
+            <div className="geometry-panel__head">
+              <div>
+                <span className="geometry-section-label">
+                  <Ruler aria-hidden="true" />
+                  Values
+                </span>
+                <h3 className="geometry-panel__title">{result.shapeName}</h3>
+              </div>
+              <button type="button" onClick={handleReset} className="geometry-reset">
+                <RotateCcw aria-hidden="true" />
+                <span>Reset</span>
+              </button>
+            </div>
+
+            <div className="geometry-presets">
+              <span className="geometry-section-label geometry-section-label--small">
+                <Sparkles aria-hidden="true" />
+                Quick values
+              </span>
+              <div className="geometry-presets__row">
+                {selectedShape === 'triangle' && (
+                  <>
+                    <Preset onClick={() => { setTriA(3); setTriB(4); setTriC(5); }}>3-4-5</Preset>
+                    <Preset onClick={() => { setTriA(5); setTriB(12); setTriC(13); }}>5-12-13</Preset>
+                    <Preset onClick={() => { setTriA(6); setTriB(6); setTriC(6); }}>Equilateral 6</Preset>
+                    <Preset onClick={() => { setTriA(5); setTriB(5); setTriC(8); }}>Isosceles 5-5-8</Preset>
+                    <Preset onClick={() => { setTriA(8); setTriB(15); setTriC(17); }}>8-15-17</Preset>
+                  </>
+                )}
+
+                {selectedShape === 'rightTriangle' && (
+                  <>
+                    <Preset onClick={() => { setRtA(3); setRtB(4); }}>3-4 (c=5)</Preset>
+                    <Preset onClick={() => { setRtA(5); setRtB(12); }}>5-12 (c=13)</Preset>
+                    <Preset onClick={() => { setRtA(8); setRtB(15); }}>8-15 (c=17)</Preset>
+                    <Preset onClick={() => { setRtA(7); setRtB(24); }}>7-24 (c=25)</Preset>
+                  </>
+                )}
+
+                {selectedShape === 'circle' && (
+                  <>
+                    <Preset onClick={() => setCircR(7)}>r = 7 (Clean π)</Preset>
+                    <Preset onClick={() => setCircR(3.5)}>r = 3.5</Preset>
+                    <Preset onClick={() => setCircR(14)}>r = 14</Preset>
+                    <Preset onClick={() => setCircR(10)}>r = 10</Preset>
+                  </>
+                )}
+
+                {selectedShape === 'rectangle' && (
+                  <>
+                    <Preset onClick={() => { setRectL(16.18); setRectW(10); }}>Golden 16.18 × 10</Preset>
+                    <Preset onClick={() => { setRectL(8); setRectW(8); }}>Square 8 × 8</Preset>
+                    <Preset onClick={() => { setRectL(12); setRectW(5); }}>12 × 5</Preset>
+                  </>
+                )}
+
+                {selectedShape === 'coordinate2d' && (
+                  <>
+                    <Preset onClick={() => { setCoordX1(0); setCoordY1(0); setCoordX2(3); setCoordY2(4); }}>
+                      (0,0) to (3,4)
+                    </Preset>
+                    <Preset onClick={() => { setCoordX1(2); setCoordY1(1); setCoordX2(8); setCoordY2(9); }}>
+                      (2,1) to (8,9)
+                    </Preset>
+                    <Preset onClick={() => { setCoordX1(-4); setCoordY1(3); setCoordX2(4); setCoordY2(-3); }}>
+                      (-4,3) to (4,-3)
+                    </Preset>
+                  </>
+                )}
+
+                {selectedShape === 'polygon' && (
+                  <>
+                    <Preset onClick={() => { setPolySides(3); setPolyLength(6); }}>Triangle (n=3)</Preset>
+                    <Preset onClick={() => { setPolySides(5); setPolyLength(5); }}>Pentagon (n=5)</Preset>
+                    <Preset onClick={() => { setPolySides(6); setPolyLength(4); }}>Hexagon (n=6)</Preset>
+                    <Preset onClick={() => { setPolySides(8); setPolyLength(4); }}>Octagon (n=8)</Preset>
+                  </>
+                )}
+
+                {selectedShape === 'cylinder' && (
+                  <>
+                    <Preset onClick={() => { setCylR(7); setCylH(10); }}>r=7, h=10</Preset>
+                    <Preset onClick={() => { setCylR(3.5); setCylH(12); }}>r=3.5, h=12</Preset>
+                  </>
+                )}
+
+                {selectedShape === 'sphere' && (
+                  <>
+                    <Preset onClick={() => setSphR(7)}>r = 7 (Clean π)</Preset>
+                    <Preset onClick={() => setSphR(4.2)}>r = 4.2</Preset>
+                    <Preset onClick={() => setSphR(10)}>r = 10</Preset>
+                  </>
+                )}
+
+                {selectedShape === 'cone' && (
+                  <>
+                    <Preset onClick={() => { setConeR(3); setConeH(4); }}>r=3, h=4 (l=5)</Preset>
+                    <Preset onClick={() => { setConeR(5); setConeH(12); }}>r=5, h=12 (l=13)</Preset>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="geometry-fields">
               {selectedShape === 'triangle' && (
                 <>
-                  <button
-                    onClick={() => { setTriA(3); setTriB(4); setTriC(5); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    3-4-5
-                  </button>
-                  <button
-                    onClick={() => { setTriA(5); setTriB(12); setTriC(13); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    5-12-13
-                  </button>
-                  <button
-                    onClick={() => { setTriA(6); setTriB(6); setTriC(6); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    Equilateral 6
-                  </button>
-                  <button
-                    onClick={() => { setTriA(5); setTriB(5); setTriC(8); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    Isosceles 5-5-8
-                  </button>
-                  <button
-                    onClick={() => { setTriA(8); setTriB(15); setTriC(17); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    8-15-17
-                  </button>
+                  <ValuePuttingField
+                    id={triAId}
+                    label="Side a (Base)"
+                    value={triA}
+                    min={0.5}
+                    max={30}
+                    step={0.5}
+                    unit="length units"
+                    onChange={setTriA}
+                  />
+                  <ValuePuttingField
+                    id={triBId}
+                    label="Side b"
+                    value={triB}
+                    min={0.5}
+                    max={30}
+                    step={0.5}
+                    unit="length units"
+                    onChange={setTriB}
+                  />
+                  <ValuePuttingField
+                    id={triCId}
+                    label="Side c"
+                    value={triC}
+                    min={0.5}
+                    max={30}
+                    step={0.5}
+                    unit="length units"
+                    onChange={setTriC}
+                  />
                 </>
               )}
 
               {selectedShape === 'rightTriangle' && (
                 <>
-                  <button
-                    onClick={() => { setRtA(3); setRtB(4); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    3-4 (c=5)
-                  </button>
-                  <button
-                    onClick={() => { setRtA(5); setRtB(12); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    5-12 (c=13)
-                  </button>
-                  <button
-                    onClick={() => { setRtA(8); setRtB(15); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    8-15 (c=17)
-                  </button>
-                  <button
-                    onClick={() => { setRtA(7); setRtB(24); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    7-24 (c=25)
-                  </button>
+                  <ValuePuttingField
+                    id={rtAId}
+                    label="Leg a (Perpendicular / Altitude)"
+                    value={rtA}
+                    min={0.5}
+                    max={30}
+                    step={0.5}
+                    unit="units"
+                    onChange={setRtA}
+                  />
+                  <ValuePuttingField
+                    id={rtBId}
+                    label="Leg b (Base)"
+                    value={rtB}
+                    min={0.5}
+                    max={30}
+                    step={0.5}
+                    unit="units"
+                    onChange={setRtB}
+                  />
                 </>
               )}
 
               {selectedShape === 'circle' && (
-                <>
-                  <button
-                    onClick={() => setCircR(7)}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    r = 7 (Clean π)
-                  </button>
-                  <button
-                    onClick={() => setCircR(3.5)}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    r = 3.5
-                  </button>
-                  <button
-                    onClick={() => setCircR(14)}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    r = 14
-                  </button>
-                  <button
-                    onClick={() => setCircR(10)}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    r = 10
-                  </button>
-                </>
+                <ValuePuttingField
+                  id={circRId}
+                  label="Radius (r)"
+                  value={circR}
+                  min={0.5}
+                  max={30}
+                  step={0.5}
+                  unit="units"
+                  onChange={setCircR}
+                />
               )}
 
               {selectedShape === 'rectangle' && (
                 <>
-                  <button
-                    onClick={() => { setRectL(16.18); setRectW(10); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    Golden 16.18 × 10
-                  </button>
-                  <button
-                    onClick={() => { setRectL(8); setRectW(8); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    Square 8 × 8
-                  </button>
-                  <button
-                    onClick={() => { setRectL(12); setRectW(5); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    12 × 5
-                  </button>
+                  <ValuePuttingField
+                    id={rectLId}
+                    label="Length (l)"
+                    value={rectL}
+                    min={0.5}
+                    max={30}
+                    step={0.5}
+                    unit="units"
+                    onChange={setRectL}
+                  />
+                  <ValuePuttingField
+                    id={rectWId}
+                    label="Width (w)"
+                    value={rectW}
+                    min={0.5}
+                    max={30}
+                    step={0.5}
+                    unit="units"
+                    onChange={setRectW}
+                  />
                 </>
               )}
 
               {selectedShape === 'coordinate2d' && (
-                <>
-                  <button
-                    onClick={() => { setCoordX1(0); setCoordY1(0); setCoordX2(3); setCoordY2(4); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    (0,0) to (3,4)
-                  </button>
-                  <button
-                    onClick={() => { setCoordX1(2); setCoordY1(1); setCoordX2(8); setCoordY2(9); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    (2,1) to (8,9)
-                  </button>
-                  <button
-                    onClick={() => { setCoordX1(-4); setCoordY1(3); setCoordX2(4); setCoordY2(-3); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    (-4,3) to (4,-3)
-                  </button>
-                </>
+                <div className="geometry-fields__pair">
+                  <ValuePuttingField
+                    id={coordX1Id}
+                    label="Point A: x₁"
+                    value={coordX1}
+                    min={-20}
+                    max={20}
+                    step={0.5}
+                    unit="coord"
+                    onChange={setCoordX1}
+                  />
+                  <ValuePuttingField
+                    id={coordY1Id}
+                    label="Point A: y₁"
+                    value={coordY1}
+                    min={-20}
+                    max={20}
+                    step={0.5}
+                    unit="coord"
+                    onChange={setCoordY1}
+                  />
+                  <ValuePuttingField
+                    id={coordX2Id}
+                    label="Point B: x₂"
+                    value={coordX2}
+                    min={-20}
+                    max={20}
+                    step={0.5}
+                    unit="coord"
+                    onChange={setCoordX2}
+                  />
+                  <ValuePuttingField
+                    id={coordY2Id}
+                    label="Point B: y₂"
+                    value={coordY2}
+                    min={-20}
+                    max={20}
+                    step={0.5}
+                    unit="coord"
+                    onChange={setCoordY2}
+                  />
+                </div>
               )}
 
               {selectedShape === 'polygon' && (
                 <>
-                  <button
-                    onClick={() => { setPolySides(3); setPolyLength(6); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    Triangle (n=3)
-                  </button>
-                  <button
-                    onClick={() => { setPolySides(5); setPolyLength(5); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    Pentagon (n=5)
-                  </button>
-                  <button
-                    onClick={() => { setPolySides(6); setPolyLength(4); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    Hexagon (n=6)
-                  </button>
-                  <button
-                    onClick={() => { setPolySides(8); setPolyLength(4); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    Octagon (n=8)
-                  </button>
+                  <ValuePuttingField
+                    id={polySidesId}
+                    label="Number of Sides (n)"
+                    value={polySides}
+                    min={3}
+                    max={16}
+                    step={1}
+                    unit="sides"
+                    onChange={(v) => setPolySides(Math.max(3, Math.round(v)))}
+                  />
+                  <ValuePuttingField
+                    id={polyLengthId}
+                    label="Side Length (s)"
+                    value={polyLength}
+                    min={0.5}
+                    max={30}
+                    step={0.5}
+                    unit="units"
+                    onChange={setPolyLength}
+                  />
                 </>
               )}
 
               {selectedShape === 'cylinder' && (
                 <>
-                  <button
-                    onClick={() => { setCylR(7); setCylH(10); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    r=7, h=10
-                  </button>
-                  <button
-                    onClick={() => { setCylR(3.5); setCylH(12); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    r=3.5, h=12
-                  </button>
+                  <ValuePuttingField
+                    id={cylRId}
+                    label="Radius (r)"
+                    value={cylR}
+                    min={0.5}
+                    max={20}
+                    step={0.5}
+                    unit="units"
+                    onChange={setCylR}
+                  />
+                  <ValuePuttingField
+                    id={cylHId}
+                    label="Height (h)"
+                    value={cylH}
+                    min={0.5}
+                    max={30}
+                    step={0.5}
+                    unit="units"
+                    onChange={setCylH}
+                  />
                 </>
               )}
 
               {selectedShape === 'sphere' && (
-                <>
-                  <button
-                    onClick={() => setSphR(7)}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    r = 7 (Clean π)
-                  </button>
-                  <button
-                    onClick={() => setSphR(4.2)}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    r = 4.2
-                  </button>
-                  <button
-                    onClick={() => setSphR(10)}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    r = 10
-                  </button>
-                </>
+                <ValuePuttingField
+                  id={sphRId}
+                  label="Radius (r)"
+                  value={sphR}
+                  min={0.5}
+                  max={25}
+                  step={0.5}
+                  unit="units"
+                  onChange={setSphR}
+                />
               )}
 
               {selectedShape === 'cone' && (
                 <>
-                  <button
-                    onClick={() => { setConeR(3); setConeH(4); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    r=3, h=4 (l=5)
-                  </button>
-                  <button
-                    onClick={() => { setConeR(5); setConeH(12); }}
-                    className="px-2 py-1 text-[11px] font-mono bg-slate-100 dark:bg-white/10 hover:bg-sky-500 hover:text-white rounded-md text-slate-700 dark:text-slate-200 cursor-pointer transition-colors"
-                  >
-                    r=5, h=12 (l=13)
-                  </button>
+                  <ValuePuttingField
+                    id={coneRId}
+                    label="Base Radius (r)"
+                    value={coneR}
+                    min={0.5}
+                    max={20}
+                    step={0.5}
+                    unit="units"
+                    onChange={setConeR}
+                  />
+                  <ValuePuttingField
+                    id={coneHId}
+                    label="Vertical Height (h)"
+                    value={coneH}
+                    min={0.5}
+                    max={30}
+                    step={0.5}
+                    unit="units"
+                    onChange={setConeH}
+                  />
                 </>
               )}
             </div>
-          </div>
 
-          {/* Dynamic Value Putting Fields based on shape */}
-          <div className="space-y-3 pt-2">
-            {selectedShape === 'triangle' && (
-              <>
-                <ValuePuttingField
-                  id={triAId}
-                  label="Side a (Base)"
-                  value={triA}
-                  min={0.5}
-                  max={30}
-                  step={0.5}
-                  unit="length units"
-                  onChange={setTriA}
-                />
-                <ValuePuttingField
-                  id={triBId}
-                  label="Side b"
-                  value={triB}
-                  min={0.5}
-                  max={30}
-                  step={0.5}
-                  unit="length units"
-                  onChange={setTriB}
-                />
-                <ValuePuttingField
-                  id={triCId}
-                  label="Side c"
-                  value={triC}
-                  min={0.5}
-                  max={30}
-                  step={0.5}
-                  unit="length units"
-                  onChange={setTriC}
-                />
-              </>
-            )}
-
-            {selectedShape === 'rightTriangle' && (
-              <>
-                <ValuePuttingField
-                  id={rtAId}
-                  label="Leg a (Perpendicular / Altitude)"
-                  value={rtA}
-                  min={0.5}
-                  max={30}
-                  step={0.5}
-                  unit="units"
-                  onChange={setRtA}
-                />
-                <ValuePuttingField
-                  id={rtBId}
-                  label="Leg b (Base)"
-                  value={rtB}
-                  min={0.5}
-                  max={30}
-                  step={0.5}
-                  unit="units"
-                  onChange={setRtB}
-                />
-              </>
-            )}
-
-            {selectedShape === 'circle' && (
-              <ValuePuttingField
-                id={circRId}
-                label="Radius (r)"
-                value={circR}
-                min={0.5}
-                max={30}
-                step={0.5}
-                unit="units"
-                onChange={setCircR}
-              />
-            )}
-
-            {selectedShape === 'rectangle' && (
-              <>
-                <ValuePuttingField
-                  id={rectLId}
-                  label="Length (l)"
-                  value={rectL}
-                  min={0.5}
-                  max={30}
-                  step={0.5}
-                  unit="units"
-                  onChange={setRectL}
-                />
-                <ValuePuttingField
-                  id={rectWId}
-                  label="Width (w)"
-                  value={rectW}
-                  min={0.5}
-                  max={30}
-                  step={0.5}
-                  unit="units"
-                  onChange={setRectW}
-                />
-              </>
-            )}
-
-            {selectedShape === 'coordinate2d' && (
-              <div className="grid grid-cols-2 gap-2">
-                <ValuePuttingField
-                  id={coordX1Id}
-                  label="Point A: x₁"
-                  value={coordX1}
-                  min={-20}
-                  max={20}
-                  step={0.5}
-                  unit="coord"
-                  onChange={setCoordX1}
-                />
-                <ValuePuttingField
-                  id={coordY1Id}
-                  label="Point A: y₁"
-                  value={coordY1}
-                  min={-20}
-                  max={20}
-                  step={0.5}
-                  unit="coord"
-                  onChange={setCoordY1}
-                />
-                <ValuePuttingField
-                  id={coordX2Id}
-                  label="Point B: x₂"
-                  value={coordX2}
-                  min={-20}
-                  max={20}
-                  step={0.5}
-                  unit="coord"
-                  onChange={setCoordX2}
-                />
-                <ValuePuttingField
-                  id={coordY2Id}
-                  label="Point B: y₂"
-                  value={coordY2}
-                  min={-20}
-                  max={20}
-                  step={0.5}
-                  unit="coord"
-                  onChange={setCoordY2}
-                />
-              </div>
-            )}
-
-            {selectedShape === 'polygon' && (
-              <>
-                <ValuePuttingField
-                  id={polySidesId}
-                  label="Number of Sides (n)"
-                  value={polySides}
-                  min={3}
-                  max={16}
-                  step={1}
-                  unit="sides"
-                  onChange={(v) => setPolySides(Math.max(3, Math.round(v)))}
-                />
-                <ValuePuttingField
-                  id={polyLengthId}
-                  label="Side Length (s)"
-                  value={polyLength}
-                  min={0.5}
-                  max={30}
-                  step={0.5}
-                  unit="units"
-                  onChange={setPolyLength}
-                />
-              </>
-            )}
-
-            {selectedShape === 'cylinder' && (
-              <>
-                <ValuePuttingField
-                  id={cylRId}
-                  label="Radius (r)"
-                  value={cylR}
-                  min={0.5}
-                  max={20}
-                  step={0.5}
-                  unit="units"
-                  onChange={setCylR}
-                />
-                <ValuePuttingField
-                  id={cylHId}
-                  label="Height (h)"
-                  value={cylH}
-                  min={0.5}
-                  max={30}
-                  step={0.5}
-                  unit="units"
-                  onChange={setCylH}
-                />
-              </>
-            )}
-
-            {selectedShape === 'sphere' && (
-              <ValuePuttingField
-                id={sphRId}
-                label="Radius (r)"
-                value={sphR}
-                min={0.5}
-                max={25}
-                step={0.5}
-                unit="units"
-                onChange={setSphR}
-              />
-            )}
-
-            {selectedShape === 'cone' && (
-              <>
-                <ValuePuttingField
-                  id={coneRId}
-                  label="Base Radius (r)"
-                  value={coneR}
-                  min={0.5}
-                  max={20}
-                  step={0.5}
-                  unit="units"
-                  onChange={setConeR}
-                />
-                <ValuePuttingField
-                  id={coneHId}
-                  label="Vertical Height (h)"
-                  value={coneH}
-                  min={0.5}
-                  max={30}
-                  step={0.5}
-                  unit="units"
-                  onChange={setConeH}
-                />
-              </>
-            )}
-          </div>
-
-          {/* Inequality / Geometric Validation Feedback */}
-          {!result.valid && (
-            <div className="p-3 bg-red-50 dark:bg-red-950/40 rounded-xl border border-red-200 dark:border-red-900 flex items-start gap-2 text-xs text-red-700 dark:text-red-300">
-              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>{result.error}</span>
-            </div>
-          )}
-
-          {result.valid && (
-            <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-900/60 flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-300">
-              <CheckCircle2 className="w-4 h-4 shrink-0" />
-              <span>Verified Geometric Validity: All constraints satisfied</span>
-            </div>
-          )}
-        </div>
-
-        {/* Center Column: Live Responsive Geometric Diagram */}
-        <div className="lg:col-span-4 bg-slate-950 p-6 rounded-2xl border border-slate-800 shadow-sm flex flex-col items-center justify-center min-h-[380px] relative overflow-hidden">
-          <div className="absolute top-4 left-4 flex items-center gap-1.5 text-[11px] font-mono text-slate-400">
-            <Layers className="w-3.5 h-3.5 text-sky-400" />
-            <span>Live Vector Rendering</span>
-          </div>
-
-          {selectedShape === 'triangle' && (
-            <svg viewBox="0 0 300 240" className="w-full max-w-[280px] h-auto">
-              {result.valid ? (
-                (() => {
-                  const maxDim = Math.max(triA, triB, triC, 1);
-                  const scale = 180 / maxDim;
-                  const x1 = 40;
-                  const y1 = 190;
-                  const x2 = 40 + triA * scale;
-                  const y2 = 190;
-
-                  // Law of cosines for third vertex
-                  const cosB = (triA * triA + triC * triC - triB * triB) / (2 * triA * triC);
-                  const safeCos = Math.max(-1, Math.min(1, cosB));
-                  const sinB = Math.sqrt(Math.max(0, 1 - safeCos * safeCos));
-                  const x3 = x1 + triC * scale * safeCos;
-                  const y3 = y1 - triC * scale * sinB;
-
-                  return (
-                    <g>
-                      <polygon
-                        points={`${x1},${y1} ${x2},${y2} ${x3},${y3}`}
-                        fill="rgba(14, 165, 233, 0.15)"
-                        stroke="#38bdf8"
-                        strokeWidth="2.5"
-                        strokeLinejoin="round"
-                      />
-                      {/* Vertex points */}
-                      <circle cx={x1} cy={y1} r="3" fill="#38bdf8" />
-                      <circle cx={x2} cy={y2} r="3" fill="#38bdf8" />
-                      <circle cx={x3} cy={y3} r="3" fill="#38bdf8" />
-
-                      {/* Dimension Labels */}
-                      <text x={(x1 + x2) / 2} y={y1 + 18} fill="#94a3b8" fontSize="11" textAnchor="middle" fontFamily="monospace">
-                        a = {triA}
-                      </text>
-                      <text x={(x2 + x3) / 2 + 10} y={(y2 + y3) / 2} fill="#94a3b8" fontSize="11" textAnchor="start" fontFamily="monospace">
-                        b = {triB}
-                      </text>
-                      <text x={(x1 + x3) / 2 - 12} y={(y1 + y3) / 2} fill="#94a3b8" fontSize="11" textAnchor="end" fontFamily="monospace">
-                        c = {triC}
-                      </text>
-                    </g>
-                  );
-                })()
-              ) : (
-                <text x="150" y="120" fill="#ef4444" fontSize="12" textAnchor="middle">
-                  Triangle Condition Invalid
-                </text>
-              )}
-            </svg>
-          )}
-
-          {selectedShape === 'rightTriangle' && (
-            <svg viewBox="0 0 300 240" className="w-full max-w-[280px] h-auto">
-              {(() => {
-                const maxDim = Math.max(rtA, rtB, 1);
-                const scale = 160 / maxDim;
-                const x0 = 60;
-                const y0 = 190;
-                const xBase = x0 + rtB * scale;
-                const yTop = y0 - rtA * scale;
-                const cVal = Math.sqrt(rtA * rtA + rtB * rtB);
-
-                return (
-                  <g>
-                    {/* Right angle marker */}
-                    <path
-                      d={`M ${x0 + 15} ${y0} L ${x0 + 15} ${y0 - 15} L ${x0} ${y0 - 15}`}
-                      fill="none"
-                      stroke="#64748b"
-                      strokeWidth="1.5"
-                    />
-                    <polygon
-                      points={`${x0},${y0} ${xBase},${y0} ${x0},${yTop}`}
-                      fill="rgba(14, 165, 233, 0.15)"
-                      stroke="#38bdf8"
-                      strokeWidth="2.5"
-                      strokeLinejoin="round"
-                    />
-                    <circle cx={x0} cy={y0} r="3" fill="#38bdf8" />
-                    <circle cx={xBase} cy={y0} r="3" fill="#38bdf8" />
-                    <circle cx={x0} cy={yTop} r="3" fill="#38bdf8" />
-
-                    <text x={(x0 + xBase) / 2} y={y0 + 18} fill="#94a3b8" fontSize="11" textAnchor="middle" fontFamily="monospace">
-                      b = {rtB}
-                    </text>
-                    <text x={x0 - 12} y={(y0 + yTop) / 2} fill="#94a3b8" fontSize="11" textAnchor="end" fontFamily="monospace">
-                      a = {rtA}
-                    </text>
-                    <text x={(x0 + xBase) / 2 + 15} y={(y0 + yTop) / 2 - 5} fill="#fcd34d" fontSize="11" textAnchor="start" fontFamily="monospace">
-                      c = {cVal.toFixed(2)}
-                    </text>
-                  </g>
-                );
-              })()}
-            </svg>
-          )}
-
-          {selectedShape === 'circle' && (
-            <svg viewBox="0 0 300 240" className="w-full max-w-[280px] h-auto">
-              <circle
-                cx="150"
-                cy="120"
-                r="85"
-                fill="rgba(14, 165, 233, 0.15)"
-                stroke="#38bdf8"
-                strokeWidth="2.5"
-              />
-              <line x1="150" y1="120" x2="235" y2="120" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" />
-              <circle cx="150" cy="120" r="3.5" fill="#f59e0b" />
-              <circle cx="235" cy="120" r="3" fill="#38bdf8" />
-              <text x="192" y="112" fill="#fcd34d" fontSize="12" textAnchor="middle" fontFamily="monospace" fontWeight="bold">
-                r = {circR}
-              </text>
-              <text x="150" y="224" fill="#94a3b8" fontSize="10" textAnchor="middle" fontFamily="monospace">
-                d = {(circR * 2).toFixed(2)}
-              </text>
-            </svg>
-          )}
-
-          {selectedShape === 'rectangle' && (
-            <svg viewBox="0 0 300 240" className="w-full max-w-[280px] h-auto">
-              {(() => {
-                const maxDim = Math.max(rectL, rectW, 1);
-                const rw = Math.max(40, (rectL / maxDim) * 200);
-                const rh = Math.max(30, (rectW / maxDim) * 140);
-                const rx = (300 - rw) / 2;
-                const ry = (240 - rh) / 2;
-
-                return (
-                  <g>
-                    <rect x={rx} y={ry} width={rw} height={rh} fill="rgba(14, 165, 233, 0.15)" stroke="#38bdf8" strokeWidth="2.5" rx="3" />
-                    <line x1={rx} y1={ry + rh} x2={rx + rw} y2={ry} stroke="#64748b" strokeWidth="1" strokeDasharray="3 3" />
-                    <text x={rx + rw / 2} y={ry + rh + 18} fill="#94a3b8" fontSize="11" textAnchor="middle" fontFamily="monospace">
-                      l = {rectL}
-                    </text>
-                    <text x={rx - 10} y={ry + rh / 2} fill="#94a3b8" fontSize="11" textAnchor="end" fontFamily="monospace">
-                      w = {rectW}
-                    </text>
-                  </g>
-                );
-              })()}
-            </svg>
-          )}
-
-          {selectedShape === 'coordinate2d' && (
-            <svg viewBox="0 0 300 240" className="w-full max-w-[280px] h-auto">
-              {(() => {
-                const minX = Math.min(coordX1, coordX2);
-                const maxX = Math.max(coordX1, coordX2);
-                const minY = Math.min(coordY1, coordY2);
-                const maxY = Math.max(coordY1, coordY2);
-                const rangeX = Math.max(1, maxX - minX);
-                const rangeY = Math.max(1, maxY - minY);
-                const scale = Math.min(180 / rangeX, 140 / rangeY);
-
-                const originX = 150 - ((minX + maxX) / 2) * scale;
-                const originY = 120 + ((minY + maxY) / 2) * scale;
-
-                const px1 = originX + coordX1 * scale;
-                const py1 = originY - coordY1 * scale;
-                const px2 = originX + coordX2 * scale;
-                const py2 = originY - coordY2 * scale;
-
-                return (
-                  <g>
-                    {/* Grid Axes */}
-                    <line x1="20" y1={originY} x2="280" y2={originY} stroke="#334155" strokeWidth="1" />
-                    <line x1={originX} y1="20" x2={originX} y2="220" stroke="#334155" strokeWidth="1" />
-
-                    {/* Vector Segment */}
-                    <line x1={px1} y1={py1} x2={px2} y2={py2} stroke="#38bdf8" strokeWidth="3" />
-                    {/* Component triangle */}
-                    <line x1={px1} y1={py1} x2={px2} y2={py1} stroke="#64748b" strokeWidth="1" strokeDasharray="2 2" />
-                    <line x1={px2} y1={py1} x2={px2} y2={py2} stroke="#64748b" strokeWidth="1" strokeDasharray="2 2" />
-
-                    {/* Points */}
-                    <circle cx={px1} cy={py1} r="4" fill="#10b981" />
-                    <circle cx={px2} cy={py2} r="4" fill="#f59e0b" />
-
-                    <text x={px1} y={py1 - 8} fill="#10b981" fontSize="10" textAnchor="middle" fontFamily="monospace">
-                      A({coordX1},{coordY1})
-                    </text>
-                    <text x={px2} y={py2 - 8} fill="#f59e0b" fontSize="10" textAnchor="middle" fontFamily="monospace">
-                      B({coordX2},{coordY2})
-                    </text>
-                  </g>
-                );
-              })()}
-            </svg>
-          )}
-
-          {selectedShape === 'polygon' && (
-            <svg viewBox="0 0 300 240" className="w-full max-w-[280px] h-auto">
-              {(() => {
-                const n = Math.max(3, polySides);
-                const r = 80;
-                const cx = 150;
-                const cy = 120;
-                const points: string[] = [];
-
-                for (let i = 0; i < n; i++) {
-                  const angle = (i * 2 * Math.PI) / n - Math.PI / 2;
-                  const x = cx + r * Math.cos(angle);
-                  const y = cy + r * Math.sin(angle);
-                  points.push(`${x},${y}`);
-                }
-
-                return (
-                  <g>
-                    <polygon
-                      points={points.join(' ')}
-                      fill="rgba(14, 165, 233, 0.15)"
-                      stroke="#38bdf8"
-                      strokeWidth="2.5"
-                    />
-                    <circle cx={cx} cy={cy} r="3" fill="#f59e0b" />
-                    <line x1={cx} y1={cy} x2={cx} y2={cy - r} stroke="#64748b" strokeWidth="1.2" strokeDasharray="2 2" />
-                    <text x={cx + 6} y={cy - r / 2} fill="#94a3b8" fontSize="10" fontFamily="monospace">
-                      R
-                    </text>
-                    <text x={cx} y={224} fill="#fcd34d" fontSize="11" textAnchor="middle" fontFamily="monospace">
-                      n = {n} sides · s = {polyLength}
-                    </text>
-                  </g>
-                );
-              })()}
-            </svg>
-          )}
-
-          {selectedShape === 'cylinder' && (
-            <svg viewBox="0 0 300 240" className="w-full max-w-[280px] h-auto">
-              <ellipse cx="150" cy="60" rx="60" ry="20" fill="rgba(14, 165, 233, 0.25)" stroke="#38bdf8" strokeWidth="2" />
-              <line x1="90" y1="60" x2="90" y2="180" stroke="#38bdf8" strokeWidth="2" />
-              <line x1="210" y1="60" x2="210" y2="180" stroke="#38bdf8" strokeWidth="2" />
-              <ellipse cx="150" cy="180" rx="60" ry="20" fill="rgba(14, 165, 233, 0.15)" stroke="#38bdf8" strokeWidth="2" />
-              <line x1="150" y1="60" x2="210" y2="60" stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="2 2" />
-              <circle cx="150" cy="60" r="3" fill="#f59e0b" />
-              {/* Labels */}
-              <text x="75" y="120" fill="#94a3b8" fontSize="11" textAnchor="end" fontFamily="monospace">h = {cylH}</text>
-              <text x="180" y="52" fill="#fcd34d" fontSize="10" textAnchor="middle" fontFamily="monospace">r = {cylR}</text>
-            </svg>
-          )}
-
-          {selectedShape === 'sphere' && (
-            <svg viewBox="0 0 300 240" className="w-full max-w-[280px] h-auto">
-              <circle cx="150" cy="120" r="75" fill="rgba(14, 165, 233, 0.15)" stroke="#38bdf8" strokeWidth="2.5" />
-              <ellipse cx="150" cy="120" rx="75" ry="25" fill="none" stroke="#64748b" strokeWidth="1.2" strokeDasharray="4 3" />
-              <line x1="150" y1="120" x2="225" y2="120" stroke="#f59e0b" strokeWidth="2" />
-              <circle cx="150" cy="120" r="3" fill="#f59e0b" />
-              <text x="185" y="112" fill="#fcd34d" fontSize="11" textAnchor="middle" fontFamily="monospace">r = {sphR}</text>
-            </svg>
-          )}
-
-          {selectedShape === 'cone' && (
-            <svg viewBox="0 0 300 240" className="w-full max-w-[280px] h-auto">
-              <line x1="150" y1="40" x2="80" y2="180" stroke="#38bdf8" strokeWidth="2.5" />
-              <line x1="150" y1="40" x2="220" y2="180" stroke="#38bdf8" strokeWidth="2.5" />
-              <ellipse cx="150" cy="180" rx="70" ry="20" fill="rgba(14, 165, 233, 0.15)" stroke="#38bdf8" strokeWidth="2" />
-              <line x1="150" y1="40" x2="150" y2="180" stroke="#64748b" strokeWidth="1" strokeDasharray="3 3" />
-              <line x1="150" y1="180" x2="220" y2="180" stroke="#f59e0b" strokeWidth="1.5" />
-              <text x="140" y="110" fill="#94a3b8" fontSize="11" textAnchor="end" fontFamily="monospace">h = {coneH}</text>
-              <text x="185" y="196" fill="#fcd34d" fontSize="10" textAnchor="middle" fontFamily="monospace">r = {coneR}</text>
-            </svg>
-          )}
-        </div>
-
-        {/* Right Column: Calculated Properties & Step-by-Step Proof */}
-        <div className="lg:col-span-4 bg-white dark:bg-[#111321] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-white/10 shadow-xs space-y-5">
-          <div className="pb-2 border-b border-slate-100 dark:border-white/10 flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
-              Calculated Results & Proofs
-            </h3>
-            <span className="text-[11px] font-mono text-sky-600 dark:text-sky-400 font-semibold">
-              Live Output
-            </span>
-          </div>
-
-          {/* Properties Grid */}
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            {result.properties.map((prop, idx) => (
-              <div key={idx} className="p-2.5 bg-slate-50 dark:bg-white/[0.03] rounded-xl border border-slate-100 dark:border-white/10">
-                <span className="text-slate-500 dark:text-slate-400 block text-[11px] truncate">{prop.label}</span>
-                <span className="font-semibold text-slate-900 dark:text-slate-100 font-mono text-xs sm:text-sm block truncate">
-                  {prop.value} <span className="text-[10px] text-slate-400 font-normal">{prop.unit}</span>
+            {!result.valid && (
+              <div className="geometry-status geometry-status--invalid" role="status">
+                <AlertTriangle aria-hidden="true" />
+                <span>
+                  <strong>Constraint not met.</strong> {result.error}
                 </span>
               </div>
-            ))}
-          </div>
+            )}
 
-          {/* Standard Formula with KaTeX */}
-          {result.formula && (
-            <div className="p-3 bg-sky-500/10 dark:bg-sky-500/15 rounded-xl border border-sky-500/20">
-              <span className="text-[11px] text-sky-700 dark:text-sky-300 font-semibold block mb-1">Standard Formula:</span>
-              <div className="overflow-x-auto">
-                <MathView math={result.formula} displayMode={true} className="text-xs sm:text-sm text-sky-900 dark:text-sky-200" />
+            {result.valid && (
+              <div className="geometry-status geometry-status--valid" role="status">
+                <CheckCircle2 aria-hidden="true" />
+                <span>Construction valid · all constraints satisfied</span>
               </div>
-            </div>
-          )}
+            )}
+          </GlassPanel>
+        </Reveal>
 
-          {/* Substitution */}
-          {result.substitution && (
-            <div className="p-3 bg-slate-50 dark:bg-white/[0.03] rounded-xl border border-slate-200/60 dark:border-white/10">
-              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium block mb-1">Value Substitution:</span>
-              <div className="overflow-x-auto text-center py-1">
-                <MathView math={result.substitution} displayMode={true} className="text-xs text-slate-800 dark:text-slate-200" />
+        <Reveal delay={220} className="geometry-col geometry-col--canvas">
+          <div className="depth-stage geometry-canvas-stage">
+            <GlassPanel className="geometry-canvas-card" tilt>
+              <div className="geometry-canvas__bar">
+                <span className="geometry-section-label">
+                  <Layers aria-hidden="true" />
+                  Live vector draft
+                </span>
+                <span
+                  className={`geometry-canvas__status${result.valid ? ' is-valid' : ' is-invalid'}`}
+                >
+                  <span className="geometry-canvas__status-dot" aria-hidden="true" />
+                  {result.valid ? 'Valid construction' : 'Check inputs'}
+                </span>
               </div>
-            </div>
-          )}
 
-          {/* Step-by-Step Proof */}
-          {result.steps.length > 0 && (
-            <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
-              <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider block mb-1">
-                Derivation Steps
-              </span>
-              <div className="space-y-1 p-2.5 bg-slate-50 dark:bg-white/[0.02] rounded-xl border border-slate-100 dark:border-white/5">
-                {result.steps.map((st, i) => (
-                  <p key={i} className="leading-relaxed text-[11px] font-mono text-slate-700 dark:text-slate-300">{st}</p>
+              <div className="geometry-canvas">
+                <span className="geometry-corner geometry-corner--tl" aria-hidden="true" />
+                <span className="geometry-corner geometry-corner--tr" aria-hidden="true" />
+                <span className="geometry-corner geometry-corner--bl" aria-hidden="true" />
+                <span className="geometry-corner geometry-corner--br" aria-hidden="true" />
+
+                <div className="geometry-canvas__figure">
+                  {selectedShape === 'triangle' && (
+                    <svg
+                      viewBox="0 0 300 240"
+                      className="geometry-diagram"
+                      role="img"
+                      aria-label={`${result.shapeName} construction`}
+                    >
+                      {result.valid ? (
+                        (() => {
+                          const maxDim = Math.max(triA, triB, triC, 1);
+                          const scale = 180 / maxDim;
+                          const x1 = 40;
+                          const y1 = 190;
+                          const x2 = 40 + triA * scale;
+                          const y2 = 190;
+
+                          // Law of cosines for third vertex
+                          const cosB = (triA * triA + triC * triC - triB * triB) / (2 * triA * triC);
+                          const safeCos = Math.max(-1, Math.min(1, cosB));
+                          const sinB = Math.sqrt(Math.max(0, 1 - safeCos * safeCos));
+                          const x3 = x1 + triC * scale * safeCos;
+                          const y3 = y1 - triC * scale * sinB;
+
+                          return (
+                            <g>
+                              <polygon
+                                points={`${x1},${y1} ${x2},${y2} ${x3},${y3}`}
+                                className="geo-shape"
+                                strokeWidth="2.5"
+                              />
+                              {/* Vertex points */}
+                              <circle cx={x1} cy={y1} r="3" className="geo-point" />
+                              <circle cx={x2} cy={y2} r="3" className="geo-point" />
+                              <circle cx={x3} cy={y3} r="3" className="geo-point" />
+
+                              {/* Dimension Labels */}
+                              <text
+                                x={(x1 + x2) / 2}
+                                y={y1 + 18}
+                                className="geo-label"
+                                fontSize="11"
+                                textAnchor="middle"
+                              >
+                                a = {triA}
+                              </text>
+                              <text
+                                x={(x2 + x3) / 2 + 10}
+                                y={(y2 + y3) / 2}
+                                className="geo-label"
+                                fontSize="11"
+                                textAnchor="start"
+                              >
+                                b = {triB}
+                              </text>
+                              <text
+                                x={(x1 + x3) / 2 - 12}
+                                y={(y1 + y3) / 2}
+                                className="geo-label"
+                                fontSize="11"
+                                textAnchor="end"
+                              >
+                                c = {triC}
+                              </text>
+                            </g>
+                          );
+                        })()
+                      ) : (
+                        <text
+                          x="150"
+                          y="120"
+                          className="geo-invalid"
+                          fontSize="12"
+                          textAnchor="middle"
+                        >
+                          Triangle condition invalid
+                        </text>
+                      )}
+                    </svg>
+                  )}
+
+                  {selectedShape === 'rightTriangle' && (
+                    <svg
+                      viewBox="0 0 300 240"
+                      className="geometry-diagram"
+                      role="img"
+                      aria-label={`${result.shapeName} construction`}
+                    >
+                      {(() => {
+                        const maxDim = Math.max(rtA, rtB, 1);
+                        const scale = 160 / maxDim;
+                        const x0 = 60;
+                        const y0 = 190;
+                        const xBase = x0 + rtB * scale;
+                        const yTop = y0 - rtA * scale;
+                        const cVal = Math.sqrt(rtA * rtA + rtB * rtB);
+
+                        return (
+                          <g>
+                            {/* Right angle marker */}
+                            <path
+                              d={`M ${x0 + 15} ${y0} L ${x0 + 15} ${y0 - 15} L ${x0} ${y0 - 15}`}
+                              className="geo-right-angle"
+                              strokeWidth="1.5"
+                            />
+                            <polygon
+                              points={`${x0},${y0} ${xBase},${y0} ${x0},${yTop}`}
+                              className="geo-shape"
+                              strokeWidth="2.5"
+                            />
+                            <circle cx={x0} cy={y0} r="3" className="geo-point" />
+                            <circle cx={xBase} cy={y0} r="3" className="geo-point" />
+                            <circle cx={x0} cy={yTop} r="3" className="geo-point" />
+
+                            <text
+                              x={(x0 + xBase) / 2}
+                              y={y0 + 18}
+                              className="geo-label"
+                              fontSize="11"
+                              textAnchor="middle"
+                            >
+                              b = {rtB}
+                            </text>
+                            <text
+                              x={x0 - 12}
+                              y={(y0 + yTop) / 2}
+                              className="geo-label"
+                              fontSize="11"
+                              textAnchor="end"
+                            >
+                              a = {rtA}
+                            </text>
+                            <text
+                              x={(x0 + xBase) / 2 + 15}
+                              y={(y0 + yTop) / 2 - 5}
+                              className="geo-label geo-label--accent"
+                              fontSize="11"
+                              textAnchor="start"
+                              fontWeight="bold"
+                            >
+                              c = {cVal.toFixed(2)}
+                            </text>
+                          </g>
+                        );
+                      })()}
+                    </svg>
+                  )}
+
+                  {selectedShape === 'circle' && (
+                    <svg
+                      viewBox="0 0 300 240"
+                      className="geometry-diagram"
+                      role="img"
+                      aria-label={`${result.shapeName} construction`}
+                    >
+                      <circle cx="150" cy="120" r="85" className="geo-shape" strokeWidth="2.5" />
+                      <line
+                        x1="150"
+                        y1="120"
+                        x2="235"
+                        y2="120"
+                        className="geo-measure"
+                        strokeWidth="2"
+                      />
+                      <circle cx="150" cy="120" r="3.5" className="geo-point geo-point--accent" />
+                      <circle cx="235" cy="120" r="3" className="geo-point" />
+                      <text
+                        x="192"
+                        y="112"
+                        className="geo-label geo-label--accent"
+                        fontSize="12"
+                        textAnchor="middle"
+                        fontWeight="bold"
+                      >
+                        r = {circR}
+                      </text>
+                      <text
+                        x="150"
+                        y="224"
+                        className="geo-label"
+                        fontSize="10"
+                        textAnchor="middle"
+                      >
+                        d = {(circR * 2).toFixed(2)}
+                      </text>
+                    </svg>
+                  )}
+
+                  {selectedShape === 'rectangle' && (
+                    <svg
+                      viewBox="0 0 300 240"
+                      className="geometry-diagram"
+                      role="img"
+                      aria-label={`${result.shapeName} construction`}
+                    >
+                      {(() => {
+                        const maxDim = Math.max(rectL, rectW, 1);
+                        const rw = Math.max(40, (rectL / maxDim) * 200);
+                        const rh = Math.max(30, (rectW / maxDim) * 140);
+                        const rx = (300 - rw) / 2;
+                        const ry = (240 - rh) / 2;
+
+                        return (
+                          <g>
+                            <rect
+                              x={rx}
+                              y={ry}
+                              width={rw}
+                              height={rh}
+                              className="geo-shape"
+                              strokeWidth="2.5"
+                              rx="1"
+                            />
+                            <line
+                              x1={rx}
+                              y1={ry + rh}
+                              x2={rx + rw}
+                              y2={ry}
+                              className="geo-dash"
+                              strokeWidth="1"
+                            />
+                            <text
+                              x={rx + rw / 2}
+                              y={ry + rh + 18}
+                              className="geo-label"
+                              fontSize="11"
+                              textAnchor="middle"
+                            >
+                              l = {rectL}
+                            </text>
+                            <text
+                              x={rx - 10}
+                              y={ry + rh / 2}
+                              className="geo-label"
+                              fontSize="11"
+                              textAnchor="end"
+                            >
+                              w = {rectW}
+                            </text>
+                          </g>
+                        );
+                      })()}
+                    </svg>
+                  )}
+
+                  {selectedShape === 'coordinate2d' && (
+                    <svg
+                      viewBox="0 0 300 240"
+                      className="geometry-diagram"
+                      role="img"
+                      aria-label={`${result.shapeName} construction`}
+                    >
+                      {(() => {
+                        const minX = Math.min(coordX1, coordX2);
+                        const maxX = Math.max(coordX1, coordX2);
+                        const minY = Math.min(coordY1, coordY2);
+                        const maxY = Math.max(coordY1, coordY2);
+                        const rangeX = Math.max(1, maxX - minX);
+                        const rangeY = Math.max(1, maxY - minY);
+                        const scale = Math.min(180 / rangeX, 140 / rangeY);
+
+                        const originX = 150 - ((minX + maxX) / 2) * scale;
+                        const originY = 120 + ((minY + maxY) / 2) * scale;
+
+                        const px1 = originX + coordX1 * scale;
+                        const py1 = originY - coordY1 * scale;
+                        const px2 = originX + coordX2 * scale;
+                        const py2 = originY - coordY2 * scale;
+
+                        return (
+                          <g>
+                            {/* Grid Axes */}
+                            <line x1="20" y1={originY} x2="280" y2={originY} className="geo-axis" />
+                            <line x1={originX} y1="20" x2={originX} y2="220" className="geo-axis" />
+
+                            {/* Vector Segment */}
+                            <line
+                              x1={px1}
+                              y1={py1}
+                              x2={px2}
+                              y2={py2}
+                              className="geo-vector"
+                              strokeWidth="3"
+                            />
+                            {/* Component triangle */}
+                            <line
+                              x1={px1}
+                              y1={py1}
+                              x2={px2}
+                              y2={py1}
+                              className="geo-dash"
+                              strokeWidth="1"
+                            />
+                            <line
+                              x1={px2}
+                              y1={py1}
+                              x2={px2}
+                              y2={py2}
+                              className="geo-dash"
+                              strokeWidth="1"
+                            />
+
+                            {/* Points */}
+                            <circle cx={px1} cy={py1} r="4" className="geo-point" />
+                            <circle cx={px2} cy={py2} r="4" className="geo-point geo-point--accent" />
+
+                            <text
+                              x={px1}
+                              y={py1 - 8}
+                              className="geo-label geo-label--strong"
+                              fontSize="10"
+                              textAnchor="middle"
+                            >
+                              A({coordX1},{coordY1})
+                            </text>
+                            <text
+                              x={px2}
+                              y={py2 - 8}
+                              className="geo-label geo-label--accent"
+                              fontSize="10"
+                              textAnchor="middle"
+                            >
+                              B({coordX2},{coordY2})
+                            </text>
+                          </g>
+                        );
+                      })()}
+                    </svg>
+                  )}
+
+                  {selectedShape === 'polygon' && (
+                    <svg
+                      viewBox="0 0 300 240"
+                      className="geometry-diagram"
+                      role="img"
+                      aria-label={`${result.shapeName} construction`}
+                    >
+                      {(() => {
+                        const n = Math.max(3, polySides);
+                        const r = 80;
+                        const cx = 150;
+                        const cy = 120;
+                        const points: string[] = [];
+
+                        for (let i = 0; i < n; i++) {
+                          const angle = (i * 2 * Math.PI) / n - Math.PI / 2;
+                          const x = cx + r * Math.cos(angle);
+                          const y = cy + r * Math.sin(angle);
+                          points.push(`${x},${y}`);
+                        }
+
+                        return (
+                          <g>
+                            <polygon
+                              points={points.join(' ')}
+                              className="geo-shape"
+                              strokeWidth="2.5"
+                            />
+                            <circle cx={cx} cy={cy} r="3" className="geo-point geo-point--accent" />
+                            <line
+                              x1={cx}
+                              y1={cy}
+                              x2={cx}
+                              y2={cy - r}
+                              className="geo-dash"
+                              strokeWidth="1.2"
+                            />
+                            <text x={cx + 6} y={cy - r / 2} className="geo-label" fontSize="10">
+                              R
+                            </text>
+                            <text
+                              x={cx}
+                              y="224"
+                              className="geo-label geo-label--accent"
+                              fontSize="11"
+                              textAnchor="middle"
+                            >
+                              n = {n} sides · s = {polyLength}
+                            </text>
+                          </g>
+                        );
+                      })()}
+                    </svg>
+                  )}
+
+                  {selectedShape === 'cylinder' && (
+                    <svg
+                      viewBox="0 0 300 240"
+                      className="geometry-diagram"
+                      role="img"
+                      aria-label={`${result.shapeName} construction`}
+                    >
+                      <ellipse
+                        cx="150"
+                        cy="60"
+                        rx="60"
+                        ry="20"
+                        className="geo-shape"
+                        strokeWidth="2"
+                      />
+                      <line x1="90" y1="60" x2="90" y2="180" className="geo-solid-line" strokeWidth="2" />
+                      <line x1="210" y1="60" x2="210" y2="180" className="geo-solid-line" strokeWidth="2" />
+                      <ellipse
+                        cx="150"
+                        cy="180"
+                        rx="60"
+                        ry="20"
+                        className="geo-shape"
+                        strokeWidth="2"
+                      />
+                      <line
+                        x1="150"
+                        y1="60"
+                        x2="210"
+                        y2="60"
+                        className="geo-measure"
+                        strokeWidth="1.5"
+                      />
+                      <circle cx="150" cy="60" r="3" className="geo-point geo-point--accent" />
+                      {/* Labels */}
+                      <text
+                        x="75"
+                        y="120"
+                        className="geo-label"
+                        fontSize="11"
+                        textAnchor="end"
+                      >
+                        h = {cylH}
+                      </text>
+                      <text
+                        x="180"
+                        y="52"
+                        className="geo-label geo-label--accent"
+                        fontSize="10"
+                        textAnchor="middle"
+                      >
+                        r = {cylR}
+                      </text>
+                    </svg>
+                  )}
+
+                  {selectedShape === 'sphere' && (
+                    <svg
+                      viewBox="0 0 300 240"
+                      className="geometry-diagram"
+                      role="img"
+                      aria-label={`${result.shapeName} construction`}
+                    >
+                      <circle cx="150" cy="120" r="75" className="geo-shape" strokeWidth="2.5" />
+                      <ellipse
+                        cx="150"
+                        cy="120"
+                        rx="75"
+                        ry="25"
+                        className="geo-dash"
+                        strokeWidth="1.2"
+                      />
+                      <line
+                        x1="150"
+                        y1="120"
+                        x2="225"
+                        y2="120"
+                        className="geo-measure"
+                        strokeWidth="2"
+                      />
+                      <circle cx="150" cy="120" r="3" className="geo-point geo-point--accent" />
+                      <text
+                        x="185"
+                        y="112"
+                        className="geo-label geo-label--accent"
+                        fontSize="11"
+                        textAnchor="middle"
+                      >
+                        r = {sphR}
+                      </text>
+                    </svg>
+                  )}
+
+                  {selectedShape === 'cone' && (
+                    <svg
+                      viewBox="0 0 300 240"
+                      className="geometry-diagram"
+                      role="img"
+                      aria-label={`${result.shapeName} construction`}
+                    >
+                      <line x1="150" y1="40" x2="80" y2="180" className="geo-solid-line" strokeWidth="2.5" />
+                      <line x1="150" y1="40" x2="220" y2="180" className="geo-solid-line" strokeWidth="2.5" />
+                      <ellipse
+                        cx="150"
+                        cy="180"
+                        rx="70"
+                        ry="20"
+                        className="geo-shape"
+                        strokeWidth="2"
+                      />
+                      <line
+                        x1="150"
+                        y1="40"
+                        x2="150"
+                        y2="180"
+                        className="geo-dash"
+                        strokeWidth="1"
+                      />
+                      <line
+                        x1="150"
+                        y1="180"
+                        x2="220"
+                        y2="180"
+                        className="geo-measure"
+                        strokeWidth="1.5"
+                      />
+                      <text
+                        x="140"
+                        y="110"
+                        className="geo-label"
+                        fontSize="11"
+                        textAnchor="end"
+                      >
+                        h = {coneH}
+                      </text>
+                      <text
+                        x="185"
+                        y="196"
+                        className="geo-label geo-label--accent"
+                        fontSize="10"
+                        textAnchor="middle"
+                      >
+                        r = {coneR}
+                      </text>
+                    </svg>
+                  )}
+                </div>
+              </div>
+
+              <div className="geometry-canvas__measures">
+                {measures.map((measure) => (
+                  <div
+                    key={measure.label}
+                    className={`geometry-measure-chip${measure.accent ? ' is-accent' : ''}`}
+                  >
+                    <span className="geometry-measure-chip__label">{measure.label}</span>
+                    <span className="geometry-measure-chip__value">
+                      {measure.value}
+                      {measure.unit && (
+                        <span className="geometry-measure-chip__unit">{measure.unit}</span>
+                      )}
+                    </span>
+                  </div>
                 ))}
               </div>
+
+              <div className="geometry-note">
+                <div className="geometry-note__head">
+                  <span className="geometry-note__tag">{relationship.tag}</span>
+                  <span className="geometry-note__stamp">Proof note</span>
+                </div>
+                <p className="geometry-note__statement">{relationship.statement}</p>
+                <p className="geometry-note__detail">{relationship.detail}</p>
+              </div>
+            </GlassPanel>
+          </div>
+        </Reveal>
+
+        <Reveal delay={300} className="geometry-col geometry-col--results">
+          <GlassPanel className="geometry-panel geometry-panel--results">
+            <div className="geometry-panel__head">
+              <div>
+                <span className="geometry-section-label">
+                  <Ruler aria-hidden="true" />
+                  Output
+                </span>
+                <h3 className="geometry-panel__title">Results &amp; proof</h3>
+              </div>
+              <span className="geometry-live">Live</span>
             </div>
-          )}
-        </div>
+
+            <div className="geometry-results-grid">
+              {result.properties.map((prop, idx) => (
+                <div key={idx} className="geometry-result">
+                  <span className="geometry-result__label">{prop.label}</span>
+                  <span className="geometry-result__value">
+                    {prop.value}
+                    {prop.unit && <span className="geometry-result__unit">{prop.unit}</span>}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {result.properties.length === 0 && (
+              <p className="geometry-results-empty">
+                No computed values yet. Adjust the inputs until the shape condition is satisfied.
+              </p>
+            )}
+
+            {result.formula && (
+              <div className="geometry-formula-block">
+                <span className="geometry-block-label">Standard formula</span>
+                <div className="geometry-formula">
+                  <MathView math={result.formula} displayMode={true} />
+                </div>
+              </div>
+            )}
+
+            {result.substitution && (
+              <div className="geometry-substitution-block">
+                <span className="geometry-block-label">Value substitution</span>
+                <div className="geometry-substitution">
+                  <MathView math={result.substitution} displayMode={true} />
+                </div>
+              </div>
+            )}
+
+            {result.steps.length > 0 && (
+              <div className="geometry-steps">
+                <span className="geometry-block-label">Derivation steps</span>
+                {result.steps.map((step, index) => {
+                  const match = step.match(/^(\d+)\.\s*(.*)$/);
+                  return (
+                    <p key={index} className="geometry-step">
+                      <span className="geometry-step__index">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <span>{match ? match[2] : step}</span>
+                    </p>
+                  );
+                })}
+              </div>
+            )}
+          </GlassPanel>
+        </Reveal>
       </div>
     </div>
   );

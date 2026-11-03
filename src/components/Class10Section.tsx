@@ -21,6 +21,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
+import '../styles/curriculum.css';
 
 interface Class10SectionProps {
   t: Translations;
@@ -358,7 +359,7 @@ export const Class10Section: React.FC<Class10SectionProps> = ({
     <div id="class-10-mathematics" className="w-full">
       {/* Section Header or Streamlined Controls */}
       {!hideHeader ? (
-        <div className="pb-6 mb-8 border-b border-slate-200 dark:border-white/10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="curr-index-head pb-6 mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-sky-500/10 dark:bg-sky-500/20 border border-sky-500/30 text-sky-700 dark:text-sky-300 text-xs font-mono font-semibold mb-3">
               <GraduationCap className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />

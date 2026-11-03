@@ -718,25 +718,25 @@ export const ShapeBuilderGame: React.FC = () => {
       {/* Shape Properties Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-center">
-          <span className="text-[10px] font-mono uppercase text-slate-400 block">Sides / Edges</span>
+          <span className="text-[11px] font-mono uppercase text-slate-400 block">Sides / Edges</span>
           <span className="text-xl sm:text-2xl font-black font-mono text-cyan-600 dark:text-cyan-400">
             {shape.sides}
           </span>
         </div>
         <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-center">
-          <span className="text-[10px] font-mono uppercase text-slate-400 block">Vertices</span>
+          <span className="text-[11px] font-mono uppercase text-slate-400 block">Vertices</span>
           <span className="text-xl sm:text-2xl font-black font-mono text-cyan-600 dark:text-cyan-400">
             {shape.vertices}
           </span>
         </div>
         <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-center">
-          <span className="text-[10px] font-mono uppercase text-slate-400 block">Interior Angles Sum</span>
+          <span className="text-[11px] font-mono uppercase text-slate-400 block">Interior Angles Sum</span>
           <span className="text-xl sm:text-2xl font-black font-mono text-cyan-600 dark:text-cyan-400">
             {shape.interiorAngleSum > 0 ? `${shape.interiorAngleSum}°` : 'Curved'}
           </span>
         </div>
         <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-center">
-          <span className="text-[10px] font-mono uppercase text-slate-400 block">3D Faces</span>
+          <span className="text-[11px] font-mono uppercase text-slate-400 block">3D Faces</span>
           <span className="text-xl sm:text-2xl font-black font-mono text-cyan-600 dark:text-cyan-400">
             {shape.faces3D || '2D Plane'}
           </span>
@@ -1063,7 +1063,7 @@ export const NumberMazeGame: React.FC = () => {
                   }`}
                 >
                   <span>{cell.value}</span>
-                  {isPlayer ? <span className="text-[10px]">🚶 Here</span> : isGoal ? <span className="text-[10px]">🏁 Goal</span> : null}
+                  {isPlayer ? <span className="text-[11px]">🚶 Here</span> : isGoal ? <span className="text-[11px]">🏁 Goal</span> : null}
                 </button>
               );
             })

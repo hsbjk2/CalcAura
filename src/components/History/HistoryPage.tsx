@@ -38,6 +38,7 @@ import { Notebook } from '../Whiteboard/types.ts';
 import { PracticeQuestion } from '../../data/practiceQuestionsData.ts';
 import { useAuth } from '../../context/AuthContext.tsx';
 import { CinematicHistoryLanding } from './CinematicHistoryLanding.tsx';
+import '../../styles/history.css';
 
 interface HistoryPageProps {
   onOpenWhiteboard: (notebook: Notebook) => void;
@@ -268,162 +269,125 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
   }
 
   return (
-    <div className="min-h-[85vh] py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+    <div className="history-page min-h-[85vh] py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-200 dark:border-white/10">
-        <div>
-          <div className="flex items-center gap-2.5 mb-1.5">
-            <div className="w-10 h-10 rounded-2xl bg-[#7957F5]/10 border border-[#7957F5]/30 flex items-center justify-center text-[#7957F5]">
+      <header className="history-head">
+        <div className="history-head__row">
+          <div className="history-title">
+            <span className="history-title__mark" aria-hidden="true">
               <History className="w-5 h-5" />
-            </div>
+            </span>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                  History
-                </h1>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Vault Connected
-                </span>
-              </div>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                Your completed practice and saved creative work.
-              </p>
+              <h1>History</h1>
+              <p>Your completed practice and saved creative work.</p>
             </div>
+            <span className="history-chip">
+              <span className="history-chip__dot" aria-hidden="true" />
+              Vault connected
+            </span>
           </div>
-        </div>
 
-        {/* User Status Bar & Tabs */}
-        <div className="flex flex-wrap items-center gap-3">
           {/* Authenticated User Chip */}
-          <div className="flex items-center gap-2.5 px-3 py-2 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 max-w-[280px] min-w-0">
+          <div className="history-user">
+            {user.avatar && /^https?:\/\//i.test(user.avatar) ? (
+              <img
+                src={user.avatar}
+                alt={`${user.name}'s profile`}
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <span aria-hidden="true">{user.avatar || '🎓'}</span>
+            )}
 
-  {user.avatar && /^https?:\/\//i.test(user.avatar) ? (
-    <img
-      src={user.avatar}
-      alt={`${user.name}'s profile`}
-      className="w-9 h-9 rounded-full object-cover shrink-0"
-      referrerPolicy="no-referrer"
-    />
-  ) : (
-    <span className="text-xl w-9 h-9 flex items-center justify-center shrink-0">
-      {user.avatar || '🎓'}
-    </span>
-  )}
-
-  <div className="text-left min-w-0 flex-1">
-    <div className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-      {user.name}
-    </div>
-    <div className="text-[10px] font-mono text-slate-400 truncate">
-      {user.email}
-    </div>
-  </div>
-
-  <button
-    onClick={logout}
-    className="ml-1 p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer shrink-0"
-    title="Sign Out"
-    aria-label="Sign Out"
-  >
-    <LogOut className="w-3.5 h-3.5" />
-  </button>
-
-</div>
-
-          {/* Tab Switcher */}
-          <div className="inline-flex p-1.5 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 self-start sm:self-auto">
-            <button
-              onClick={() => {
-                setActiveTab('practice');
-                setSearchQuery('');
-              }}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                activeTab === 'practice'
-                  ? 'bg-white dark:bg-[#1E1E22] text-[#7957F5] shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <BookOpen className="w-4 h-4" />
-              <span>Interactive Practice</span>
-              <span
-                className={`px-2 py-0.5 rounded-full text-[11px] font-mono ${
-                  activeTab === 'practice'
-                    ? 'bg-[#7957F5]/10 text-[#7957F5]'
-                    : 'bg-slate-200 dark:bg-white/10 text-slate-500 dark:text-slate-400'
-                }`}
-              >
-                {practiceEntries.length}
-              </span>
-            </button>
+            <div className="text-left min-w-0 flex-1">
+              <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                {user.name}
+              </div>
+              <div className="text-[10px] text-slate-400 truncate">{user.email}</div>
+            </div>
 
             <button
-              onClick={() => {
-                setActiveTab('whiteboard');
-                setSearchQuery('');
-              }}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                activeTab === 'whiteboard'
-                  ? 'bg-white dark:bg-[#1E1E22] text-[#7957F5] shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
+              onClick={logout}
+              className="ml-1 p-1.5 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer shrink-0"
+              title="Sign Out"
+              aria-label="Sign Out"
             >
-              <Layout className="w-4 h-4" />
-              <span>Saved Whiteboards</span>
-              <span
-                className={`px-2 py-0.5 rounded-full text-[11px] font-mono ${
-                  activeTab === 'whiteboard'
-                    ? 'bg-[#7957F5]/10 text-[#7957F5]'
-                    : 'bg-slate-200 dark:bg-white/10 text-slate-500 dark:text-slate-400'
-                }`}
-              >
-                {whiteboards.length}
-              </span>
+              <LogOut className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
-      </div>
+
+        {/* Tab Switcher */}
+        <div className="history-tabs" role="tablist" aria-label="History sections">
+          <button
+            role="tab"
+            aria-selected={activeTab === 'practice'}
+            onClick={() => {
+              setActiveTab('practice');
+              setSearchQuery('');
+            }}
+            className={`history-tab ${activeTab === 'practice' ? 'is-active' : ''}`}
+          >
+            <BookOpen className="w-4 h-4" aria-hidden="true" />
+            <span>Interactive practice</span>
+            <span className="history-tab__count">{practiceEntries.length}</span>
+          </button>
+
+          <button
+            role="tab"
+            aria-selected={activeTab === 'whiteboard'}
+            onClick={() => {
+              setActiveTab('whiteboard');
+              setSearchQuery('');
+            }}
+            className={`history-tab ${activeTab === 'whiteboard' ? 'is-active' : ''}`}
+          >
+            <Layout className="w-4 h-4" aria-hidden="true" />
+            <span>Saved whiteboards</span>
+            <span className="history-tab__count">{whiteboards.length}</span>
+          </button>
+        </div>
+      </header>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
-        <div className="flex-1 flex items-center gap-2 max-w-md">
-          <div className="relative w-full">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={
-                activeTab === 'practice'
-                  ? 'Search by sheet title, class, or chapter...'
-                  : 'Search saved whiteboards by name...'
-              }
-              className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-white dark:bg-[#18181B] border border-slate-200 dark:border-white/10 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#7957F5] shadow-xs"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
+      <div className="history-toolbar">
+        <div className="history-search">
+          <Search aria-hidden="true" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={
+              activeTab === 'practice'
+                ? 'Search by sheet title, class, or chapter…'
+                : 'Search saved whiteboards by name…'
+            }
+            aria-label="Search history"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
+              aria-label="Clear search"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-2 self-end sm:self-auto">
           {/* Date Range Filter */}
-          <div className="flex items-center gap-1.5 bg-white dark:bg-[#18181B] border border-slate-200 dark:border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-slate-600 dark:text-slate-300 shadow-xs">
-            <Calendar className="w-3.5 h-3.5 text-slate-400" />
+          <div className="history-filter">
+            <Calendar className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value as DateFilterType)}
-              className="bg-transparent text-xs font-semibold focus:outline-none cursor-pointer"
+              aria-label="Filter by date"
             >
-              <option value="all" className="dark:bg-[#18181B]">All Time</option>
+              <option value="all" className="dark:bg-[#18181B]">All time</option>
               <option value="today" className="dark:bg-[#18181B]">Today</option>
-              <option value="7days" className="dark:bg-[#18181B]">Past 7 Days</option>
-              <option value="30days" className="dark:bg-[#18181B]">Past 30 Days</option>
+              <option value="7days" className="dark:bg-[#18181B]">Past 7 days</option>
+              <option value="30days" className="dark:bg-[#18181B]">Past 30 days</option>
             </select>
           </div>
 
@@ -431,11 +395,11 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
           {activeTab === 'practice' && practiceEntries.length > 0 && (
             <button
               onClick={() => setClearPracticeConfirmOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 transition-colors cursor-pointer"
               title="Clear all completed practice sheets"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Clear History</span>
+              <span className="hidden sm:inline">Clear history</span>
             </button>
           )}
         </div>
@@ -450,22 +414,18 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
       ) : activeTab === 'practice' ? (
         /* ================= TAB 1: PRACTICE SHEETS ================= */
         filteredPracticeEntries.length === 0 ? (
-          <div className="py-20 text-center rounded-3xl border border-dashed border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] p-8 max-w-xl mx-auto">
-            <div className="w-14 h-14 rounded-3xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-[#7957F5] mx-auto mb-4">
-              <FileCheck className="w-7 h-7" />
-            </div>
-            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 mb-1">
-              You haven't completed any practice sheets yet.
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto leading-relaxed">
-              Solve interactive questions in the Practice Exam & Worksheet section. Your submitted tests, scores, and step proofs will appear here automatically.
+          <div className="history-empty">
+            <span className="history-empty__mark" aria-hidden="true">
+              <FileCheck className="w-6 h-6" />
+            </span>
+            <h3>No practice sheets yet.</h3>
+            <p>
+              Solve interactive questions in the practice worksheet. Submitted tests, scores and
+              step-by-step proofs land here automatically, ready to revisit.
             </p>
-            <button
-              onClick={onNavigateToPractice}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#7957F5] hover:bg-[#6846E3] active:scale-95 text-white text-xs font-bold shadow-md transition-all cursor-pointer"
-            >
-              <BookOpen className="w-4 h-4" />
-              <span>Start a Practice Sheet</span>
+            <button type="button" className="btn btn--sm" onClick={onNavigateToPractice}>
+              <BookOpen className="w-4 h-4" aria-hidden="true" />
+              <span>Start a practice sheet</span>
             </button>
           </div>
         ) : (
@@ -485,7 +445,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
               return (
                 <div
                   key={entry.id}
-                  className="bg-white dark:bg-[#18181B] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm hover:shadow-md transition-all p-4.5 flex flex-col justify-between"
+                  className="history-card"
                 >
                   <div>
                     {/* Top row: tags and score badge */}
@@ -586,22 +546,18 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
       ) : (
         /* ================= TAB 2: SAVED WHITEBOARDS ================= */
         filteredWhiteboards.length === 0 ? (
-          <div className="py-20 text-center rounded-3xl border border-dashed border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] p-8 max-w-xl mx-auto">
-            <div className="w-14 h-14 rounded-3xl bg-[#7957F5]/10 border border-[#7957F5]/20 flex items-center justify-center text-[#7957F5] mx-auto mb-4">
-              <Layout className="w-7 h-7" />
-            </div>
-            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 mb-1">
-              No saved whiteboards yet. Create a board and click Save to see it here.
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto leading-relaxed">
-              Whiteboards are only added to your permanent history when you explicitly click the Save button. Draft edits or unsaved boards will not clutter your history.
+          <div className="history-empty">
+            <span className="history-empty__mark" aria-hidden="true">
+              <Layout className="w-6 h-6" />
+            </span>
+            <h3>No saved whiteboards yet.</h3>
+            <p>
+              A board is added to history only when you explicitly save it. Open the whiteboard,
+              sketch a proof and save it — the full multi-sheet notebook will appear here.
             </p>
-            <button
-              onClick={onNavigateToWhiteboard}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#7957F5] hover:bg-[#6846E3] active:scale-95 text-white text-xs font-bold shadow-md transition-all cursor-pointer"
-            >
-              <Layout className="w-4 h-4" />
-              <span>Open Whiteboard Workspace</span>
+            <button type="button" className="btn btn--sm" onClick={onNavigateToWhiteboard}>
+              <Layout className="w-4 h-4" aria-hidden="true" />
+              <span>Open the whiteboard</span>
             </button>
           </div>
         ) : (
@@ -609,7 +565,7 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
             {filteredWhiteboards.map((entry) => (
               <div
                 key={entry.id}
-                className="bg-white dark:bg-[#18181B] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group"
+                className="history-card history-card--media group overflow-hidden"
               >
                 {/* Visual Thumbnail */}
                 <div

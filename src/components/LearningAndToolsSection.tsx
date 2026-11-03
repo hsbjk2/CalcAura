@@ -29,6 +29,7 @@ import {
   EducationToolItem,
 } from '../data/educationToolsData.ts';
 import * as mathEng from '../math/educationTools.ts';
+import '../styles/curriculum.css';
 
 interface LearningAndToolsSectionProps {
   t: Translations;
@@ -477,7 +478,7 @@ export const LearningAndToolsSection: React.FC<LearningAndToolsSectionProps> = (
   return (
     <div id="learning-and-tools" className="w-full space-y-10">
       {/* 1. Section Header & Purpose */}
-      <div className="pb-6 border-b border-slate-200 dark:border-white/10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div className="curr-index-head pb-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#7957F5]/10 dark:bg-[#7957F5]/20 border border-[#7957F5]/30 text-[#7957F5] dark:text-purple-300 text-xs font-mono font-semibold mb-3">
             <Layers className="w-3.5 h-3.5" />

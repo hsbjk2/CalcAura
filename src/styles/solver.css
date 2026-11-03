@@ -1,0 +1,1329 @@
+/* =========================================================================
+   CALCAURA — equation solver / algebra desk
+   Paper, ink, one chartreuse signal. Bodoni headings, Jost controls,
+   hairline glass panels, a layered formula plane and numbered step cards.
+   Scoped under .solver-desk so it can live inside App and StudioWorkspace.
+   ========================================================================= */
+
+.solver-desk {
+  --sd-text: var(--ink);
+  --sd-muted: var(--muted);
+  --sd-surface: color-mix(in srgb, #ffffff 42%, var(--paper));
+  --sd-raised: color-mix(in srgb, #ffffff 58%, var(--paper));
+  --sd-inset: color-mix(in srgb, var(--paper-2) 78%, transparent);
+  --sd-line: color-mix(in srgb, var(--ink) 14%, transparent);
+  --sd-line-soft: color-mix(in srgb, var(--ink) 8%, transparent);
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  max-width: 1240px;
+  margin-inline: auto;
+  padding: clamp(22px, 3.6vw, 46px) clamp(16px, 3vw, 32px) clamp(34px, 5vw, 58px);
+  color: var(--sd-text);
+  font-family: var(--font-text);
+}
+
+.solver-desk::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -8% -2% auto;
+  height: 440px;
+  pointer-events: none;
+  background: radial-gradient(
+    52% 62% at 78% 0%,
+    color-mix(in srgb, var(--accent) 16%, transparent),
+    transparent 72%
+  );
+}
+
+.dark .solver-desk {
+  --sd-text: var(--paper);
+  --sd-muted: var(--muted-ink);
+  --sd-surface: color-mix(in srgb, var(--ink-3) 82%, transparent);
+  --sd-raised: color-mix(in srgb, var(--ink-3) 94%, transparent);
+  --sd-inset: color-mix(in srgb, var(--ink) 64%, transparent);
+  --sd-line: var(--line-ink);
+  --sd-line-soft: color-mix(in srgb, var(--paper) 9%, transparent);
+}
+
+.dark .solver-desk::before {
+  background: radial-gradient(
+    52% 62% at 78% 0%,
+    color-mix(in srgb, var(--accent) 9%, transparent),
+    transparent 72%
+  );
+}
+
+/* -------------------------------------------------------------------------
+   Header copy
+   ------------------------------------------------------------------------- */
+
+.solver-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+  gap: clamp(28px, 5vw, 66px);
+  align-items: center;
+  margin-bottom: clamp(26px, 4vw, 44px);
+}
+
+.solver-head__copy,
+.solver-col {
+  min-width: 0;
+}
+
+.solver-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--sd-muted);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.19em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.solver-eyebrow::before {
+  content: '';
+  width: 20px;
+  height: 1px;
+  background: currentColor;
+}
+
+.solver-desk .solver-title {
+  margin: 0.55rem 0 0;
+  color: var(--sd-text) !important;
+  font-family: var(--font-display);
+  font-size: clamp(2.45rem, 5.3vw, 4.85rem);
+  font-weight: 500 !important;
+  letter-spacing: -0.035em;
+  line-height: 0.94;
+  text-wrap: balance;
+}
+
+.solver-desk .solver-title em {
+  font-style: italic;
+  background: linear-gradient(var(--accent), var(--accent)) left bottom / 100% 0.16em no-repeat;
+  padding-bottom: 0.05em;
+}
+
+.solver-lead {
+  max-width: 54ch;
+  margin: 1rem 0 0;
+  color: var(--sd-muted);
+  font-size: clamp(0.98rem, 0.96rem + 0.16vw, 1.08rem);
+  line-height: 1.52;
+}
+
+.solver-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 1.35rem;
+  padding: 5px;
+  border: 1px solid var(--sd-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper-2) 68%, transparent);
+}
+
+.solver-mode {
+  min-height: 40px;
+  padding: 0.52rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--sd-muted);
+  font-family: var(--font-text);
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 240ms ease,
+    color 240ms ease,
+    box-shadow 240ms ease;
+}
+
+.solver-mode:hover {
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+  color: var(--sd-text);
+}
+
+.solver-mode[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #ffffff 46%, transparent),
+    0 2px 0 color-mix(in srgb, var(--accent-strong) 50%, transparent);
+}
+
+.dark .solver-modes {
+  background: color-mix(in srgb, var(--ink-3) 72%, transparent);
+}
+
+.dark .solver-mode:hover {
+  background: color-mix(in srgb, var(--paper) 8%, transparent);
+}
+
+/* -------------------------------------------------------------------------
+   The 3D formula plane
+   ------------------------------------------------------------------------- */
+
+.solver-head__stage {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.solver-plane {
+  position: relative;
+  width: min(100%, 370px);
+  min-height: 330px;
+}
+
+/* Put the tilt glow behind the formula sheets. */
+.solver-plane::after {
+  z-index: -1;
+}
+
+.solver-plane__glow {
+  position: absolute;
+  inset: 12% 4% auto;
+  height: 190px;
+  border-radius: 50%;
+  background: radial-gradient(
+    60% 60% at 50% 42%,
+    color-mix(in srgb, var(--accent) 28%, transparent),
+    transparent 72%
+  );
+  filter: blur(18px);
+  transform: translateZ(-22px);
+  pointer-events: none;
+}
+
+.solver-plane__glyph {
+  position: absolute;
+  z-index: 0;
+  color: color-mix(in srgb, var(--ink) 48%, transparent);
+  font-family: var(--font-display);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.solver-plane__glyph--a {
+  top: 26px;
+  left: -14px;
+  font-size: 2.1rem;
+  transform: translateZ(38px) rotate(-8deg);
+}
+
+.solver-plane__glyph--b {
+  right: -8px;
+  bottom: 2px;
+  font-size: 2.4rem;
+  transform: translateZ(44px) rotate(7deg);
+}
+
+.dark .solver-plane__glyph {
+  color: color-mix(in srgb, var(--paper) 52%, transparent);
+}
+
+.solver-plane__sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--sd-line);
+  border-radius: 3px;
+  background: var(--sd-surface);
+  box-shadow:
+    0 18px 42px rgba(10, 12, 9, 0.12),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 52%, transparent);
+  transform-style: preserve-3d;
+}
+
+.solver-plane__sheet--back {
+  top: 8px;
+  right: 62px;
+  opacity: 0.76;
+  background: color-mix(in srgb, var(--paper-2) 84%, transparent);
+  transform: translateZ(6px) rotate(-4deg);
+}
+
+.solver-plane__sheet--mid {
+  top: 88px;
+  left: 20px;
+  right: -8px;
+  transform: translateZ(26px) rotate(1.5deg);
+}
+
+.solver-plane__sheet--front {
+  top: 180px;
+  left: 8px;
+  right: 8px;
+  background: var(--sd-raised);
+  transform: translateZ(52px) rotate(-0.5deg);
+}
+
+.dark .solver-plane__sheet {
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.dark .solver-plane__sheet--back {
+  background: color-mix(in srgb, var(--ink) 42%, var(--sd-surface));
+}
+
+.solver-plane__label,
+.solver-plane__tag,
+.solver-plane__foot {
+  color: var(--sd-muted);
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.17em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.solver-plane__tag {
+  color: color-mix(in srgb, var(--ink) 82%, transparent);
+  font-weight: 600;
+}
+
+.dark .solver-plane__tag {
+  color: var(--paper);
+}
+
+.solver-plane__foot {
+  margin-top: auto;
+  letter-spacing: 0.1em;
+  text-transform: none;
+}
+
+.solver-plane .katex {
+  color: var(--sd-text) !important;
+}
+
+.solver-plane__math .katex-display {
+  margin: 0 !important;
+}
+
+.solver-plane__sheet .katex {
+  font-size: 0.84em;
+}
+
+.solver-plane__sheet--front .katex {
+  font-size: 0.98em;
+}
+
+/* Keep KaTeX legible even when MathView's legacy slate classes load first. */
+.solver-desk .text-slate-800,
+.solver-desk .text-slate-200 {
+  color: var(--sd-text) !important;
+}
+
+/* -------------------------------------------------------------------------
+   Workspace panels
+   ------------------------------------------------------------------------- */
+
+.solver-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
+  gap: clamp(18px, 2.4vw, 28px);
+  align-items: start;
+}
+
+.solver-panel {
+  position: relative;
+  padding: clamp(18px, 2.4vw, 28px);
+  border-radius: 3px;
+  transition: border-color 300ms var(--ease-out);
+}
+
+.solver-desk .solver-panel {
+  border-color: var(--sd-line);
+  background: linear-gradient(145deg, var(--sd-raised) 0%, var(--sd-surface) 100%);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #ffffff 55%, transparent),
+    0 20px 48px rgba(10, 12, 9, 0.09);
+}
+
+.dark .solver-desk .solver-panel {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 24px 58px rgba(0, 0, 0, 0.4);
+}
+
+.solver-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, var(--accent), transparent 58%);
+}
+
+@media (hover: hover) {
+  .solver-panel:hover {
+    border-color: color-mix(in srgb, var(--accent-strong) 26%, var(--sd-line));
+  }
+}
+
+.solver-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.15rem;
+  padding-bottom: 0.95rem;
+  border-bottom: 1px solid var(--sd-line);
+}
+
+.solver-kicker {
+  display: block;
+  color: var(--sd-muted);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.solver-desk .solver-panel__title {
+  margin: 0.28rem 0 0;
+  color: var(--sd-text) !important;
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 1.8vw, 1.72rem);
+  font-weight: 500 !important;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+}
+
+.solver-reset {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.38rem;
+  min-height: 34px;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--sd-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--sd-muted);
+  font-family: var(--font-text);
+  font-size: 0.72rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    transform 260ms var(--ease-out),
+    border-color 240ms ease,
+    color 240ms ease,
+    background-color 240ms ease;
+}
+
+.solver-reset:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent-strong) 52%, var(--sd-line));
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--sd-text);
+}
+
+.solver-reset svg {
+  transition: transform 320ms var(--ease-out);
+}
+
+.solver-reset:hover svg {
+  transform: rotate(-35deg);
+}
+
+/* -------------------------------------------------------------------------
+   Live expression + coefficient fields
+   ------------------------------------------------------------------------- */
+
+.solver-expression {
+  position: relative;
+  margin-bottom: 1.15rem;
+  padding: 1rem 1.1rem 0.95rem 1.25rem;
+  overflow: hidden;
+  border: 1px solid var(--sd-line);
+  border-radius: 3px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, #ffffff 32%, var(--paper)) 0%,
+    var(--sd-inset) 100%
+  );
+}
+
+.dark .solver-expression {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--ink) 34%, var(--sd-raised)) 0%,
+    var(--sd-inset) 100%
+  );
+}
+
+.solver-expression::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  background: var(--accent);
+}
+
+.solver-expression__label {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--sd-muted);
+  font-size: 0.59rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.solver-expression .katex {
+  color: var(--sd-text) !important;
+}
+
+.solver-expression .katex-display {
+  margin: 0.1em 0 !important;
+}
+
+.solver-expression__math {
+  font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+}
+
+.solver-expression--system .solver-expression__math {
+  font-size: clamp(0.85rem, 1.2vw, 1.02rem);
+}
+
+.solver-fieldset {
+  display: flex;
+  flex-direction: column;
+}
+
+.solver-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.solver-fields--linear {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.solver-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+  cursor: text;
+}
+
+.solver-field__label {
+  color: var(--sd-muted);
+  font-size: 0.67rem;
+  line-height: 1.3;
+}
+
+.solver-field__label strong {
+  color: var(--sd-text);
+  font-family: var(--font-display);
+  font-size: 0.98em;
+  font-style: italic;
+  font-weight: 500;
+}
+
+.solver-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--sd-line);
+  border-radius: 3px;
+  background: var(--sd-raised);
+  color: var(--sd-text);
+  font-family: var(--font-text);
+  font-size: 1.18rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  line-height: 1.2;
+  color-scheme: light;
+  transition:
+    border-color 220ms var(--ease-out),
+    box-shadow 220ms var(--ease-out),
+    background-color 220ms var(--ease-out);
+}
+
+.dark .solver-desk .solver-input {
+  color-scheme: dark;
+}
+
+.solver-input:hover {
+  border-color: color-mix(in srgb, var(--ink) 28%, transparent);
+}
+
+.dark .solver-desk .solver-input:hover {
+  border-color: color-mix(in srgb, var(--paper) 30%, transparent);
+}
+
+.solver-input:focus {
+  outline: none;
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+.solver-input:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+.solver-system {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.solver-system__row {
+  padding: 0.7rem 0.75rem 0.8rem;
+  border: 1px solid var(--sd-line-soft);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--sd-raised) 55%, transparent);
+}
+
+.solver-system__label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--sd-muted);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.solver-system__label span:last-child {
+  color: var(--sd-text);
+  font-family: var(--font-display);
+  font-size: 0.76rem;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  opacity: 0.82;
+  text-transform: none;
+}
+
+.solver-system__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.solver-coef {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
+.solver-coef > span {
+  color: var(--sd-muted);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+}
+
+.solver-input--coef {
+  min-height: 42px;
+  padding: 0.42rem 0.5rem;
+  font-size: 1.05rem;
+  text-align: center;
+}
+
+.solver-input--rhs {
+  background: color-mix(in srgb, var(--accent) 9%, var(--sd-raised));
+}
+
+/* -------------------------------------------------------------------------
+   Example chips + solve action
+   ------------------------------------------------------------------------- */
+
+.solver-examples {
+  margin-top: 1.1rem;
+  padding-top: 0.95rem;
+  border-top: 1px dashed var(--sd-line);
+}
+
+.solver-examples__label {
+  display: block;
+  margin-bottom: 0.55rem;
+  color: var(--sd-muted);
+  font-size: 0.59rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.solver-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.solver-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.72rem;
+  border: 1px solid var(--sd-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 66%, transparent);
+  color: var(--sd-text);
+  font-family: var(--font-text);
+  font-size: 0.75rem;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    transform 300ms var(--ease-out),
+    background-color 240ms ease,
+    border-color 240ms ease,
+    box-shadow 300ms var(--ease-out);
+}
+
+.solver-chip:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent-strong) 65%, var(--sd-line));
+  background: color-mix(in srgb, var(--accent) 22%, var(--paper));
+  box-shadow: 0 10px 20px rgba(10, 12, 9, 0.09);
+}
+
+.dark .solver-chip {
+  background: color-mix(in srgb, var(--ink-3) 58%, transparent);
+}
+
+.dark .solver-chip:hover {
+  background: color-mix(in srgb, var(--accent) 16%, var(--ink-3));
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+}
+
+.solver-action {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 1.3rem;
+}
+
+.solver-solve {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  min-height: 54px;
+  padding: 0 1.35rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: var(--font-text);
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    transform 260ms var(--ease-out),
+    background-color var(--t-hover, 180ms) ease,
+    box-shadow 300ms var(--ease-out);
+}
+
+.solver-solve:hover {
+  transform: translateY(-2px);
+  background: var(--accent-strong);
+  box-shadow: 0 14px 28px color-mix(in srgb, var(--accent) 26%, transparent);
+}
+
+.solver-solve:active {
+  transform: translateY(0);
+}
+
+.solver-solve svg {
+  transition: transform 280ms var(--ease-out);
+}
+
+.solver-solve:hover svg {
+  transform: translateX(4px);
+}
+
+.solver-action__hint {
+  color: var(--sd-muted);
+  font-size: 0.67rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* -------------------------------------------------------------------------
+   Result panel
+   ------------------------------------------------------------------------- */
+
+.solver-result-anchor {
+  border-radius: 3px;
+  scroll-margin-top: calc(var(--nav-clear, 74px) + 16px);
+}
+
+.solver-result-anchor:focus {
+  outline: none;
+}
+
+.solver-result-anchor:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 4px;
+}
+
+.solver-verified {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.34rem;
+  padding: 0.34rem 0.62rem;
+  border: 1px solid color-mix(in srgb, var(--accent-strong) 42%, var(--sd-line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  color: var(--sd-text);
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.dark .solver-verified {
+  background: color-mix(in srgb, var(--accent) 12%, var(--ink-3));
+  color: var(--paper);
+}
+
+.solver-verified svg {
+  color: var(--accent-ink);
+}
+
+.dark .solver-verified svg {
+  color: var(--accent);
+}
+
+.solver-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.solver-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--sd-line);
+  border-radius: 3px;
+  background: var(--sd-line-soft);
+}
+
+.solver-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  min-height: 104px;
+  padding: 0.85rem 0.9rem;
+  background: var(--sd-raised);
+}
+
+.solver-metric--accent {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.solver-metric__label {
+  color: var(--sd-muted);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.solver-metric--accent .solver-metric__label,
+.solver-metric--accent .solver-metric__note {
+  color: color-mix(in srgb, var(--accent-ink) 66%, transparent);
+}
+
+.solver-metric__value {
+  color: inherit;
+  font-size: clamp(1.02rem, 1.5vw, 1.3rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  line-height: 1.14;
+  overflow-wrap: anywhere;
+}
+
+.solver-metric__value--text {
+  font-size: 0.93rem;
+  line-height: 1.3;
+}
+
+.solver-metric__note {
+  margin-top: auto;
+  color: var(--sd-muted);
+  font-size: 0.66rem;
+  line-height: 1.35;
+}
+
+.solver-formula {
+  padding: 0.8rem 0.95rem 0.75rem;
+  border: 1px dashed var(--sd-line);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--sd-inset) 65%, transparent);
+}
+
+.solver-formula__label {
+  display: block;
+  margin-bottom: 0.1rem;
+  color: var(--sd-muted);
+  font-size: 0.59rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.solver-formula .katex {
+  color: var(--sd-text) !important;
+}
+
+.solver-formula .katex-display {
+  margin: 0.15em 0 !important;
+}
+
+.solver-formula__math {
+  font-size: clamp(0.95rem, 1.3vw, 1.12rem);
+}
+
+/* -------------------------------------------------------------------------
+   Numbered derivation cards
+   ------------------------------------------------------------------------- */
+
+.solver-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.solver-steps__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.solver-steps__count {
+  color: var(--sd-muted);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.solver-steplist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.solver-step {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.72rem 0.85rem 0.72rem 0.95rem;
+  border: 1px solid var(--sd-line-soft);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--sd-raised) 62%, transparent);
+  animation: solver-step-in 620ms var(--ease-expo) both;
+  animation-delay: var(--step-delay, 0ms);
+}
+
+.solver-step::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  background: linear-gradient(
+    180deg,
+    var(--accent) 0%,
+    color-mix(in srgb, var(--accent) 8%, transparent) 100%
+  );
+}
+
+.solver-step__num {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  border: 1px solid var(--sd-line);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--paper) 55%, transparent);
+  color: var(--sd-muted);
+  font-size: 0.57rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+.dark .solver-step__num {
+  background: color-mix(in srgb, var(--ink) 50%, transparent);
+}
+
+.solver-step__text {
+  min-width: 0;
+  margin: 0;
+  color: var(--sd-text);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+@keyframes solver-step-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Empty state + linear root
+   ------------------------------------------------------------------------- */
+
+.solver-empty {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  padding: 1.1rem;
+  border: 1px dashed var(--sd-line);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--sd-inset) 55%, transparent);
+}
+
+.solver-empty__mark {
+  flex: 0 0 auto;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 0.66rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.solver-empty p {
+  margin: 0;
+  color: var(--sd-muted);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.solver-empty strong {
+  color: var(--sd-text);
+  font-weight: 600;
+}
+
+.solver-root {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: clamp(1.1rem, 2vw, 1.6rem);
+  overflow: hidden;
+  border: 1px solid var(--sd-line);
+  border-radius: 3px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 18%, var(--sd-raised)) 0%,
+    var(--sd-raised) 100%
+  );
+}
+
+.solver-root::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  background: var(--accent);
+}
+
+.solver-root__label {
+  color: var(--sd-muted);
+  font-size: 0.59rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.solver-root__value {
+  color: var(--sd-text);
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 3.6vw, 2.8rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.solver-root__note {
+  color: var(--sd-muted);
+  font-size: 0.67rem;
+}
+
+/* -------------------------------------------------------------------------
+   "How to read this solution" note
+   ------------------------------------------------------------------------- */
+
+.solver-note-wrap {
+  margin-top: clamp(18px, 2.6vw, 28px);
+}
+
+.solver-desk .solver-note {
+  padding: clamp(18px, 2.6vw, 30px);
+  border-color: var(--sd-line);
+  border-radius: 3px;
+  background: linear-gradient(
+    135deg,
+    var(--sd-raised) 0%,
+    color-mix(in srgb, var(--sd-surface) 86%, transparent) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #ffffff 52%, transparent),
+    0 18px 44px rgba(10, 12, 9, 0.08);
+}
+
+.dark .solver-desk .solver-note {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 22px 52px rgba(0, 0, 0, 0.38);
+}
+
+.solver-note__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.solver-desk .solver-note__title {
+  margin: 0.3rem 0 0;
+  color: var(--sd-text) !important;
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 2.2vw, 2rem);
+  font-weight: 500 !important;
+  letter-spacing: -0.02em;
+  line-height: 1.04;
+}
+
+.solver-note__stamp {
+  display: inline-flex;
+  flex: 0 0 auto;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--sd-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper) 42%, transparent);
+  color: var(--sd-muted);
+  font-size: 0.63rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.dark .solver-note__stamp {
+  background: color-mix(in srgb, var(--ink) 36%, transparent);
+}
+
+.solver-note__list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem 1.6rem;
+  margin: 1.1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.solver-note__list li {
+  position: relative;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--sd-line);
+  color: var(--sd-muted);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.solver-note__list li::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 26px;
+  height: 2px;
+  background: var(--accent);
+}
+
+.solver-note__list strong {
+  display: block;
+  margin-bottom: 0.2rem;
+  color: var(--sd-text);
+  font-weight: 600;
+}
+
+/* -------------------------------------------------------------------------
+   Responsive
+   ------------------------------------------------------------------------- */
+
+@media (max-width: 980px) {
+  .solver-head {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.8rem;
+  }
+
+  .solver-head__stage {
+    justify-content: center;
+  }
+
+  .solver-plane {
+    width: min(100%, 350px);
+    min-height: 318px;
+  }
+
+  .solver-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .solver-note__list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .solver-modes {
+    width: 100%;
+    border-radius: 18px;
+  }
+
+  .solver-mode {
+    flex: 1 1 auto;
+    justify-content: center;
+    padding-inline: 0.8rem;
+  }
+
+  .solver-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .solver-fields--linear {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .solver-metrics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .solver-metric {
+    min-height: 0;
+  }
+
+  .solver-metric__note {
+    margin-top: 0.1rem;
+  }
+
+  .solver-panel__head,
+  .solver-note__head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .solver-verified,
+  .solver-note__stamp {
+    align-self: flex-start;
+  }
+
+  .solver-plane {
+    min-height: 308px;
+  }
+
+  .solver-plane__sheet--mid {
+    top: 82px;
+  }
+
+  .solver-plane__sheet--front {
+    top: 170px;
+  }
+}
+
+@media (max-width: 400px) {
+  .solver-fields--linear {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .solver-step {
+    gap: 0.55rem;
+    padding-right: 0.7rem;
+  }
+
+  .solver-step__text {
+    font-size: 0.75rem;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Reduced motion
+   ------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .solver-step {
+    animation: none !important;
+  }
+
+  .solver-chip,
+  .solver-solve,
+  .solver-reset,
+  .solver-panel,
+  .solver-input {
+    transition: none !important;
+  }
+
+  .solver-chip:hover,
+  .solver-solve:hover,
+  .solver-reset:hover {
+    transform: none !important;
+  }
+
+  .solver-solve:hover svg,
+  .solver-reset:hover svg {
+    transform: none !important;
+  }
+}

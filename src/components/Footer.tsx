@@ -1,6 +1,5 @@
 import React from 'react';
-import calcauraLogo from '../../Logo.png';
-import { Mail, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Mail } from 'lucide-react';
 import { Translations } from '../i18n/translations.ts';
 
 interface FooterProps {
@@ -9,102 +8,156 @@ interface FooterProps {
   onOpenAbout: () => void;
 }
 
+const PRODUCT_LINKS = [
+  { label: 'Calculators', tab: 'basic-calculator' },
+  { label: 'Graphing', tab: 'stage-02' },
+  { label: 'Geometry', tab: 'stage-03' },
+  { label: 'Whiteboard', tab: 'whiteboard' },
+  { label: 'Practice', tab: 'stage-08' },
+];
+
+const STUDY_LINKS = [
+  { label: 'Classes 1–5', tab: 'classes1-5' },
+  { label: 'Classes 6–9', tab: 'classes6-9' },
+  { label: 'Class 10', tab: 'class10' },
+  { label: 'Classes 11–12', tab: 'class12' },
+  { label: 'Engineering', tab: 'engineering' },
+  { label: 'Graduation', tab: 'graduation' },
+];
+
+const IMAGE_CREDITS = [
+  {
+    label: 'Bakhshali manuscript',
+    href: 'https://commons.wikimedia.org/wiki/File:Bakhshali_manuscript.jpg',
+  },
+  {
+    label: 'Qajar astrolabe',
+    href: 'https://www.artic.edu/artworks/90589',
+  },
+  {
+    label: 'Euclid’s Elements, 1570',
+    href: 'https://commons.wikimedia.org/wiki/File:Title_page_of_Sir_Henry_Billingsley%27s_first_English_version_of_Euclid%27s_Elements,_1570_(560x900).jpg',
+  },
+  {
+    label: 'Lilavati, 16th century',
+    href: 'https://commons.wikimedia.org/wiki/File:Lilavati_of_Bhaskaracharya_II,_Sanskrit_language,_Newar_script.jpg',
+  },
+];
+
+const FooterMark: React.FC = () => (
+  <span className="site-footer__mark" aria-hidden="true">
+    <svg viewBox="0 0 32 32" role="presentation" focusable="false">
+      <rect x="1.5" y="1.5" width="29" height="29" fill="none" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M7 25 L25 7" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="16" cy="16" r="5" fill="var(--accent)" />
+    </svg>
+  </span>
+);
+
 export const Footer: React.FC<FooterProps> = ({ t, onSelectTab, onOpenAbout }) => {
+  const go = (tab: string) => {
+    onSelectTab(tab);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <footer className="w-full bg-slate-100 dark:bg-[#0B0D16] border-t border-slate-200 dark:border-white/[0.08] text-xs text-slate-600 dark:text-[#A6A9B8] py-12 transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-8 border-b border-slate-200/80 dark:border-white/[0.06]">
-          {/* Brand & One-line description */}
-          <div className="max-w-md">
-            <div className="flex items-center gap-2.5 mb-2.5">
-              <img
-                src={calcauraLogo}
-                alt=""
-                aria-hidden="true"
-                loading="lazy"
-                draggable={false}
-                className="h-8 w-10 shrink-0 object-contain drop-shadow-[0_0_8px_rgba(121,87,245,0.22)]"
-              />
-              <span className="text-base font-bold tracking-tight text-slate-900 dark:text-[#F6F7FB]">
-                CalcAura
-              </span>
+    <footer className="site-footer">
+      <div className="shell">
+        <p className="site-footer__word" aria-hidden="true">
+          CalcAura
+        </p>
+
+        <div className="site-footer__grid">
+          <div className="site-footer__about">
+            <div className="site-footer__brand">
+              <FooterMark />
+              <span>CalcAura</span>
             </div>
-            <p className="text-xs text-slate-600 dark:text-[#A6A9B8] leading-relaxed">
-              {t.footerDesc}
-            </p>
-          </div>
-
-          {/* Minimal Navigation Links */}
-          <div className="flex flex-wrap items-center gap-6 text-xs font-medium">
-            <button
-              onClick={() => {
-                onSelectTab('home');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className="text-slate-600 dark:text-[#A6A9B8] hover:text-slate-950 dark:hover:text-white transition-colors cursor-pointer"
-            >
-              {t.navOverview}
-            </button>
-
-            <button
-              onClick={() => {
-                onSelectTab('curriculum');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className="text-slate-600 dark:text-[#A6A9B8] hover:text-slate-950 dark:hover:text-white transition-colors cursor-pointer"
-            >
-              {t.navCurriculum}
-            </button>
-
-            <button
-              onClick={onOpenAbout}
-              className="text-slate-600 dark:text-[#A6A9B8] hover:text-slate-950 dark:hover:text-white transition-colors cursor-pointer"
-            >
-              {t.navAbout}
-            </button>
-
-            <button
-              onClick={() => onSelectTab('platform')}
-              className="text-[#7957F5] hover:text-purple-700 dark:hover:text-white font-semibold transition-colors cursor-pointer"
-            >
+            <p>{t.footerDesc}</p>
+            <button type="button" className="text-link" onClick={() => go('platform')}>
               {t.workspace}
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
-
-            <button
-              onClick={onOpenAbout}
-              className="text-slate-600 dark:text-[#A6A9B8] hover:text-slate-950 dark:hover:text-white transition-colors cursor-pointer"
-            >
-              {t.privacyTerms}
-            </button>
-
-            <a
-              href="mailto:support.hsbjk@gmail.com"
-              className="text-slate-600 dark:text-[#A6A9B8] hover:text-slate-950 dark:hover:text-white transition-colors flex items-center gap-1.5"
-              title="Contact Support"
-            >
-              <Mail className="w-3.5 h-3.5 text-[#7957F5]" />
-              <span>support.hsbjk@gmail.com</span>
-            </a>
           </div>
+
+          <nav className="site-footer__col" aria-label="Product">
+            <h3>Product</h3>
+            <ul>
+              {PRODUCT_LINKS.map((link) => (
+                <li key={link.label}>
+                  <button type="button" onClick={() => go(link.tab)}>
+                    {link.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <nav className="site-footer__col" aria-label="Study">
+            <h3>Study</h3>
+            <ul>
+              {STUDY_LINKS.map((link) => (
+                <li key={link.label}>
+                  <button type="button" onClick={() => go(link.tab)}>
+                    {link.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <nav className="site-footer__col" aria-label="CalcAura">
+            <h3>CalcAura</h3>
+            <ul>
+              <li>
+                <button type="button" onClick={() => go('home')}>
+                  {t.navOverview}
+                </button>
+              </li>
+              <li>
+                <button type="button" onClick={() => go('curriculum')}>
+                  {t.navCurriculum}
+                </button>
+              </li>
+              <li>
+                <button type="button" onClick={onOpenAbout}>
+                  {t.navAbout}
+                </button>
+              </li>
+              <li>
+                <button type="button" onClick={onOpenAbout}>
+                  {t.privacyTerms}
+                </button>
+              </li>
+              <li>
+                <a href="mailto:support.hsbjk@gmail.com" title="Contact support">
+                  <Mail className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span>support.hsbjk@gmail.com</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
         </div>
 
-        {/* Bottom Attribution Strip */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500 dark:text-[#A6A9B8]/80">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+        <div className="site-footer__bottom">
+          <div className="site-footer__meta">
             <span>
               © {new Date().getFullYear()} CalcAura. {t.footerRights}
             </span>
+            <span>{t.builtBy.includes('HSBJK') ? t.builtBy : 'Built by HSBJK'}</span>
           </div>
 
-          <div className="font-mono text-slate-600 dark:text-[#A6A9B8]">
-            {t.builtBy.includes('HSBJK') ? (
-              t.builtBy
-            ) : (
-              <>
-                Built by <strong className="text-slate-900 dark:text-white font-semibold">HSBJK</strong>
-              </>
-            )}
+          <div className="site-footer__credits">
+            <span>Archival images, all public domain: </span>
+            {IMAGE_CREDITS.map((credit, index) => (
+              <React.Fragment key={credit.label}>
+                <a href={credit.href} target="_blank" rel="noreferrer noopener">
+                  {credit.label}
+                </a>
+                {index < IMAGE_CREDITS.length - 1 ? <span aria-hidden="true"> · </span> : null}
+              </React.Fragment>
+            ))}
+            <span>. Sources: Wikimedia Commons, Art Institute of Chicago.</span>
           </div>
         </div>
       </div>

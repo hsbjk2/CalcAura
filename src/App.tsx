@@ -1,13 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar.tsx';
 import { ScrollProgressBar } from './components/ScrollProgressBar.tsx';
-import { CinematicHero } from './components/CinematicLanding/CinematicHero.tsx';
-import { Scroll3DProductReveal } from './components/CinematicLanding/Scroll3DProductReveal.tsx';
-import { PhilosophySection } from './components/CinematicLanding/PhilosophySection.tsx';
-import { Interactive3DWorld } from './components/CinematicLanding/Interactive3DWorld.tsx';
-import { CinematicHowItWorks } from './components/CinematicLanding/CinematicHowItWorks.tsx';
-import { DifferentMindsSection } from './components/CinematicLanding/DifferentMindsSection.tsx';
-import { CinematicFinalCta } from './components/CinematicLanding/CinematicFinalCta.tsx';
+import { LandingPage } from './components/Landing/LandingPage.tsx';
+import { Seo } from './components/Seo.tsx';
 import { ThreeCanvas3DScroll } from './components/ThreeCanvas3DScroll.tsx';
 import { InteractiveGeometry } from './components/InteractiveGeometry.tsx';
 import { GraphingEngine } from './components/GraphingEngine.tsx';
@@ -34,10 +29,10 @@ import { WhiteboardWorkspace } from './components/Whiteboard/WhiteboardWorkspace
 import { HistoryPage } from './components/History/HistoryPage.tsx';
 import { Notebook } from './components/Whiteboard/types.ts';
 import { PracticeHistoryEntry } from './data/historyStorage.ts';
-import { ParticleNetworkBackground } from './components/ParticleNetworkBackground.tsx';
 import { LearningAndToolsSection } from './components/LearningAndToolsSection.tsx';
 import { ToolDirectory } from './components/ToolDirectory.tsx';
 import { Footer } from './components/Footer.tsx';
+import { PageOutro } from './components/ui/PageOutro.tsx';
 import { SearchModal } from './components/SearchModal.tsx';
 import { AboutModal } from './components/AboutModal.tsx';
 import { ClerkAuthPage } from './components/Auth/ClerkAuthPage.tsx';
@@ -242,10 +237,10 @@ export default function App() {
     }
     if (combined.includes('history')) return 'history';
     if (combined.includes('whiteboard') || combined.includes('canvas')) return 'whiteboard';
+    if (combined.includes('table') || combined.includes('multiplication')) return 'multiplication-tables';
     if (combined.includes('playground')) return 'playground';
     if (combined.includes('about')) return 'about';
     if (combined.includes('visual-math')) return 'visual-maths';
-    if (combined.includes('table') || combined.includes('multiplication')) return 'multiplication-tables';
     if (combined.includes('classes1-5') || combined.includes('classes-1-5') || combined.includes('junior')) {
       return 'classes1-5';
     }
@@ -312,9 +307,9 @@ export default function App() {
       if (saved !== null) {
         return saved === 'dark';
       }
-      return typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      return false;
     } catch {
-      return true;
+      return false;
     }
   });
 
@@ -357,14 +352,14 @@ if (path === '/sign-up' || path.startsWith('/sign-up/')) {
         handleSelectTab('history');
       } else if (combined.includes('whiteboard') || combined.includes('canvas') || combined.includes('drawing')) {
         handleSelectTab('whiteboard');
+      } else if (combined.includes('table') || combined.includes('multiplication')) {
+        handleSelectTab('multiplication-tables');
       } else if (combined.includes('playground')) {
         handleSelectTab('playground');
       } else if (combined.includes('about')) {
         handleSelectTab('about');
       } else if (combined.includes('visual-math')) {
         handleSelectTab('visual-maths');
-      } else if (combined.includes('table') || combined.includes('multiplication')) {
-        handleSelectTab('multiplication-tables');
       } else if (combined.includes('classes1-5') || combined.includes('classes-1-5') || combined.includes('junior')) {
         handleSelectTab('classes1-5');
       } else if (combined.includes('classes6-9') || combined.includes('classes-6-9')) {
@@ -379,12 +374,12 @@ if (path === '/sign-up' || path.startsWith('/sign-up/')) {
         handleSelectTab('class9');
       } else if (combined.includes('classes6-8') || combined.includes('classes-6-8')) {
         handleSelectTab('classes6-9');
-      } else if (combined.includes('curriculum')) {
-        handleSelectTab('curriculum');
       } else if (combined.includes('class-10') || combined.includes('class10')) {
         handleSelectTab('class-10');
       } else if (combined.includes('class-12') || combined.includes('class12')) {
         handleSelectTab('class-12');
+      } else if (combined.includes('curriculum')) {
+        handleSelectTab('curriculum');
       } else if (combined.includes('engineering')) {
         handleSelectTab('engineering');
       } else if (combined.includes('graduation')) {
@@ -731,24 +726,23 @@ if (path === '/sign-up' || path.startsWith('/sign-up/')) {
 
   if (activeTab === 'whiteboard') {
     return (
-      <WhiteboardWorkspace
-        onExit={() => handleSelectTab('home')}
-        darkMode={darkMode}
-        onToggleDarkMode={() => setDarkMode(!darkMode)}
-        initialNotebook={historyNotebookToOpen}
-        onNavigateToHistory={() => handleSelectTab('history')}
-      />
+      <>
+        <Seo activeTab="whiteboard" />
+        <h1 className="sr-only">CalcAura whiteboard</h1>
+        <WhiteboardWorkspace
+          onExit={() => handleSelectTab('home')}
+          darkMode={darkMode}
+          onToggleDarkMode={() => setDarkMode(!darkMode)}
+          initialNotebook={historyNotebookToOpen}
+          onNavigateToHistory={() => handleSelectTab('history')}
+        />
+      </>
     );
   }
 
   return (
-    <div className={`min-h-screen flex flex-col ${
-      isAbout 
-        ? (darkMode ? 'bg-[#0E0713]/85 text-[#FFF9FD]' : 'bg-[#FFF9FD]/85 text-[#200D25]')
-        : 'bg-transparent text-slate-900 dark:text-[#F6F7FB]'
-    } selection:bg-[#7957F5]/30 selection:text-white transition-colors overflow-x-hidden w-full max-w-full relative`}>
-      {/* Real-time Dynamic Particle Network Background (Reference-inspired canvas) */}
-      <ParticleNetworkBackground darkMode={darkMode} activeTab={activeTab} />
+    <div className="min-h-screen flex flex-col bg-transparent text-slate-900 dark:text-[#F6F7FB] transition-colors overflow-x-hidden w-full max-w-full relative">
+      <Seo activeTab={activeTab} />
 
       {/* Floating Navigation Header */}
       <Navbar
@@ -766,81 +760,41 @@ if (path === '/sign-up' || path.startsWith('/sign-up/')) {
       />
 
       {/* Fixed Scroll Progress Indicator Line beneath the navigation bar */}
-      {isLanding && <ScrollProgressBar />}
+      <ScrollProgressBar />
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-full overflow-x-hidden">
-        {/* VIEW 1: CINEMATIC 3D SCROLLING HOMEPAGE (Informational, Brand & Vision) */}
+      <main
+        key={isLanding ? 'landing' : activeTab}
+        className={`flex-1 w-full max-w-full overflow-x-hidden ${isLanding ? '' : 'page-shell'}`}
+      >
+        {/* VIEW 1: THE DESK — one continuous surface from Class 1 to engineering */}
         {isLanding && (
-          <div>
-            {/* Section 1: Hero Scene */}
-            <CinematicHero
-              onOpenPlatform={() => handleSelectTab('platform')}
-              onExploreScroll={() => {
-                document.getElementById('product-showcase')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              onDiscoverVision={() => {
-                document.getElementById('philosophy')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-            />
-
-            {/* Section 2: Scroll-Driven 3D Product Reveal */}
-            <Scroll3DProductReveal
-              onOpenPlatform={() => handleSelectTab('platform')}
-              onNavigateTab={handleSelectTab}
-            />
-
-            {/* Section 3: The Philosophy Behind CalcAura */}
-            <PhilosophySection />
-
-            {/* Section 4: An Interactive Mathematical World */}
-            <Interactive3DWorld />
-
-            {/* Section 5: How CalcAura Works */}
-            <CinematicHowItWorks />
-
-            {/* Section 6: Built for Different Minds */}
-            <DifferentMindsSection />
-
-            {/* Section 7: Final Call to Action */}
-            <CinematicFinalCta
-              onOpenPlatform={() => handleSelectTab('platform')}
-              onOpenAbout={() => handleSelectTab('about')}
-            />
-          </div>
+          <LandingPage
+            onOpenWorkspace={() => handleSelectTab('platform')}
+            onSelectTab={handleSelectTab}
+          />
         )}
 
         {/* VIEW 2: DEDICATED SCHOOL MATHEMATICS CURRICULUM (Class 10 & Class 12) */}
         {isCurriculum && (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8 animate-in fade-in">
-            {/* Curriculum Top Navigation & Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-white/10">
+          <div className="page-surface space-y-8 animate-in fade-in">
+            <header className="page-head">
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#7957F5]/10 dark:bg-[#7957F5]/20 border border-[#7957F5]/30 text-[#7957F5] dark:text-[#D94BCB] text-xs font-mono font-semibold mb-2">
-                  <GraduationCap className="w-3.5 h-3.5" />
-                  <span>Class-Based Mathematics Progression · Classes 1–12 & Higher</span>
-                </div>
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                  {t.curriculumTitle || 'Class-Based Mathematics Progression'}
-                </h1>
-                <p className="mt-1.5 text-xs sm:text-sm text-slate-600 dark:text-[#A6A9B8] max-w-3xl leading-relaxed">
+                <h1>{t.curriculumTitle || 'Class-based mathematics progression'}</h1>
+                <p>
                   {t.curriculumSubtitle ||
-                    'Structured class-wise mathematical learning progression spanning Foundation (Classes 1–5), Explorer (Classes 6–8), Pre-Secondary (Class 9), Secondary (Class 10), Senior Secondary (Class 12), Engineering, and Undergraduate Mathematics.'}
+                    'Foundation, middle school, secondary, senior secondary, engineering and undergraduate mathematics in one sequence.'}
                 </p>
               </div>
 
-              <div className="flex items-center gap-2.5 shrink-0">
-                <button
-                  onClick={() => handleSelectTab('platform')}
-                  className="px-4 py-2.5 bg-gradient-to-r from-[#7957F5] to-[#D94BCB] text-white text-xs font-semibold rounded-xl shadow-md hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
-                >
+              <div className="page-head__actions">
+                <button type="button" className="btn btn--sm" onClick={() => handleSelectTab('platform')}>
                   <span>{t.workspace}</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
                 </button>
               </div>
-            </div>
+            </header>
 
-            {/* School Curriculum Directory Component */}
             <SchoolCurriculumSection
               t={t}
               onNavigateStage={handleScrollToStage}
@@ -866,39 +820,31 @@ if (path === '/sign-up' || path.startsWith('/sign-up/')) {
 
         {/* VIEW: CLASSES 6-9 MATHEMATICS EXPLORER & PRE-SECONDARY */}
         {isClasses6to9 && (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8 animate-in fade-in">
-            {/* Class Header & Quick Links */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-white/10">
+          <div className="page-surface space-y-8 animate-in fade-in">
+            <header className="page-head">
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#7957F5]/10 dark:bg-[#7957F5]/20 border border-[#7957F5]/30 text-[#7957F5] dark:text-[#D94BCB] text-xs font-mono font-semibold mb-2">
-                  <Compass className="w-3.5 h-3.5" />
-                  <span>Classes 6, 7, 8 & 9 · Comprehensive Mathematics Progression</span>
-                </div>
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                  Middle School & Pre-Secondary Learning System
-                </h1>
-                <p className="mt-1.5 text-xs sm:text-sm text-slate-600 dark:text-[#A6A9B8] max-w-3xl leading-relaxed">
-                  Authentic, age-appropriate chapters with concept explanations, formulas, step-by-step worked examples, interactive math tools, and strict zero-leak practice tests.
+                <h1>Middle school, one shelf.</h1>
+                <p>
+                  Classes 6 to 9: chapters, worked examples, formulas and zero-leak practice, kept
+                  in the same workspace as the calculators.
                 </p>
               </div>
 
-              <div className="flex items-center gap-2.5 shrink-0">
+              <div className="page-head__actions">
                 <button
+                  type="button"
+                  className="btn btn--sm btn--ghost"
                   onClick={() => handleSelectTab('curriculum')}
-                  className="px-3.5 py-2 bg-slate-100 dark:bg-white/[0.08] hover:bg-slate-200 dark:hover:bg-white/[0.12] text-slate-800 dark:text-white text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
                 >
-                  <GraduationCap className="w-3.5 h-3.5 text-[#7957F5]" />
-                  <span>All Classes (1–12)</span>
+                  <GraduationCap className="w-3.5 h-3.5" aria-hidden="true" />
+                  <span>All classes</span>
                 </button>
-                <button
-                  onClick={() => handleSelectTab('platform')}
-                  className="px-4 py-2 bg-gradient-to-r from-[#7957F5] to-[#D94BCB] text-white text-xs font-semibold rounded-xl shadow-md hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
-                >
+                <button type="button" className="btn btn--sm" onClick={() => handleSelectTab('platform')}>
                   <span>{t.workspace}</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
                 </button>
               </div>
-            </div>
+            </header>
 
             <MiddleSchoolSection
               onNavigateStage={handleScrollToStage}
@@ -1004,8 +950,9 @@ if (path === '/sign-up' || path.startsWith('/sign-up/')) {
         {/* VIEW 3: FULL CALCAURA WORKSPACE PLATFORM (Working Calculators & Tools) */}
         {!isLanding && !isCurriculum && !isClasses1to5 && !isVisualMaths && !isMultiplicationTables && !isPlayground && !isAbout && !isHistory && !isBasicCalculator && !isSignIn && !isSignUp && (
           <div>
+            <h1 className="sr-only">CalcAura workspace</h1>
             {/* Sequential Milestone Ribbon (begins cleanly at the top of the Platform section) */}
-            <div className="sticky top-16 sm:top-[72px] z-30 w-full max-w-full bg-white/95 dark:bg-[#0B0D16]/90 backdrop-blur-xl border-b border-slate-200 dark:border-white/[0.08] py-2 transition-all overflow-hidden">
+            <div className="workspace-ribbon sticky top-16 sm:top-[72px] z-30 w-full max-w-full py-2 transition-all overflow-hidden">
               <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-4 overflow-hidden">
                 {/* Stage Indicators */}
                 <div className="flex items-center gap-1.5 overflow-x-auto py-1 thin-scrollbar max-w-full">
@@ -1017,7 +964,7 @@ if (path === '/sign-up' || path.startsWith('/sign-up/')) {
                         onClick={() => handleScrollToStage(s.id)}
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-medium whitespace-nowrap transition-all cursor-pointer ${
                           isActive
-                            ? 'bg-gradient-to-r from-[#7957F5] to-[#D94BCB] text-white font-bold shadow-[0_0_12px_rgba(121,87,245,0.35)]'
+                            ? 'bg-[#c9f04e] text-[#0a0c09] font-bold'
                             : 'text-slate-600 dark:text-[#A6A9B8] hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06]'
                         }`}
                         title={`${s.step}: ${s.title}`}
@@ -1072,7 +1019,7 @@ if (path === '/sign-up' || path.startsWith('/sign-up/')) {
                       </strong>
                     </span>
                   </div>
-                  <span className="px-2.5 py-1 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-semibold text-[11px] shrink-0">
+                  <span className="px-2.5 py-1 rounded-full bg-[#c9f04e]/20 text-[#4f6900] dark:text-[#c9f04e] font-semibold text-[11px] shrink-0">
                     {STAGES.find((s) => s.id === currentStageId)?.category}
                   </span>
                 </div>
@@ -1196,6 +1143,11 @@ if (path === '/sign-up' || path.startsWith('/sign-up/')) {
           </div>
         )}
       </main>
+
+      {/* Shared closing panel: one desk, every kind of mathematics */}
+      {!isLanding && !isAbout && !isSignIn && !isSignUp && (
+        <PageOutro onSelectTab={handleSelectTab} />
+      )}
 
       {/* Minimal Footer (About page has its own dedicated minimal footer) */}
       {!isAbout && (

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { VisualObject, VisualAssetType, VISUAL_ASSETS } from './VisualAssetLibrary.tsx';
-import { Minus, Equal, RotateCw, CheckCircle2, ArrowRight, Lightbulb, Trash2 } from 'lucide-react';
+import { Reveal } from '../ui/Depth.tsx';
+import { Minus, RotateCw, CheckCircle2, ArrowRight, Trash2 } from 'lucide-react';
+import '../../styles/visual-activities.css';
 
 export const PictureSubtractionActivity: React.FC = () => {
   const [assetType, setAssetType] = useState<VisualAssetType>('orange');
@@ -51,197 +53,224 @@ export const PictureSubtractionActivity: React.FC = () => {
     ])
   ).sort((a, b) => a - b);
 
+  const progress =
+    userAnswer !== null
+      ? 100
+      : Math.round(20 + (removedCountNow / Math.max(removeCount, 1)) * 65);
+
+  const progressLabel =
+    userAnswer !== null
+      ? 'Answered'
+      : `${removedCountNow} of ${removeCount} removed`;
+
   return (
-    <div className="w-full max-w-4xl mx-auto p-4 sm:p-6 bg-white dark:bg-[#111321] rounded-3xl border border-slate-200 dark:border-white/10 shadow-lg space-y-6">
+    <Reveal as="section" className="va-shell" delay={40}>
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-white/[0.06]">
-        <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 to-pink-500 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-rose-500/25">
-            −
-          </div>
+      <div className="va-head">
+        <div className="va-head__id">
+          <div className="va-mark" aria-hidden="true">−</div>
           <div>
-            <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+            <h3 className="va-title">
               <span>Picture Subtraction</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 font-mono font-semibold">
-                Class 1–3
-              </span>
+              <span className="va-chip">Class 1–3</span>
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Take away objects from a collection and count what remains!
-            </p>
+            <p className="va-sub">Take objects away, then count what stays behind.</p>
           </div>
         </div>
 
-        <button
-          onClick={handleNewPuzzle}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95"
-        >
+        <button type="button" onClick={handleNewPuzzle} className="va-btn va-btn--ink va-btn--sm">
           <RotateCw className="w-3.5 h-3.5" />
-          <span>New Subtraction</span>
+          <span>New subtraction</span>
         </button>
       </div>
 
-      {/* Scenario Instruction */}
-      <div className="text-center space-y-1">
-        <h4 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-          You have {totalCount} {meta.plural.toLowerCase()}. Take away {removeCount}. How many remain?
-        </h4>
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          Tap {removeCount} {meta.plural.toLowerCase()} to remove them into the "Removed Basket"!
-        </p>
+      {/* Progress rail */}
+      <div className="va-progress">
+        <div className="va-progress__meta">
+          <span>Progress</span>
+          <span>{progressLabel}</span>
+        </div>
+        <div
+          className="va-rail"
+          role="progressbar"
+          aria-label="Subtraction progress"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={progress}
+        >
+          <span className="va-rail__fill" style={{ width: `${progress}%` }} />
+        </div>
       </div>
 
-      {/* Interactive Subtraction Stage: Main Basket vs Removed Area */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Main Basket (Remaining) */}
-        <div className="md:col-span-2 p-5 rounded-3xl bg-slate-50 dark:bg-white/[0.02] border-2 border-slate-200 dark:border-white/10 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-300 uppercase">
-              Main Collection ({totalCount} Started)
-            </span>
-            <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-bold">
-              {remainingCountNow} remaining
-            </span>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-3 p-4 min-h-[140px] bg-white dark:bg-[#0B0D16] rounded-2xl border border-slate-200 dark:border-white/10">
-            {Array.from({ length: totalCount }).map((_, i) => {
-              const isRem = removedIndices[i];
-              return (
-                <VisualObject
-                  key={i}
-                  type={assetType}
-                  size="lg"
-                  isDimmed={isRem}
-                  isRemoved={isRem}
-                  onClick={() => handleTapToRemove(i)}
-                  className={`transition-all ${isRem ? 'scale-90 opacity-30 grayscale' : 'hover:scale-105'}`}
-                />
-              );
-            })}
-          </div>
-
-          <p className="text-[11px] text-slate-500 text-center">
-            Tap an object to toggle removing it. Removed count: <strong>{removedCountNow}/{removeCount}</strong>
+      <div className="va-body">
+        {/* Scenario instruction */}
+        <div className="va-prompt">
+          <span className="va-kicker">Activity instruction</span>
+          <h4 className="va-question">
+            You have {totalCount} {meta.plural.toLowerCase()}. Take away {removeCount}. How many remain?
+          </h4>
+          <p className="va-hintline">
+            Tap {removeCount} {meta.plural.toLowerCase()} to move them into the removed basket.
           </p>
         </div>
 
-        {/* Removed Area */}
-        <div className="p-5 rounded-3xl bg-rose-500/[0.04] border-2 border-dashed border-rose-500/30 flex flex-col justify-between space-y-3">
-          <div>
-            <div className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-mono text-xs font-bold uppercase mb-2">
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>Removed Basket ({removeCount})</span>
+        {/* Subtraction stage */}
+        <div className="va-split">
+          {/* Main collection */}
+          <div className="va-collection">
+            <div className="va-collection__head">
+              <span className="va-collection__label">
+                Main collection · {totalCount} started
+              </span>
+              <span className="va-collection__status">{remainingCountNow} remaining</span>
             </div>
-            <p className="text-[11px] text-slate-500 leading-snug">
-              Objects taken away move into this basket.
+
+            <div className="va-tray va-collection__objects">
+              <span className="va-tray__surface" aria-hidden="true" />
+              {Array.from({ length: totalCount }).map((_, i) => {
+                const isRem = removedIndices[i];
+                return (
+                  <VisualObject
+                    key={i}
+                    type={assetType}
+                    size="lg"
+                    isDimmed={isRem}
+                    isRemoved={isRem}
+                    onClick={() => handleTapToRemove(i)}
+                    className={`va-object va-object--removable${isRem ? ' is-removed' : ''}`}
+                  />
+                );
+              })}
+            </div>
+
+            <p className="va-collection__note">
+              Tap an object to remove it or put it back. Removed count:{' '}
+              <strong>
+                {removedCountNow}/{removeCount}
+              </strong>
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-2 p-3 min-h-[90px] bg-white dark:bg-[#0B0D16] rounded-2xl border border-rose-500/20">
-            {Object.keys(removedIndices).length === 0 ? (
-              <span className="text-xs text-slate-400 italic">No objects removed yet</span>
-            ) : (
-              Object.keys(removedIndices).map((k) => (
-                <VisualObject key={k} type={assetType} size="md" className="animate-in zoom-in-50" />
-              ))
-            )}
-          </div>
+          {/* Removed basket */}
+          <aside className="va-basket">
+            <div>
+              <div className="va-basket__head">
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Removed basket · {removeCount}</span>
+              </div>
+              <p className="va-basket__hint">Objects taken away wait here.</p>
+            </div>
 
-          <button
-            onClick={() => {
-              // Auto remove requested count
-              const rem: Record<number, boolean> = {};
-              for (let i = 0; i < removeCount; i++) rem[i] = true;
-              setRemovedIndices(rem);
-            }}
-            className="w-full py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-semibold transition-colors cursor-pointer text-center"
-          >
-            Auto-Remove {removeCount}
-          </button>
+            <div className="va-basket__slot">
+              {removedCountNow === 0 ? (
+                <span className="va-basket__empty">Nothing removed yet</span>
+              ) : (
+                Object.keys(removedIndices).map((k) => (
+                  <VisualObject key={k} type={assetType} size="md" className="va-object" />
+                ))
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                // Auto remove requested count
+                const rem: Record<number, boolean> = {};
+                for (let i = 0; i < removeCount; i++) rem[i] = true;
+                setRemovedIndices(rem);
+              }}
+              className="va-btn va-btn--ghost va-btn--sm"
+            >
+              <span>Auto-remove {removeCount}</span>
+            </button>
+          </aside>
         </div>
-      </div>
 
-      {/* Equation Banner */}
-      <div className="text-center pt-2">
-        <div className="inline-flex items-center gap-3 px-6 py-2 rounded-2xl bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 text-lg sm:text-2xl font-black font-mono">
-          <span className="text-slate-900 dark:text-white">{totalCount}</span>
-          <span className="text-rose-500">−</span>
-          <span className="text-rose-500">{removeCount}</span>
-          <span className="text-slate-400">=</span>
-          <span className="text-emerald-600 dark:text-emerald-400">
+        {/* Equation banner */}
+        <div className="va-equation" aria-label={`${totalCount} minus ${removeCount} equals ${userAnswer ?? 'unknown'}`}>
+          <span>{totalCount}</span>
+          <span className="va-equation__op">
+            <Minus className="w-5 h-5" aria-hidden="true" />
+          </span>
+          <span>{removeCount}</span>
+          <span className="va-equation__op">=</span>
+          <span
+            className={`va-equation__result${
+              userAnswer === null
+                ? ' is-pending'
+                : userAnswer === remainingTarget
+                  ? ' is-revealed'
+                  : ''
+            }`}
+          >
             {userAnswer !== null ? userAnswer : '?'}
           </span>
         </div>
-      </div>
 
-      {/* Answer Selector */}
-      <div className="space-y-3 pt-2">
-        <span className="text-xs font-mono uppercase tracking-wider text-slate-400 block text-center">
-          How many {meta.plural.toLowerCase()} are left?
-        </span>
+        {/* Answer selector */}
+        <div className="va-answer-block">
+          <span className="va-answer-caption">
+            How many {meta.plural.toLowerCase()} are left?
+          </span>
 
-        <div className="grid grid-cols-4 gap-3 max-w-md mx-auto">
-          {uniqueOpts.map((opt) => {
-            const isSelected = userAnswer === opt;
-            const isCorrect = isSelected && opt === remainingTarget;
-            const isWrong = isSelected && opt !== remainingTarget;
+          <div className="va-answers">
+            {uniqueOpts.map((opt) => {
+              const isSelected = userAnswer === opt;
+              const isCorrect = isSelected && opt === remainingTarget;
+              const isWrong = isSelected && opt !== remainingTarget;
 
-            return (
-              <button
-                key={opt}
-                onClick={() => setUserAnswer(opt)}
-                className={`py-3 rounded-2xl font-mono text-xl font-black transition-all cursor-pointer ${
-                  isCorrect
-                    ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 scale-105'
-                    : isWrong
-                    ? 'bg-rose-500 text-white'
-                    : 'bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.05] dark:hover:bg-white/10 text-slate-800 dark:text-white border border-slate-200 dark:border-white/10'
-                }`}
-              >
-                {opt}
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => setUserAnswer(opt)}
+                  className={`va-answer${isCorrect ? ' is-correct' : ''}${isWrong ? ' is-wrong' : ''}`}
+                  aria-pressed={isSelected}
+                >
+                  <span className="va-answer__value">{opt}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      {/* Feedback */}
-      {userAnswer !== null && (
-        <div
-          className={`p-4 rounded-2xl text-center space-y-1 animate-in zoom-in-95 ${
-            userAnswer === remainingTarget
-              ? 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-800 dark:text-emerald-300'
-              : 'bg-rose-500/15 border border-rose-500/40 text-rose-800 dark:text-rose-300'
-          }`}
-        >
-          {userAnswer === remainingTarget ? (
-            <>
-              <div className="flex items-center justify-center gap-1.5 font-bold text-base">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                <span>Correct! {totalCount} − {removeCount} = {remainingTarget} {meta.plural.toLowerCase()} remaining!</span>
-              </div>
-              <p className="text-xs">
-                Starting with {totalCount} and removing {removeCount} leaves exactly {remainingTarget} {meta.plural}.
-              </p>
-              <button
-                onClick={handleNewPuzzle}
-                className="mt-2 px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-xs inline-flex items-center gap-1 cursor-pointer"
-              >
-                <span>Next Subtraction Puzzle</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </>
-          ) : (
-            <>
-              <div className="font-bold text-sm">Not quite!</div>
-              <p className="text-xs">
-                Look at the main collection: after removing {removeCount}, there are {remainingTarget} remaining.
-              </p>
-            </>
-          )}
-        </div>
-      )}
-    </div>
+        {/* Feedback */}
+        {userAnswer !== null && (
+          <div
+            className={`va-feedback ${userAnswer === remainingTarget ? 'is-correct' : 'is-wrong'}`}
+            role="status"
+            aria-live="polite"
+          >
+            {userAnswer === remainingTarget ? (
+              <>
+                <div className="va-feedback__title">
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span>
+                    Correct — {totalCount} − {removeCount} = {remainingTarget} remaining.
+                  </span>
+                </div>
+                <p className="va-feedback__body">
+                  Starting with {totalCount} and removing {removeCount} leaves exactly{' '}
+                  {remainingTarget} {meta.plural}.
+                </p>
+                <button type="button" onClick={handleNewPuzzle} className="va-btn va-btn--sm">
+                  <span>Next subtraction puzzle</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="va-feedback__title">
+                  <span>Not quite — look at the main collection.</span>
+                </div>
+                <p className="va-feedback__body">
+                  After removing {removeCount}, there are {remainingTarget} remaining.
+                </p>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </Reveal>
   );
 };
